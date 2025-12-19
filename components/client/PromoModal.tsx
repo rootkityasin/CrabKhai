@@ -28,7 +28,7 @@ export function PromoModal() {
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-            <div className="relative w-full max-w-sm h-[500px] bg-gray-900 rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 group">
+            <div className="relative w-full max-w-sm h-[340px] bg-gray-900 rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 group">
                 {/* Full Background Image */}
                 <img
                     src="/images/promo-combo.jpg"
@@ -51,20 +51,15 @@ export function PromoModal() {
                 {/* Content Overlay */}
                 <div className="absolute inset-0 flex flex-col justify-end p-6 z-20 text-center">
                     {/* Top Badge */}
-                    <div className="absolute top-6 left-0 right-0 flex justify-center">
+                    <div className="absolute top-4 left-0 right-0 flex justify-center">
                         <div className="inline-block px-4 py-1.5 bg-crab-red text-white text-[11px] font-black uppercase tracking-[0.2em] rounded-full shadow-lg animate-pulse border border-white/20">
                             Most Popular
                         </div>
                     </div>
 
                     {/* Bottom Section */}
-                    <div className="pb-4">
-                        <p className="text-gray-200 mb-6 font-medium text-sm leading-relaxed drop-shadow-md">
-                            Experience the ultimate seafood explosion! <br />
-                            <span className="text-white/80 text-xs">Crispy Crab Wings + Signature Bomb</span>
-                        </p>
-
-                        <div className="flex items-center justify-center gap-4 mb-6">
+                    <div className="pb-2">
+                        <div className="flex items-center justify-center gap-4 mb-4">
                             <span className="text-white/40 line-through text-sm decoration-2">BDT 1320</span>
                             <span className="text-4xl font-black text-crab-red drop-shadow-lg" style={{ textShadow: '0 2px 10px rgba(224, 79, 52, 0.5)' }}>
                                 <span className="text-lg align-top opacity-80">BDT</span> 1200
@@ -77,13 +72,6 @@ export function PromoModal() {
                         >
                             <Clock className="w-4 h-4 group-hover/btn:animate-spin" />
                             Order Now
-                        </button>
-
-                        <button
-                            onClick={handleClose}
-                            className="mt-4 text-[10px] uppercase tracking-widest text-white/40 hover:text-white transition-colors font-medium"
-                        >
-                            No thanks, I'll pass
                         </button>
                     </div>
                 </div>
