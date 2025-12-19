@@ -40,8 +40,8 @@ export function PromoModal() {
                 {/* Image Section */}
                 <div className="relative h-64 w-full">
                     <img
-                        src="/images/promo-crab.png"
-                        alt="Delicious Crab Combo"
+                        src="/images/promo-combo.jpg"
+                        alt="Wings & Bomb Combo"
                         className="w-full h-full object-cover"
                     />
                     {/* Gradient Overlay for Text Readability */}
@@ -49,37 +49,40 @@ export function PromoModal() {
 
                     <div className="absolute bottom-4 left-0 w-full text-center p-4">
                         <div className="inline-block px-3 py-1 bg-crab-red text-white text-[10px] font-bold uppercase tracking-widest rounded-full mb-2 shadow-lg animate-bounce">
-                            Limited Time
+                            Most Popular
                         </div>
-                        <h2 className="text-4xl font-heading font-black text-white drop-shadow-xl leading-none">
-                            COMBO <br /> <span className="text-sand">OFFER</span>
+                        <h2 className="text-3xl font-heading font-black text-white drop-shadow-xl leading-none">
+                            WINGS & BOMB <br /> <span className="text-sand">COMBO</span>
                         </h2>
                     </div>
                 </div>
 
                 {/* Content Section */}
                 <div className="p-6 text-center bg-white relative">
-                    <p className="text-gray-600 mb-6 font-medium">
-                        Enjoy the authentic taste of Sundarban with our exclusive platter.
+                    <p className="text-gray-600 mb-4 font-medium leading-relaxed">
+                        Experience the ultimate seafood explosion!
                         <br />
-                        <span className="block mt-2 text-2xl font-bold text-crab-red">
-                            FLAT 20% OFF
-                        </span>
+                        <span className="text-sm">Crispy Crab Wings + Signature Bomb</span>
                     </p>
+
+                    <div className="flex items-center justify-center gap-3 mb-6">
+                        <span className="text-gray-400 line-through text-sm">BDT 1320</span>
+                        <span className="text-2xl font-bold text-crab-red">BDT 1200</span>
+                    </div>
 
                     <button
                         onClick={handleClose}
                         className="w-full py-3 bg-ocean-blue text-white font-bold rounded-xl shadow-lg active:scale-95 transition-all hover:bg-ocean-blue/90 flex items-center justify-center gap-2"
                     >
                         <Clock className="w-4 h-4" />
-                        Grab Deal Now
+                        Order Now
                     </button>
 
                     <button
                         onClick={handleClose}
                         className="mt-4 text-xs text-gray-400 hover:text-gray-600 font-medium"
                     >
-                        No thanks, I'm full
+                        No thanks, I'll pass
                     </button>
                 </div>
             </div>
