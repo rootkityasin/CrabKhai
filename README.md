@@ -61,6 +61,19 @@ Make sure you have [Node.js](https://nodejs.org/) (v18 or higher) installed.
 4. **Access the App**
    Open [http://localhost:3000](http://localhost:3000) in your browser.
 
+## Kitchen Management System (Backend)
+This project includes a robust backend administrative dashboard designed to streamline kitchen operations and business management. Everything you need to run the business is built right in.
+
+### Key Features:
+- **Order Management**: Real-time tracking of incoming orders, status updates, and fulfillment.
+- **Product & Category Management**: Easy tools to add, update, or remove seafood items and organize them.
+- **Inventory & Stock**: Keep track of what's fresh and what's running low.
+- **Analytics & Reporting**: Insightful dashboards to monitor sales performance and customer trends.
+- **Customer Database**: Manage customer profiles and order history.
+- **Billing & Subscriptions**: Integrated financial tools for invoicing and subscription plans.
+- **Marketing Tools**: Manage promos, themes, and automation settings.
+- **User Roles**: Granular access control for admins, kitchen staff, and managers.
+
 ## Design System
 We use a custom theme configured in `tailwind.config.ts` to reflect our brand identity:
 - **Colors**: `crab-red` (Primary), `ocean-blue` (Secondary), `sand` (Accent).

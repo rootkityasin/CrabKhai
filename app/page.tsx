@@ -4,6 +4,7 @@ import { CategoryNav } from '@/components/client/CategoryNav';
 import { ProductRail } from '@/components/client/ProductRail';
 import { MobileHeader } from "@/components/client/MobileHeader";
 import { BottomNav } from "@/components/client/BottomNav";
+import { PromoModal } from "@/components/client/PromoModal";
 
 // Mock Data
 const bestSellers = [
@@ -20,6 +21,7 @@ const newArrivals = [
 export default function Home() {
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 pb-20">
+      <PromoModal />
       <MobileHeader />
       <main className="flex-1 w-full max-w-md mx-auto bg-white min-h-[calc(100vh-3.5rem)]">
         <div className="pb-8">
