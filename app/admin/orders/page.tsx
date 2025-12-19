@@ -1,0 +1,426 @@
+'use client';
+
+import { Search, Filter, Plus, Edit, ExternalLink, MessageCircle, LayoutGrid, List, Check, X, Clock, Truck, ChefHat, ChevronDown, Package, CheckCircle, AlertOctagon, RotateCcw, CreditCard, Ban, Calendar as CalendarIcon } from 'lucide-react';
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Calendar } from "@/components/ui/calendar"
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover"
+import { cn } from '@/lib/utils';
+import { FulfillmentBoard } from '@/components/admin/FulfillmentBoard';
+import { useAdmin } from '@/components/providers/AdminProvider';
+import { format } from "date-fns"
+
+export default function OrdersPage() {
+    // Global State
+    const { orders, addOrder, updateOrder, deleteOrder } = useAdmin();
+
+    const [view, setView] = useState<'table' | 'kanban'>('table');
+    const [filterStatus, setFilterStatus] = useState('all');
+    const [filterSource, setFilterSource] = useState('all');
+    const [date, setDate] = useState<Date | undefined>(undefined); // Date Filter State (Date Object)
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+    const [isAdding, setIsAdding] = useState(false);
+
+    // Edit Order State
+    const [editingId, setEditingId] = useState<string | null>(null);
+    const [editForm, setEditForm] = useState({ customer: '', phone: '', price: 0, items: 1 });
+
+    // Add Order Form
+    const [newOrder, setNewOrder] = useState({ customer: '', phone: '', price: 0, items: 1 });
+
+    const filteredOrders = orders.filter(o => {
+        const matchesStatus = filterStatus === 'all' || o.status.toLowerCase() === filterStatus.toLowerCase();
+        const matchesSource = filterSource === 'all' || o.source === filterSource;
+
+        // Date Logic (Compare Date Objects)
+        let matchesDate = true;
+        if (date) {
+            const orderDateObj = new Date(o.date);
+
+            // Normalize both dates to YYYY-MM-DD for comparison (ignoring time)
+            const orderStr = orderDateObj.toDateString();
+            const filterStr = date.toDateString();
+
+            matchesDate = orderStr === filterStr;
+        }
+
+        return matchesStatus && matchesSource && matchesDate;
+    });
+
+    const handleStatusChange = (id: string, newStatus: string) => {
+        updateOrder(id, { status: newStatus });
+    };
+
+    const handleCreateOrder = (e: React.FormEvent) => {
+        e.preventDefault();
+        const order = {
+            id: `#${Math.floor(Math.random() * 1000000)}`,
+            date: new Date().toLocaleString(),
+            customer: newOrder.customer,
+            phone: newOrder.phone,
+            items: newOrder.items,
+            source: 'MANUAL',
+            price: newOrder.price,
+            status: 'Placed'
+        };
+        addOrder(order);
+        setIsAdding(false);
+        setNewOrder({ customer: '', phone: '', price: 0, items: 1 });
+    };
+
+    const handleEditClick = (order: any) => {
+        setEditingId(order.id);
+        setEditForm({
+            customer: order.customer,
+            phone: order.phone,
+            price: order.price,
+            items: order.items
+        });
+    };
+
+    const handleUpdateOrder = (e: React.FormEvent) => {
+        e.preventDefault();
+        updateOrder(editingId!, editForm);
+        setEditingId(null);
+    };
+
+    const handleDelete = (id: string) => {
+        if (confirm('Delete Order?')) {
+            deleteOrder(id);
+        }
+    }
+
+    const getAllStatuses = () => [
+        "Placed", "Confirmed", "Processing", "Ready", "Shipped", "Delivered", "Completed", "Cancelled", "Returned", "Payment OnProcess", "Payment Failed"
+    ];
+
+    const getStatusColor = (status: string) => {
+        switch (status) {
+            case 'Placed': return "bg-blue-100 text-blue-700";
+            case 'Confirmed': return "bg-green-100 text-green-700";
+            case 'Processing': return "bg-orange-100 text-orange-700";
+            case 'Ready': return "bg-purple-100 text-purple-700";
+            case 'Shipped': return "bg-indigo-100 text-indigo-700";
+            case 'Delivered': return "bg-emerald-100 text-emerald-700";
+            case 'Completed': return "bg-slate-100 text-slate-700";
+            case 'Cancelled': return "bg-red-100 text-red-700";
+            case 'Returned': return "bg-rose-100 text-rose-700";
+            case 'Payment OnProcess': return "bg-yellow-100 text-yellow-700";
+            case 'Payment Failed': return "bg-red-50 text-red-600 border border-red-200";
+            default: return "bg-gray-100 text-gray-700";
+        }
+    }
+
+    return (
+        <div className="space-y-6 relative" onClick={() => isFilterOpen && setIsFilterOpen(false)}>
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl font-bold tracking-tight text-slate-800">Orders</h1>
+                    <p className="text-sm text-slate-500">Manage your kitchen flow here.</p>
+                </div>
+                <div className="flex items-center gap-2">
+                    <div className="flex bg-gray-100 p-1 rounded-lg mr-2">
+                        <button
+                            onClick={() => setView('table')}
+                            className={cn("p-1.5 rounded-md transition-all", view === 'table' ? "bg-white shadow-sm text-slate-900" : "text-slate-400")}
+                        >
+                            <List className="w-4 h-4" />
+                        </button>
+                        <button
+                            onClick={() => setView('kanban')}
+                            className={cn("p-1.5 rounded-md transition-all", view === 'kanban' ? "bg-white shadow-sm text-slate-900" : "text-slate-400")}
+                        >
+                            <LayoutGrid className="w-4 h-4" />
+                        </button>
+                    </div>
+
+                    {/* Search */}
+                    <div className="relative">
+                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+                        <Input type="search" placeholder="Search orders..." className="pl-9 w-[180px] sm:w-[250px] bg-white text-xs sm:text-sm" />
+                    </div>
+
+                    {/* Date Filter (Modern Shadcn) */}
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <Button
+                                variant={"outline"}
+                                className={cn(
+                                    "w-[180px] justify-start text-left font-normal bg-white",
+                                    !date && "text-muted-foreground"
+                                )}
+                            >
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {date ? format(date, "PPP") : <span>Pick a date</span>}
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="end">
+                            <Calendar
+                                mode="single"
+                                selected={date}
+                                onSelect={setDate}
+                                initialFocus
+                            />
+                            {date && (
+                                <div className="p-2 border-t border-gray-100">
+                                    <Button variant="ghost" className="w-full h-8 text-xs text-red-500 hover:text-red-700 hover:bg-red-50" onClick={() => setDate(undefined)}>
+                                        Clear Filter
+                                    </Button>
+                                </div>
+                            )}
+                        </PopoverContent>
+                    </Popover>
+
+                    {/* Source Filter Dropdown */}
+                    <div className="relative">
+                        <Button variant="outline" onClick={(e) => { e.stopPropagation(); setIsFilterOpen(!isFilterOpen); }}>
+                            <Filter className="w-4 h-4 mr-2" />
+                            {filterSource === 'all' ? 'Source' : filterSource}
+                            <ChevronDown className="w-3 h-3 ml-2 opacity-50" />
+                        </Button>
+
+                        {isFilterOpen && (
+                            <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 py-1 z-50 animate-in fade-in zoom-in-95">
+                                <div className="px-3 py-2 text-xs font-semibold text-slate-500 bg-gray-50 border-b border-gray-100">Filter by Source</div>
+                                <button onClick={() => setFilterSource('all')} className={cn("w-full text-left px-3 py-2 text-sm hover:bg-orange-50 flex items-center justify-between", filterSource === 'all' && "text-orange-600 font-medium")}>
+                                    All Sources {filterSource === 'all' && <Check className="w-3 h-3" />}
+                                </button>
+                                <button onClick={() => setFilterSource('WEB')} className={cn("w-full text-left px-3 py-2 text-sm hover:bg-orange-50 flex items-center justify-between", filterSource === 'WEB' && "text-orange-600 font-medium")}>
+                                    Web Orders {filterSource === 'WEB' && <Check className="w-3 h-3" />}
+                                </button>
+                                <button onClick={() => setFilterSource('WHATSAPP')} className={cn("w-full text-left px-3 py-2 text-sm hover:bg-orange-50 flex items-center justify-between", filterSource === 'WHATSAPP' && "text-orange-600 font-medium")}>
+                                    WhatsApp {filterSource === 'WHATSAPP' && <Check className="w-3 h-3" />}
+                                </button>
+                                <button onClick={() => setFilterSource('MANUAL')} className={cn("w-full text-left px-3 py-2 text-sm hover:bg-orange-50 flex items-center justify-between", filterSource === 'MANUAL' && "text-orange-600 font-medium")}>
+                                    Manual (Phone) {filterSource === 'MANUAL' && <Check className="w-3 h-3" />}
+                                </button>
+                            </div>
+                        )}
+                    </div>
+
+                    <Button onClick={() => setIsAdding(true)} className="bg-orange-600 hover:bg-orange-700 text-white"><Plus className="w-4 h-4 mr-2" /> Create</Button>
+                </div>
+            </div>
+
+            {/* Add Order Modal */}
+            {isAdding && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                    <Card className="w-full max-w-md animate-in fade-in zoom-in-95 duration-200">
+                        <div className="p-6">
+                            <div className="flex justify-between items-center mb-4">
+                                <h2 className="text-xl font-bold text-slate-800">Create Manual Order</h2>
+                                <button onClick={() => setIsAdding(false)} className="text-slate-400 hover:text-slate-600"><X className="w-5 h-5" /></button>
+                            </div>
+                            <form onSubmit={handleCreateOrder} className="space-y-4">
+                                <div>
+                                    <label className="text-sm font-medium">Customer Name</label>
+                                    <Input value={newOrder.customer} onChange={e => setNewOrder({ ...newOrder, customer: e.target.value })} required />
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium">Phone</label>
+                                    <Input value={newOrder.phone} onChange={e => setNewOrder({ ...newOrder, phone: e.target.value })} required />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="text-sm font-medium">Price (৳)</label>
+                                        <Input type="number" value={newOrder.price} onChange={e => setNewOrder({ ...newOrder, price: parseInt(e.target.value) })} required />
+                                    </div>
+                                    <div>
+                                        <label className="text-sm font-medium">Items Qty</label>
+                                        <Input type="number" value={newOrder.items} onChange={e => setNewOrder({ ...newOrder, items: parseInt(e.target.value) })} required />
+                                    </div>
+                                </div>
+                                <Button type="submit" className="w-full bg-orange-600 hover:bg-orange-700 text-white">Place Order</Button>
+                            </form>
+                        </div>
+                    </Card>
+                </div>
+            )}
+
+            {/* Edit Order Modal */}
+            {editingId && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                    <Card className="w-full max-w-md animate-in fade-in zoom-in-95 duration-200">
+                        <div className="p-6">
+                            <div className="flex justify-between items-center mb-4">
+                                <h2 className="text-xl font-bold text-slate-800">Edit Order {editingId}</h2>
+                                <button onClick={() => setEditingId(null)} className="text-slate-400 hover:text-slate-600"><X className="w-5 h-5" /></button>
+                            </div>
+                            <form onSubmit={handleUpdateOrder} className="space-y-4">
+                                <div>
+                                    <label className="text-sm font-medium">Customer Name</label>
+                                    <Input value={editForm.customer} onChange={e => setEditForm({ ...editForm, customer: e.target.value })} required />
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium">Phone</label>
+                                    <Input value={editForm.phone} onChange={e => setEditForm({ ...editForm, phone: e.target.value })} required />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="text-sm font-medium">Price (৳)</label>
+                                        <Input type="number" value={editForm.price} onChange={e => setEditForm({ ...editForm, price: parseInt(e.target.value) })} required />
+                                    </div>
+                                    <div>
+                                        <label className="text-sm font-medium">Items Qty</label>
+                                        <Input type="number" value={editForm.items} onChange={e => setEditForm({ ...editForm, items: parseInt(e.target.value) })} required />
+                                    </div>
+                                </div>
+                                <div className="flex gap-2 justify-end pt-2">
+                                    <Button type="button" variant="destructive" onClick={() => { handleDelete(editingId!); setEditingId(null); }}>Delete Order</Button>
+                                    <Button type="submit" className="bg-orange-600 hover:bg-orange-700 text-white">Save Changes</Button>
+                                </div>
+                            </form>
+                        </div>
+                    </Card>
+                </div>
+            )}
+
+            {/* Summary Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <SummaryCard label="Today's Orders" value={orders.length.toString()} subtext="2 canceled" />
+                <SummaryCard label="Total Amount" value={`৳ ${orders.reduce((acc: number, o: any) => acc + o.price, 0).toLocaleString()}`} subtext="+12% from yesterday" />
+                <SummaryCard label="Pending Processing" value={orders.filter(o => o.status === 'Processing' || o.status === 'Placed').length.toString()} subtext="Need attention" active />
+                <SummaryCard label="Dispatched" value={orders.filter(o => o.status === 'Shipped').length.toString()} subtext="On the way" />
+            </div>
+
+            {/* Main Content with Tabs */}
+            {view === 'table' ? (
+                <Card className="border-none shadow-none bg-transparent">
+                    <Tabs defaultValue="all" className="w-full" onValueChange={setFilterStatus}>
+                        <div className="overflow-x-auto pb-2">
+                            <TabsList className="bg-white p-1 border border-gray-100 h-auto justify-start w-full sm:w-auto inline-flex">
+                                <TabTrigger value="all" label="All Orders" count={orders.length} />
+                                <TabTrigger value="placed" label="Placed" count={orders.filter(o => o.status === 'Placed').length} />
+                                <TabTrigger value="confirmed" label="Confirmed" count={orders.filter(o => o.status === 'Confirmed').length} />
+                                <TabTrigger value="processing" label="Processing" count={orders.filter(o => o.status === 'Processing').length} />
+                                <TabTrigger value="ready" label="Ready" count={orders.filter(o => o.status === 'Ready').length} />
+                                <TabTrigger value="shipped" label="Shipped" count={orders.filter(o => o.status === 'Shipped').length} />
+                                <TabTrigger value="delivered" label="Delivered" count={orders.filter(o => o.status === 'Delivered').length} />
+                                <TabTrigger value="completed" label="Completed" count={orders.filter(o => o.status === 'Completed').length} />
+                                <TabTrigger value="cancelled" label="Cancelled" count={orders.filter(o => o.status === 'Cancelled').length} />
+                                <TabTrigger value="returned" label="Returned" count={orders.filter(o => o.status === 'Returned').length} />
+                                <TabTrigger value="payment onprocess" label="Payment OnProcess" count={orders.filter(o => o.status === 'Payment OnProcess').length} />
+                                <TabTrigger value="payment failed" label="Payment Failed" count={orders.filter(o => o.status === 'Payment Failed').length} />
+                            </TabsList>
+                        </div>
+
+                        <TabsContent value={filterStatus} className="mt-4">
+                            <div className="overflow-hidden rounded-lg border border-gray-100 bg-white shadow-sm">
+                                <table className="w-full text-sm text-left">
+                                    <thead className="bg-gray-50 text-slate-500 font-medium border-b border-gray-100">
+                                        <tr>
+                                            <th className="p-4 w-4"><input type="checkbox" /></th>
+                                            <th className="p-4">Order ID</th>
+                                            <th className="p-4">Date & Time</th>
+                                            <th className="p-4">Customer</th>
+                                            <th className="p-4">Items</th>
+                                            <th className="p-4">Source</th>
+                                            <th className="p-4">Price</th>
+                                            <th className="p-4">Status</th>
+                                            <th className="p-4 text-right">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-50">
+                                        {filteredOrders.length > 0 ? filteredOrders.map((order) => (
+                                            <tr key={order.id} className="hover:bg-gray-50/50">
+                                                <td className="p-4"><input type="checkbox" /></td>
+                                                <td className="p-4 font-bold text-slate-800">{order.id}</td>
+                                                <td className="p-4 text-slate-500">{order.date}</td>
+                                                <td className="p-4">
+                                                    <div className="font-medium text-slate-900">{order.customer}</div>
+                                                    <div className="text-xs text-slate-500">{order.phone}</div>
+                                                </td>
+                                                <td className="p-4 text-center font-medium bg-slate-50 rounded mx-auto w-fit">{order.items}</td>
+                                                <td className="p-4">
+                                                    <Badge variant="secondary" className="bg-slate-800 text-white hover:bg-slate-700">
+                                                        {order.source === 'WHATSAPP' && <MessageCircle className="w-3 h-3 mr-1" />}
+                                                        {order.source}
+                                                    </Badge>
+                                                </td>
+                                                <td className="p-4 font-bold text-slate-800">৳{order.price}</td>
+                                                <td className="p-4">
+                                                    <Badge className={cn("font-normal", getStatusColor(order.status))}>
+                                                        {order.status}
+                                                    </Badge>
+                                                </td>
+                                                <td className="p-4 text-right">
+                                                    <div className="flex items-center justify-end gap-2">
+                                                        <DropdownMenu>
+                                                            <DropdownMenuTrigger asChild>
+                                                                <Button variant="outline" size="sm" className="h-8">Change Status <ChevronDown className="w-3 h-3 ml-2" /></Button>
+                                                            </DropdownMenuTrigger>
+                                                            <DropdownMenuContent align="end" className="w-[200px]">
+                                                                <DropdownMenuLabel>Update Status</DropdownMenuLabel>
+                                                                <DropdownMenuSeparator />
+                                                                {getAllStatuses().map(status => (
+                                                                    <DropdownMenuItem key={status} onClick={() => handleStatusChange(order.id, status)}>
+                                                                        {status} {order.status === status && <Check className="w-3 h-3 ml-auto" />}
+                                                                    </DropdownMenuItem>
+                                                                ))}
+                                                            </DropdownMenuContent>
+                                                        </DropdownMenu>
+
+                                                        <Button size="icon" variant="ghost" className="h-8 w-8 text-blue-600 bg-blue-50" onClick={() => handleEditClick(order)}>
+                                                            <Edit className="w-4 h-4" />
+                                                        </Button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        )) : (
+                                            <tr>
+                                                <td colSpan={9} className="p-8 text-center text-slate-500">
+                                                    No orders found matching your filters.
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </TabsContent>
+                    </Tabs>
+                </Card>
+            ) : (
+                <FulfillmentBoard orders={filteredOrders} onStatusChange={handleStatusChange} />
+            )}
+        </div>
+    );
+}
+
+function SummaryCard({ label, value, subtext, active }: { label: string, value: string, subtext?: string, active?: boolean }) {
+    return (
+        <Card className={cn("border-none shadow-sm", active ? "bg-orange-600 text-white" : "bg-white")}>
+            <CardContent className="p-6">
+                <div className={cn("text-xs font-medium uppercase tracking-wider mb-1", active ? "text-orange-100" : "text-slate-500")}>{label}</div>
+                <div className="text-2xl font-bold mb-1">{value}</div>
+                {subtext && <div className={cn("text-xs", active ? "text-orange-200" : "text-green-600")}>{subtext}</div>}
+            </CardContent>
+        </Card>
+    )
+}
+
+function TabTrigger({ value, label, count }: { value: string, label: string, count?: number }) {
+    return (
+        <TabsTrigger value={value} className="data-[state=active]:bg-orange-600 data-[state=active]:text-white rounded-md px-4 py-2 h-9 mx-1 text-slate-600 whitespace-nowrap">
+            {label}
+            {count !== undefined && <span className="ml-2 text-[10px] bg-black/10 px-1.5 rounded-full">{count}</span>}
+        </TabsTrigger>
+    )
+}

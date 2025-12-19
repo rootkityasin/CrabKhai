@@ -1,0 +1,58 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id          String     @id @default(cuid())
+  name        String
+  price       Int
+  image       String?    // Cloudinary Public ID
+  isAvailable Boolean    @default(true)
+  categoryId  String
+  category    Category   @relation(fields: [categoryId], references: [id])
+  modifiers   Modifier[] 
+  orderItems  OrderItem[]
+}
+
+model Modifier {
+  id        String   @id @default(cuid())
+  name      String   // e.g., "Spice Level"
+  options   String[] // e.g., ["Mild", "Medium", "Naga"]
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+}
+
+model Order {
+  id              String   @id @default(cuid())
+  orderId         String   @unique // Short ID like "CK-1024"
+  status          String   @default("PENDING") 
+  customerName    String
+  customerPhone   String
+  customerAddress String
+  source          String   @default("WEB") // WEB, WHATSAPP, FACEBOOK
+  totalAmount     Int
+  items           OrderItem[]
+  createdAt       DateTime @default(now())
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  quantity  Int
+  price     Int     
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id])
+  selectedModifiers String? // Stores "Spice: Naga"
+}
+
+model Category {
+  id       String    @id @default(cuid())
+  name     String
+  products Product[]
+}
