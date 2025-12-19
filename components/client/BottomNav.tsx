@@ -5,12 +5,19 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useCartStore } from '@/lib/store';
+import { useState, useEffect } from 'react';
 
 export function BottomNav() {
     const pathname = usePathname();
-    // We'll set up the store later, for now just mock count
-    // const cartCount = useCartStore((state) => state.items.length);
-    const cartCount = 0;
+    const [mounted, setMounted] = useState(false);
+    const cartItems = useCartStore((state) => state.items);
+
+    // Prevent hydration mismatch
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    const cartCount = mounted ? cartItems.reduce((acc, item) => acc + item.quantity, 0) : 0;
 
     const navItems = [
         { label: 'Home', icon: Home, href: '/' },
