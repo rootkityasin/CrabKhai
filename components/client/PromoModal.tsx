@@ -28,62 +28,68 @@ export function PromoModal() {
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-            <div className="relative w-full max-w-sm bg-white rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 group">
+            <div className="relative w-full max-w-sm h-[500px] bg-gray-900 rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 group">
+                {/* Full Background Image */}
+                <img
+                    src="/images/promo-combo.jpg"
+                    alt="Wings & Bomb Combo"
+                    className="absolute inset-0 w-full h-full object-cover opacity-90"
+                />
+
+                {/* Gradient Overlays for Readability */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-transparent h-32" />
+
                 {/* Close Button */}
                 <button
                     onClick={handleClose}
-                    className="absolute top-3 right-3 p-1.5 bg-black/20 hover:bg-black/50 backdrop-blur-md rounded-full text-white transition-colors z-30"
+                    className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full text-white transition-colors z-30 border border-white/10"
                 >
                     <X className="w-5 h-5" />
                 </button>
 
-                {/* Image Section */}
-                <div className="relative h-64 w-full">
-                    <img
-                        src="/images/promo-combo.jpg"
-                        alt="Wings & Bomb Combo"
-                        className="w-full h-full object-cover"
-                    />
-                    {/* Gradient Overlay for Text Readability */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
-
-                    <div className="absolute bottom-4 left-0 w-full text-center p-4">
-                        <div className="inline-block px-3 py-1 bg-crab-red text-white text-[10px] font-bold uppercase tracking-widest rounded-full mb-2 shadow-lg animate-bounce">
+                {/* Content Overlay */}
+                <div className="absolute inset-0 flex flex-col justify-between p-6 z-20 text-center">
+                    {/* Top Section */}
+                    <div className="pt-4">
+                        <div className="inline-block px-4 py-1.5 bg-crab-red text-white text-[11px] font-black uppercase tracking-[0.2em] rounded-full mb-4 shadow-lg animate-pulse border border-white/20">
                             Most Popular
                         </div>
-                        <h2 className="text-3xl font-heading font-black text-white drop-shadow-xl leading-none">
-                            WINGS & BOMB <br /> <span className="text-sand">COMBO</span>
+                        <h2 className="text-4xl font-heading font-black text-white drop-shadow-2xl leading-[0.9]">
+                            WINGS & BOMB <br />
+                            <span className="text-sand text-5xl">COMBO</span>
                         </h2>
                     </div>
-                </div>
 
-                {/* Content Section */}
-                <div className="p-6 text-center bg-white relative">
-                    <p className="text-gray-600 mb-4 font-medium leading-relaxed">
-                        Experience the ultimate seafood explosion!
-                        <br />
-                        <span className="text-sm">Crispy Crab Wings + Signature Bomb</span>
-                    </p>
+                    {/* Bottom Section */}
+                    <div className="pb-4">
+                        <p className="text-gray-200 mb-6 font-medium text-sm leading-relaxed drop-shadow-md">
+                            Experience the ultimate seafood explosion! <br />
+                            <span className="text-white/80 text-xs">Crispy Crab Wings + Signature Bomb</span>
+                        </p>
 
-                    <div className="flex items-center justify-center gap-3 mb-6">
-                        <span className="text-gray-400 line-through text-sm">BDT 1320</span>
-                        <span className="text-2xl font-bold text-crab-red">BDT 1200</span>
+                        <div className="flex items-center justify-center gap-4 mb-6">
+                            <span className="text-white/40 line-through text-sm decoration-2">BDT 1320</span>
+                            <span className="text-4xl font-black text-crab-red drop-shadow-lg" style={{ textShadow: '0 2px 10px rgba(224, 79, 52, 0.5)' }}>
+                                <span className="text-lg align-top opacity-80">BDT</span> 1200
+                            </span>
+                        </div>
+
+                        <button
+                            onClick={handleClose}
+                            className="w-full py-4 bg-white text-crab-red font-black uppercase tracking-widest rounded-xl shadow-xl active:scale-95 transition-all hover:bg-gray-100 flex items-center justify-center gap-2 group/btn"
+                        >
+                            <Clock className="w-4 h-4 group-hover/btn:animate-spin" />
+                            Order Now
+                        </button>
+
+                        <button
+                            onClick={handleClose}
+                            className="mt-4 text-[10px] uppercase tracking-widest text-white/40 hover:text-white transition-colors font-medium"
+                        >
+                            No thanks, I'll pass
+                        </button>
                     </div>
-
-                    <button
-                        onClick={handleClose}
-                        className="w-full py-3 bg-ocean-blue text-white font-bold rounded-xl shadow-lg active:scale-95 transition-all hover:bg-ocean-blue/90 flex items-center justify-center gap-2"
-                    >
-                        <Clock className="w-4 h-4" />
-                        Order Now
-                    </button>
-
-                    <button
-                        onClick={handleClose}
-                        className="mt-4 text-xs text-gray-400 hover:text-gray-600 font-medium"
-                    >
-                        No thanks, I'll pass
-                    </button>
                 </div>
             </div>
         </div>
