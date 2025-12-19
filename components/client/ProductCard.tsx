@@ -9,7 +9,7 @@ import Image from 'next/image';
 interface Product {
     id: string;
     name: string;
-    price: number;
+    price: string | number;
     image: string;
 }
 
@@ -19,7 +19,17 @@ export function ProductCard({ product }: { product: Product }) {
 
     const handleAdd = () => {
         setQty(1);
-        addItem({ ...product, quantity: 1, modifiers: 'Standard' });
+        // Ensure price is a number for the cart
+        let cartPrice = 0;
+        if (typeof product.price === 'number') {
+            cartPrice = product.price;
+        } else {
+            // Extract the first number found in the string
+            const match = product.price.match(/(\d+)/);
+            cartPrice = match ? parseInt(match[0], 10) : 0;
+        }
+
+        addItem({ ...product, price: cartPrice, quantity: 1, modifiers: 'Standard' });
     };
 
     return (
@@ -37,7 +47,9 @@ export function ProductCard({ product }: { product: Product }) {
                 <h3 className="text-sm font-heading font-bold text-ocean-blue line-clamp-2 leading-tight mb-1 h-9">{product.name}</h3>
 
                 <div className="mt-2 flex items-center justify-between">
-                    <span className="text-base font-bold text-crab-red">৳{product.price}</span>
+                    <span className="text-sm font-bold text-crab-red">
+                        {typeof product.price === 'number' ? `৳${product.price}` : product.price}
+                    </span>
                     {qty === 0 ? (
                         <button
                             onClick={handleAdd}

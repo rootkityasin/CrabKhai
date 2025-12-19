@@ -7,7 +7,7 @@ import Link from 'next/link';
 interface Product {
     id: string;
     name: string;
-    price: number;
+    price: string | number;
     image: string;
 }
 
