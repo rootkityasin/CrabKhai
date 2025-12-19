@@ -1,36 +1,73 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CrabKhai - Premium Seafood from Sundarbans 🦀
 
-## Getting Started
+**CrabKhai** is a premium e-commerce platform dedicated to bringing the freshest live crab and seafood delicacies from the Sundarbans directly to your doorstep. Our mission is to provide an authentic, high-quality seafood experience with a touch of luxury.
 
-First, run the development server:
+## 🚀 Live Demo
+- **Frontend**: [http://localhost:3000](http://localhost:3000) (Local Development)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 🛠 Tech Stack
+This project is built using the latest web technologies for speed, scalability, and developer experience.
+
+- **Framework**: [Next.js 16](https://nextjs.org/) (App Router)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **UI Components**: [Radix UI](https://www.radix-ui.com/) & [Lucide Icons](https://lucide.dev/)
+- **State Management**: [Zustand](https://github.com/pmndrs/zustand)
+- **Database**: Prisma (ORM)
+- **Fonts**: Playfair Display (Headings) & Inter (Body)
+
+## 📂 Project Structure
+Here's a quick overview of how the codebase is organized:
+
+```
+crab-khai/
+├── app/                  # Next.js App Router
+│   ├── (client)/         # Client-facing pages (Menu, Checkout)
+│   ├── admin/            # Admin dashboard routes
+│   └── page.tsx          # Landing page (Home)
+├── components/           # Reusable UI components
+│   ├── client/           # Components for the public store
+│   ├── admin/            # Components for the admin panel
+│   └── ui/               # Base UI elements (Buttons, Inputs)
+├── lib/                  # Utilities and helper functions
+├── prisma/               # Database schema and config
+└── public/               # Static assets (images, fonts)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## ⚡ Getting Started
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Follow these steps to get the project running locally on your machine.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Prerequisites
+Make sure you have [Node.js](https://nodejs.org/) (v18 or higher) installed.
 
-## Learn More
+### Installation
 
-To learn more about Next.js, take a look at the following resources:
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/rootkityasin/CrabKhai.git
+   cd CrabKhai
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+3. **Run the development server**
+   ```bash
+   npm run dev
+   ```
 
-## Deploy on Vercel
+4. **Access the App**
+   Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🎨 Design System
+We use a custom theme configured in `tailwind.config.ts` to reflect our brand identity:
+- **Colors**: `crab-red` (Primary), `ocean-blue` (Secondary), `sand` (Accent).
+- **Typography**: Serif headings for elegance, Sans-serif body for readability.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🤝 Contributing
+Feel free to open issues or submit pull requests if you have ideas for improvements.
+
+---
+*Built with ❤️ by CrabKhai Engineering Team*
