@@ -3,6 +3,7 @@
 import React from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
+import Link from 'next/link';
 
 const slides = [
     { id: 1, src: 'https://images.unsplash.com/photo-1565557623262-b51c2513a641?q=80&w=1000&auto=format&fit=crop', alt: 'Spicy Crab Curry', title: 'Live Mud Crab', subtitle: 'Fresh from Sundarbans' },
@@ -33,9 +34,11 @@ export function HeroCarousel() {
                             <h2 className="text-4xl font-heading font-bold leading-tight drop-shadow-lg mb-2">
                                 {slide.title}
                             </h2>
-                            <button className="text-xs font-bold uppercase tracking-widest border-b-2 border-white/80 pb-0.5 hover:text-sand hover:border-sand transition-colors">
-                                Shop Now
-                            </button>
+                            <Link href="/menu">
+                                <button className="text-xs font-bold uppercase tracking-widest border-b-2 border-white/80 pb-0.5 hover:text-sand hover:border-sand transition-colors">
+                                    Shop Now
+                                </button>
+                            </Link>
                         </div>
                     </div>
                 ))}

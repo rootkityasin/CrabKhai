@@ -18,10 +18,10 @@ export function Footer() {
                     <div>
                         <h4 className="font-bold uppercase tracking-widest text-xs mb-4 text-sand">Quick Links</h4>
                         <ul className="space-y-2 text-sm text-white/80">
-                            <li><Link href="/about" className="hover:text-sand transition-colors">Our Story</Link></li>
+                            <li><Link href="/" className="hover:text-sand transition-colors">Our Story</Link></li>
                             <li><Link href="/menu" className="hover:text-sand transition-colors">Menu</Link></li>
-                            <li><Link href="/contact" className="hover:text-sand transition-colors">Contact</Link></li>
-                            <li><Link href="/terms" className="hover:text-sand transition-colors">Terms of Service</Link></li>
+                            <li><Link href="/" className="hover:text-sand transition-colors">Contact</Link></li>
+                            <li><Link href="/" className="hover:text-sand transition-colors">Terms of Service</Link></li>
                         </ul>
                     </div>
 
