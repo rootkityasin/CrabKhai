@@ -49,16 +49,12 @@ export function PromoModal() {
                 </button>
 
                 {/* Content Overlay */}
-                <div className="absolute inset-0 flex flex-col justify-between p-6 z-20 text-center">
-                    {/* Top Section */}
-                    <div className="pt-4">
-                        <div className="inline-block px-4 py-1.5 bg-crab-red text-white text-[11px] font-black uppercase tracking-[0.2em] rounded-full mb-4 shadow-lg animate-pulse border border-white/20">
+                <div className="absolute inset-0 flex flex-col justify-end p-6 z-20 text-center">
+                    {/* Top Badge */}
+                    <div className="absolute top-6 left-0 right-0 flex justify-center">
+                        <div className="inline-block px-4 py-1.5 bg-crab-red text-white text-[11px] font-black uppercase tracking-[0.2em] rounded-full shadow-lg animate-pulse border border-white/20">
                             Most Popular
                         </div>
-                        <h2 className="text-4xl font-heading font-black text-white drop-shadow-2xl leading-[0.9]">
-                            WINGS & BOMB <br />
-                            <span className="text-sand text-5xl">COMBO</span>
-                        </h2>
                     </div>
 
                     {/* Bottom Section */}
