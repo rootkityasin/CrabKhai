@@ -1,11 +1,11 @@
-# CrabKhai - Premium Seafood from Sundarbans 🦀
+# CrabKhai - Premium Seafood from Sundarbans
 
 **CrabKhai** is a premium e-commerce platform dedicated to bringing the freshest live crab and seafood delicacies from the Sundarbans directly to your doorstep. Our mission is to provide an authentic, high-quality seafood experience with a touch of luxury.
 
-## 🚀 Live Demo
+## Live Demo
 - **Frontend**: [http://localhost:3000](http://localhost:3000) (Local Development)
 
-## 🛠 Tech Stack
+## Tech Stack
 This project is built using the latest web technologies for speed, scalability, and developer experience.
 
 - **Framework**: [Next.js 16](https://nextjs.org/) (App Router)
@@ -15,7 +15,7 @@ This project is built using the latest web technologies for speed, scalability, 
 - **Database**: Prisma (ORM)
 - **Fonts**: Playfair Display (Headings) & Inter (Body)
 
-## 📂 Project Structure
+## Project Structure
 Here's a quick overview of how the codebase is organized:
 
 ```
@@ -33,7 +33,7 @@ crab-khai/
 └── public/               # Static assets (images, fonts)
 ```
 
-## ⚡ Getting Started
+## Getting Started
 
 Follow these steps to get the project running locally on your machine.
 
@@ -61,13 +61,13 @@ Make sure you have [Node.js](https://nodejs.org/) (v18 or higher) installed.
 4. **Access the App**
    Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## 🎨 Design System
+## Design System
 We use a custom theme configured in `tailwind.config.ts` to reflect our brand identity:
 - **Colors**: `crab-red` (Primary), `ocean-blue` (Secondary), `sand` (Accent).
 - **Typography**: Serif headings for elegance, Sans-serif body for readability.
 
-## 🤝 Contributing
+## Contributing
 Feel free to open issues or submit pull requests if you have ideas for improvements.
 
 ---
-*Built with ❤️ by CrabKhai Engineering Team*
+*Built with ❤️ by 90s Solutions*
