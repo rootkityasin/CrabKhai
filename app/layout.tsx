@@ -1,20 +1,27 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Inter } from "next/font/google";
+import { Inter, Hind_Siliguri, Playfair_Display } from "next/font/google";
+import { Toaster } from 'sonner';
 import "./globals.css";
 
-const headingFont = Playfair_Display({
-  variable: "--font-heading",
+const inter = Inter({
   subsets: ["latin"],
+  variable: "--font-inter",
 });
 
-const bodyFont = Inter({
-  variable: "--font-body",
+const hindSiliguri = Hind_Siliguri({
+  weight: ['400', '500', '600', '700'],
+  subsets: ['bengali'],
+  variable: "--font-hind",
+});
+
+const playfair = Playfair_Display({
   subsets: ["latin"],
+  variable: "--font-poster",
 });
 
 export const metadata: Metadata = {
-  title: "CrabKhai - Premium Sea Food",
-  description: "Fresh from the Sundarbans to your plate.",
+  title: "Crab & Khai - Authentic Seafood",
+  description: "Best Crab and Seafood Restaurant in Dhaka",
 };
 
 export default function RootLayout({
@@ -23,11 +30,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
-        className={`${headingFont.variable} ${bodyFont.variable} antialiased font-body bg-gray-50 text-gray-900`}
+        className={`${inter.variable} ${hindSiliguri.variable} ${playfair.variable} antialiased bg-sand text-ocean-blue font-body`}
       >
         {children}
+        <Toaster richColors position="bottom-right" />
       </body>
     </html>
   );

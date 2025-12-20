@@ -13,6 +13,7 @@ export default function CartPage() {
     const [formData, setFormData] = useState({
         name: '',
         phone: '',
+        area: '',
         address: '',
     });
 
@@ -26,8 +27,24 @@ export default function CartPage() {
 
     const handlePlaceOrder = (e: React.FormEvent) => {
         e.preventDefault();
-        // Here you would typically send directly to an API
-        console.log('Order Placed:', { items, total: total(), customer: formData });
+
+        // Calculate Points (1 point per 100 Taka)
+        const pointsEarned = Math.floor(total() / 100);
+
+        // Update User Points in LocalStorage if logged in
+        const storedUser = localStorage.getItem('crabkhai_user');
+        if (storedUser) {
+            const user = JSON.parse(storedUser);
+            const newPoints = (user.points || 0) + pointsEarned;
+
+            // Determine Status
+            let newStatus = 'Bronze';
+            if (newPoints >= 500) newStatus = 'Gold';
+            else if (newPoints >= 100) newStatus = 'Silver';
+
+            const updatedUser = { ...user, points: newPoints, status: newStatus };
+            localStorage.setItem('crabkhai_user', JSON.stringify(updatedUser));
+        }
 
         // Simulate Success
         setIsOrderPlaced(true);
@@ -75,7 +92,7 @@ export default function CartPage() {
     }
 
     return (
-        <div className="p-4 pb-32 animate-in slide-in-from-right duration-300">
+        <div className="p-4 pb-20 animate-in slide-in-from-right duration-300">
             <h1 className="text-2xl font-heading font-bold text-ocean-blue mb-6">Your Bag</h1>
 
             {/* Cart Items List */}
@@ -174,6 +191,20 @@ export default function CartPage() {
                             value={formData.phone}
                             onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                         />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Area / City</label>
+                        <select
+                            required
+                            className="w-full p-3 bg-gray-50 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all appearance-none"
+                            value={formData.area}
+                            onChange={(e) => setFormData({ ...formData, area: e.target.value })}
+                        >
+                            <option value="">Select Area</option>
+                            {['Dhaka', 'Khulna', 'Chattogram'].map((area) => (
+                                <option key={area} value={area}>{area}</option>
+                            ))}
+                        </select>
                     </div>
                     <div>
                         <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Address</label>

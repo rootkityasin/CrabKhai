@@ -5,14 +5,43 @@ import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
 import Link from 'next/link';
 
+import { useLanguageStore } from '@/lib/languageStore';
+import { translations } from '@/lib/translations';
+
 const slides = [
-    { id: 1, src: 'https://images.unsplash.com/photo-1565557623262-b51c2513a641?q=80&w=1000&auto=format&fit=crop', alt: 'Spicy Crab Curry', title: 'Live Mud Crab', subtitle: 'Fresh from Sundarbans' },
-    { id: 2, src: 'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?q=80&w=1000&auto=format&fit=crop', alt: 'Platters', title: 'Family Platters', subtitle: 'Share the joy' },
-    { id: 3, src: 'https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?q=80&w=1000&auto=format&fit=crop', alt: 'Shrimp', title: 'Jumbo Shrimp', subtitle: 'Grilled to perfection' },
+    {
+        id: 1,
+        src: 'https://images.unsplash.com/photo-1565557623262-b51c2513a641?q=80&w=1000&auto=format&fit=crop',
+        alt: 'Spicy Crab Curry',
+        title: 'Live Mud Crab',
+        title_bn: 'জীবন্ত মাড ক্র্যাব',
+        subtitle: 'Fresh from Sundarbans',
+        subtitle_bn: 'সুন্দরবন থেকে সরাসরি সংগ্রহকৃত'
+    },
+    {
+        id: 2,
+        src: 'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?q=80&w=1000&auto=format&fit=crop',
+        alt: 'Platters',
+        title: 'Family Platters',
+        title_bn: 'ফ্যামিলি প্ল্যাটার',
+        subtitle: 'Share the joy',
+        subtitle_bn: 'খুশি ভাগ করে নিন'
+    },
+    {
+        id: 3,
+        src: 'https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?q=80&w=1000&auto=format&fit=crop',
+        alt: 'Shrimp',
+        title: 'Jumbo Shrimp',
+        title_bn: 'জাম্বো চিংড়ি',
+        subtitle: 'Grilled to perfection',
+        subtitle_bn: 'নিখুঁতভাবে গ্রিল করা'
+    },
 ];
 
 export function HeroCarousel() {
     const [emblaRef] = useEmblaCarousel({ loop: true }, [Autoplay({ delay: 5000 })]);
+    const { language } = useLanguageStore();
+    const t = translations[language];
 
     return (
         <div className="relative overflow-hidden bg-gray-100 aspect-[4/3] md:aspect-[21/9]" ref={emblaRef}>
@@ -28,15 +57,15 @@ export function HeroCarousel() {
                         />
 
                         <div className="absolute z-20 left-6 bottom-8 max-w-[80%] text-white">
-                            <span className="inline-block px-3 py-1 rounded-sm bg-crab-red text-white text-[10px] uppercase tracking-widest font-bold mb-3 shadow-sm">
-                                {slide.subtitle}
+                            <span className={`inline-block px-3 py-1 rounded-sm bg-crab-red text-white text-[10px] uppercase tracking-widest font-bold mb-3 shadow-sm ${language === 'bn' ? 'font-bangla' : 'font-body'}`}>
+                                {language === 'en' ? slide.subtitle : slide.subtitle_bn}
                             </span>
-                            <h2 className="text-4xl font-heading font-bold leading-tight drop-shadow-lg mb-2">
-                                {slide.title}
+                            <h2 className={`text-4xl font-heading font-bold leading-tight drop-shadow-lg mb-2 ${language === 'bn' ? 'font-bangla' : 'font-heading'}`}>
+                                {language === 'en' ? slide.title : slide.title_bn}
                             </h2>
                             <Link href="/menu">
                                 <button className="text-xs font-bold uppercase tracking-widest border-b-2 border-white/80 pb-0.5 hover:text-sand hover:border-sand transition-colors">
-                                    Shop Now
+                                    {t.orderNow}
                                 </button>
                             </Link>
                         </div>

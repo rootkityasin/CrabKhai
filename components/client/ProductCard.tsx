@@ -1,69 +1,57 @@
 'use client';
 
-import { useState } from 'react';
-import { Plus, Minus, Star } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useCartStore } from '@/lib/store';
-import { cn } from '@/lib/utils';
-import Image from 'next/image';
+import { toast } from 'sonner';
+import { useLanguageStore } from '@/lib/languageStore';
 
-interface Product {
+interface ProductCardProps {
     id: string;
     name: string;
-    price: string | number;
+    name_bn?: string;
+    price: string;
+    price_bn?: string;
     image: string;
+    categoryId?: string;
 }
 
-export function ProductCard({ product }: { product: Product }) {
-    const [qty, setQty] = useState(0);
+export function ProductCard({ id, name, name_bn, price, price_bn, image }: ProductCardProps) {
     const addItem = useCartStore((state) => state.addItem);
+    const { language } = useLanguageStore();
 
-    const handleAdd = () => {
-        setQty(1);
-        // Ensure price is a number for the cart
-        let cartPrice = 0;
-        if (typeof product.price === 'number') {
-            cartPrice = product.price;
-        } else {
-            // Extract the first number found in the string
-            const match = product.price.match(/(\d+)/);
-            cartPrice = match ? parseInt(match[0], 10) : 0;
-        }
+    const displayPrice = language === 'bn' && price_bn ? price_bn : price;
+    const displayName = language === 'bn' && name_bn ? name_bn : name;
 
-        addItem({ ...product, price: cartPrice, quantity: 1, modifiers: 'Standard' });
+    const handleAddToCart = () => {
+        addItem({ id, name, price: Number(price.replace(/[^0-9.]/g, '')), image, quantity: 1 });
+        toast.success(`Added ${name} to cart`);
     };
 
     return (
-        <div className="relative flex-none w-48 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden snap-start flex flex-col group transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
-            {/* Image Area */}
-            <div className="relative h-32 w-full bg-gray-50 overflow-hidden">
-                <img src={product.image} alt={product.name} className="object-cover w-full h-full transform transition-transform duration-700 group-hover:scale-110" />
-                <div className="absolute top-2 left-2 bg-crab-red text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
-                    FRESH
-                </div>
+        <div className="group relative bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 animate-scale-in hover-scale">
+            <div className="aspect-square overflow-hidden bg-gray-100">
+                <img
+                    src={image}
+                    alt={name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    loading="lazy"
+                />
             </div>
-
-            {/* Content Area */}
-            <div className="p-3 flex flex-col flex-1 relative">
-                <h3 className="text-sm font-heading font-bold text-ocean-blue line-clamp-2 leading-tight mb-1 h-9">{product.name}</h3>
-
-                <div className="mt-2 flex items-center justify-between">
-                    <span className="text-sm font-bold text-crab-red">
-                        {typeof product.price === 'number' ? `৳${product.price}` : product.price}
+            <div className="p-3">
+                <h3 className={`font-bold text-gray-800 line-clamp-1 mb-1 ${language === 'bn' ? 'font-bangla text-base' : 'font-heading text-sm'}`}>
+                    {displayName}
+                </h3>
+                <div className="flex items-center justify-between">
+                    <span className={`text-crab-red font-bold ${language === 'bn' ? 'font-bangla' : 'font-body'}`}>
+                        ৳{displayPrice}
                     </span>
-                    {qty === 0 ? (
-                        <button
-                            onClick={handleAdd}
-                            className="flex items-center justify-center w-8 h-8 rounded-full bg-sand/30 text-crab-red border border-sand shadow-sm active:scale-95 transition-all hover:bg-crab-red hover:text-white hover:border-crab-red"
-                        >
-                            <Plus className="w-4 h-4" />
-                        </button>
-                    ) : (
-                        <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-full px-1.5 py-0.5 shadow-sm">
-                            <button className="text-gray-400 hover:text-crab-red transition-colors" onClick={() => setQty(Math.max(0, qty - 1))}><Minus className="w-3 h-3" /></button>
-                            <span className="text-sm font-bold w-4 text-center">{qty}</span>
-                            <button className="text-crab-red hover:text-crab-red/80 transition-colors" onClick={() => setQty(qty + 1)}><Plus className="w-3 h-3" /></button>
-                        </div>
-                    )}
+                    <button
+                        onClick={handleAddToCart}
+                        className="p-1.5 bg-gray-900 text-white rounded-full hover:bg-crab-red transition-colors active:scale-95"
+                        aria-label="Add to cart"
+                    >
+                        <Plus className="w-4 h-4" />
+                    </button>
                 </div>
             </div>
         </div>

@@ -4,52 +4,31 @@ import { ProductCard } from '@/components/client/ProductCard';
 import { Search } from 'lucide-react';
 
 // Scraped Data from crabkhaibd.com
-const menuItems = [
-    {
-        "id": "101",
-        "name": "Crispy Crab Wings",
-        "price": "330",
-        "image": "https://www.easykoro.com/inventories/fit-in/400x400/604194297355933.png"
-    },
-    {
-        "id": "102",
-        "name": "Crispy Crab Bomb",
-        "price": "330",
-        "image": "https://www.easykoro.com/inventories/fit-in/400x400/606088101401451.png"
-    },
-    {
-        "id": "103",
-        "name": "Signature Masala Crab wings",
-        "price": "350",
-        "image": "https://www.easykoro.com/inventories/fit-in/400x400/651903648889884.png"
-    },
-    {
-        "id": "104",
-        "name": "Tempura Shrimp",
-        "price": "400",
-        "image": "https://www.easykoro.com/inventories/fit-in/400x400/745402355963125.png"
-    },
-    {
-        "id": "105",
-        "name": "WINGS & BOMB COMBO",
-        "price": "BDT 1200",
-        "image": "https://www.easykoro.com/inventories/fit-in/400x400/4838007732246716.jpg"
-    },
-    {
-        "id": "106",
-        "name": "Raw Crab Clean",
-        "price": "450",
-        "image": "https://www.easykoro.com/inventories/fit-in/400x400/587600975137614.png"
-    },
-    {
-        "id": "107",
-        "name": "Signature Masala Crab Bomb",
-        "price": "350",
-        "image": "https://www.easykoro.com/inventories/fit-in/400x400/1684482693291279.png"
-    }
-];
+import { menuItems } from '@/lib/data';
 
-export default function MenuPage() {
+import { useSearchParams } from 'next/navigation';
+import { Suspense, useState, useEffect } from 'react';
+
+// ... (keep menuItems as is)
+
+function MenuContent() {
+    const searchParams = useSearchParams();
+    const initialQuery = searchParams.get('search') || '';
+    const category = searchParams.get('category');
+
+    const [searchQuery, setSearchQuery] = useState(initialQuery);
+
+    useEffect(() => {
+        setSearchQuery(initialQuery);
+    }, [initialQuery]);
+
+    // Filter logic
+    const filteredItems = menuItems.filter(item => {
+        const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesCategory = category ? item.categoryId === category : true;
+        return matchesSearch && matchesCategory;
+    });
+
     return (
         <div className="bg-gray-50 min-h-screen pb-20">
             {/* Header */}
@@ -61,20 +40,44 @@ export default function MenuPage() {
                         type="text"
                         placeholder="Search for crabs..."
                         className="w-full pl-9 pr-4 py-2 bg-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-crab-red/20"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
                     />
                 </div>
             </div>
 
             {/* Menu Grid */}
             <div className="p-4 grid grid-cols-2 gap-4">
-                {menuItems.map((item) => (
-                    <ProductCard key={item.id} product={item} />
-                ))}
+                {filteredItems.length > 0 ? (
+                    filteredItems.map((item) => (
+                        <ProductCard
+                            key={item.id}
+                            id={item.id}
+                            name={item.name}
+                            price={item.price}
+                            image={item.image}
+                            name_bn={item.name_bn}
+                            price_bn={item.price_bn}
+                        />
+                    ))
+                ) : (
+                    <div className="col-span-2 text-center py-12 text-gray-500">
+                        <p>No delicious crabs found matching "{searchQuery}"</p>
+                    </div>
+                )}
             </div>
 
             <div className="text-center py-8 text-gray-400 text-sm">
                 ~ End of Menu ~
             </div>
         </div>
+    );
+}
+
+export default function MenuPage() {
+    return (
+        <Suspense fallback={<div className="p-8 text-center">Loading menu...</div>}>
+            <MenuContent />
+        </Suspense>
     );
 }

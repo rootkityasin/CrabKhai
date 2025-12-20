@@ -27,9 +27,18 @@ export function ProductRail({ title, products, viewAllLink = '#' }: ProductRailP
                 </Link>
             </div>
 
-            <div className="flex gap-3 overflow-x-auto px-4 pb-4 snap-x hide-scrollbar">
+            <div className="flex gap-4 overflow-x-auto pb-4 snap-x hide-scrollbar px-4">
                 {products.map((product) => (
-                    <ProductCard key={product.id} product={product} />
+                    <div key={product.id} className="w-[160px] flex-none snap-start">
+                        <ProductCard
+                            id={product.id}
+                            name={product.name}
+                            price={String(product.price)}
+                            image={product.image}
+                            name_bn={(product as any).name_bn}
+                            price_bn={(product as any).price_bn}
+                        />
+                    </div>
                 ))}
             </div>
         </section>

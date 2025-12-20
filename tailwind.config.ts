@@ -10,9 +10,9 @@ const config: Config = {
 	theme: {
 		extend: {
 			colors: {
-				'crab-red': '#E04F34',
-				'ocean-blue': '#0A3D62',
-				'sand': '#F4E7D3',
+				'crab-red': 'var(--crab-red)',
+				'ocean-blue': 'var(--ocean-blue)',
+				'sand': 'var(--sand)',
 				background: 'hsl(var(--background))',
 				foreground: 'hsl(var(--foreground))',
 				card: {
@@ -55,8 +55,9 @@ const config: Config = {
 				}
 			},
 			fontFamily: {
-				heading: ['var(--font-heading)', 'serif'],
-				body: ['var(--font-body)', 'sans-serif'],
+				heading: ['var(--font-poster)', 'Playfair Display', 'serif'],
+				body: ['var(--font-inter)', 'Inter', 'sans-serif'],
+				bangla: ['var(--font-hind)', 'Hind Siliguri', 'sans-serif'],
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
