@@ -55,7 +55,8 @@ const newArrivals = [
     },
 ];
 
-export default function Home() {
+// Main landing page for the client application
+export default function ClientHomePage() {
     return (
         <div className="pb-8">
             <PromoModal />
