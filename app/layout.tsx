@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Hind_Siliguri, Playfair_Display } from "next/font/google";
-import { Toaster } from 'sonner';
+import { Toaster } from '@/components/ui/sonner';
+import PromoPopup from '@/components/client/PromoPopup';
 import "./globals.css";
 
 const inter = Inter({
@@ -35,7 +36,8 @@ export default function RootLayout({
         className={`${inter.variable} ${hindSiliguri.variable} ${playfair.variable} antialiased bg-sand text-ocean-blue font-body`}
       >
         {children}
-        <Toaster richColors position="bottom-right" />
+        <PromoPopup />
+        <Toaster richColors position="top-center" />
       </body>
     </html>
   );

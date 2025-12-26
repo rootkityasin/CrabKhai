@@ -12,13 +12,15 @@ import { cn } from '@/lib/utils';
 import { ProductBoard } from '@/components/admin/ProductBoard';
 import { useAdmin } from '@/components/providers/AdminProvider';
 
+import { ImageUpload } from '@/components/admin/ImageUpload';
+
 export default function ProductsPage() {
     // Replace local state with Global Context
     const { products, addProduct, updateProduct, deleteProduct, toggleStock } = useAdmin();
 
     const [view, setView] = useState<'table' | 'kanban'>('table');
     const [isAdding, setIsAdding] = useState(false);
-    const [newProduct, setNewProduct] = useState({ name: '', price: 0, sku: '' });
+    const [newProduct, setNewProduct] = useState({ name: '', price: 0, sku: '', nutritionImage: '', cookingImage: '' });
 
     const handleDelete = (id: string) => {
         if (confirm('Delete this product?')) {
@@ -41,11 +43,13 @@ export default function ProductsPage() {
             image: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=100&fit=crop',
             stock: true,
             source: 'Self',
-            stage: 'Draft'
+            stage: 'Draft',
+            nutritionImage: newProduct.nutritionImage,
+            cookingImage: newProduct.cookingImage
         };
         addProduct(product);
         setIsAdding(false);
-        setNewProduct({ name: '', price: 0, sku: '' });
+        setNewProduct({ name: '', price: 0, sku: '', nutritionImage: '', cookingImage: '' });
     };
 
     // Derived state for stats? (Optional, if we want to show counts somewhere global)
@@ -106,6 +110,24 @@ export default function ProductsPage() {
                                         <Input value={newProduct.sku} onChange={e => setNewProduct({ ...newProduct, sku: e.target.value })} />
                                     </div>
                                 </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">Nutrition Image</label>
+                                    <ImageUpload
+                                        value={newProduct.nutritionImage || ''}
+                                        onChange={(url) => setNewProduct({ ...newProduct, nutritionImage: url })}
+                                        onRemove={() => setNewProduct({ ...newProduct, nutritionImage: '' })}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">Cooking Instructions Image</label>
+                                    <ImageUpload
+                                        value={newProduct.cookingImage || ''}
+                                        onChange={(url) => setNewProduct({ ...newProduct, cookingImage: url })}
+                                        onRemove={() => setNewProduct({ ...newProduct, cookingImage: '' })}
+                                    />
+                                </div>
+
                                 <Button type="submit" className="w-full bg-orange-600 hover:bg-orange-700 text-white">Save Product</Button>
                             </form>
                         </div>

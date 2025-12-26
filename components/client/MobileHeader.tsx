@@ -4,7 +4,7 @@ import { Menu, Search, MapPin, ShoppingCart, User } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useLanguageStore } from '@/lib/languageStore';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useCartStore } from '@/lib/store';
 import { menuItems } from '@/lib/data';
 
@@ -16,8 +16,27 @@ export function MobileHeader() {
     const { language, toggleLanguage } = useLanguageStore();
     const t = translations[language];
 
+    const searchRef = useRef<HTMLDivElement>(null);
+    const searchTriggerRef = useRef<HTMLButtonElement>(null);
+
     useEffect(() => {
         setMounted(true);
+
+        function handleClickOutside(event: MouseEvent) {
+            if (
+                searchRef.current &&
+                !searchRef.current.contains(event.target as Node) &&
+                searchTriggerRef.current &&
+                !searchTriggerRef.current.contains(event.target as Node)
+            ) {
+                setIsSearchOpen(false);
+            }
+        }
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
     }, []);
 
     const cartCount = mounted ? cartItems.reduce((acc, item) => acc + item.quantity, 0) : 0;
@@ -57,6 +76,7 @@ export function MobileHeader() {
                     {/* Right: Icons (Search, Pin, Cart, User) */}
                     <div className="flex items-center gap-3">
                         <button
+                            ref={searchTriggerRef}
                             className={`p-1 transition-colors ${isSearchOpen ? 'text-yellow-400' : 'text-white'}`}
                             onClick={() => setIsSearchOpen(!isSearchOpen)}
                         >
@@ -129,7 +149,7 @@ export function MobileHeader() {
 
                 {/* Search Bar Popup */}
                 {isSearchOpen && (
-                    <div className="absolute top-16 left-0 right-0 bg-white p-4 shadow-lg animate-in slide-in-from-top-2 z-40 border-b border-gray-100">
+                    <div ref={searchRef} className="absolute top-16 left-0 right-0 bg-white p-4 shadow-lg animate-in slide-in-from-top-2 z-40 border-b border-gray-100">
                         <form onSubmit={handleSearch} className="relative">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                             <input

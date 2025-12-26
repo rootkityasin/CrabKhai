@@ -6,9 +6,23 @@ import { Facebook, Instagram, Phone, Mail } from 'lucide-react';
 import { useLanguageStore } from '@/lib/languageStore';
 import { translations } from '@/lib/translations';
 
-export function Footer() {
+interface FooterProps {
+    config?: {
+        contactPhone: string;
+        contactEmail: string;
+        contactAddress: string;
+    } | null;
+}
+
+export function Footer({ config }: FooterProps) {
     const { language } = useLanguageStore();
     const t = translations[language];
+
+    const phone = config?.contactPhone || "+880 1804 221 161";
+    const email = config?.contactEmail || "crabkhaibangladesh@gmail.com";
+
+    // Clean phone for tel link (remove spaces/dashes)
+    const cleanPhone = phone.replace(/[^0-9+]/g, '');
 
     return (
         <footer className="bg-crab-red text-white py-12 pb-24">
@@ -26,7 +40,7 @@ export function Footer() {
                         <ul className={`space-y-2 text-sm text-white/80 ${language === 'bn' ? 'font-bangla' : 'font-body'}`}>
                             <li><Link href="/" className="hover:text-sand transition-colors">{t.ourStory}</Link></li>
                             <li><Link href="/menu" className="hover:text-sand transition-colors">{t.menu}</Link></li>
-                            <li><a href="mailto:crabkhaibangladesh@gmail.com" className="hover:text-sand transition-colors">{t.contact}</a></li>
+                            <li><a href={`mailto:${email}`} className="hover:text-sand transition-colors">{t.contact}</a></li>
                             <li><Link href="/" className="hover:text-sand transition-colors">{t.terms}</Link></li>
                         </ul>
                     </div>
@@ -40,13 +54,17 @@ export function Footer() {
                             <a href="https://www.instagram.com/crabkhai" target="_blank" rel="noopener noreferrer" className="p-2 bg-white/10 rounded-full hover:bg-crab-red transition-colors">
                                 <Instagram className="w-5 h-5" />
                             </a>
-                            <a href="https://wa.me/8801804221161" target="_blank" rel="noopener noreferrer" className="p-2 bg-white/10 rounded-full hover:bg-green-500 transition-colors">
+                            <a href={`https://wa.me/${cleanPhone.replace('+', '')}`} target="_blank" rel="noopener noreferrer" className="p-2 bg-white/10 rounded-full hover:bg-green-500 transition-colors">
                                 <Phone className="w-5 h-5" />
                             </a>
                         </div>
-                        <div className="text-white/70 text-sm space-y-1">
-                            <p className="flex items-center gap-2"><Phone className="w-4 h-4" /> +880 1804-221161</p>
-                            <p className="flex items-center gap-2"><Mail className="w-4 h-4" /> crabkhaibangladesh@gmail.com</p>
+                        <div className="text-white/70 text-sm space-y-2">
+                            <a href={`tel:${cleanPhone}`} className="flex items-center gap-2 hover:text-white transition-colors">
+                                <Phone className="w-4 h-4" /> {phone}
+                            </a>
+                            <a href={`mailto:${email}`} className="flex items-center gap-2 hover:text-white transition-colors">
+                                <Mail className="w-4 h-4" /> {email}
+                            </a>
                         </div>
                     </div>
                 </div>

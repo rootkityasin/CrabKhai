@@ -84,3 +84,21 @@ Feel free to open issues or submit pull requests if you have ideas for improveme
 
 ---
 *Built with ❤️ by 90s Solutions*
+
+## Deployment & Environment Variables
+
+When deploying to Vercel (or any other host), you **MUST** configure the following Environment Variables in your project settings:
+
+### Required Variables
+| Variable Key | Description |
+|--------------|-------------|
+| `DATABASE_URL` | Connection string for your PostgreSQL database. |
+| `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` | Your Cloudinary Cloud Name (e.g., `dwrmfoq1a`). |
+| `NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET` | Your **Unsigned** Upload Preset (e.g., `CrabKhai`). |
+
+### How to Add in Vercel
+1. Go to your Vercel Dashboard.
+2. Select your project -> **Settings**.
+3. Click on **Environment Variables** in the sidebar.
+4. Add the keys and values listed above.
+5. **Redeploy** your application for changes to take effect.

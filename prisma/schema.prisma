@@ -4,7 +4,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model Product {
@@ -12,6 +11,8 @@ model Product {
   name        String
   price       Int
   image       String?    // Cloudinary Public ID
+  nutritionImage String?
+  cookingImage   String?
   isAvailable Boolean    @default(true)
   categoryId  String
   category    Category   @relation(fields: [categoryId], references: [id])
@@ -55,4 +56,22 @@ model Category {
   id       String    @id @default(cuid())
   name     String
   products Product[]
+}
+
+model PromoCard {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  imageUrl    String
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+}
+
+model SiteConfig {
+  id              String   @id @default(cuid())
+  contactPhone    String   @default("+880 1804 221 161")
+  contactEmail    String   @default("crabkhaibangladesh@gmail.com")
+  contactAddress  String   @default("195 Green Road, Dhaka")
+  allergensText   String   @default("Crustaceans")
+  certificates    String[] // URLs
 }

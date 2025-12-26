@@ -11,15 +11,29 @@ interface Product {
     image: string;
 }
 
+import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
+import { useRef } from 'react';
+
 interface ProductRailProps {
     title: string;
     products: Product[];
     viewAllLink?: string;
+    enableScrollAnimation?: boolean;
 }
 
-export function ProductRail({ title, products, viewAllLink = '#' }: ProductRailProps) {
+export function ProductRail({ title, products, viewAllLink = '#', enableScrollAnimation = false }: ProductRailProps) {
+    const containerRef = useRef<HTMLElement>(null);
+    const { scrollYProgress } = useScroll({
+        target: containerRef,
+        offset: ["start 90%", "end 10%"]
+    });
+
+    // Gentle floating effect: starts slightly right (40px) and lands at 0px
+    const rawX = useTransform(scrollYProgress, [0, 1], [40, 0]);
+    const x = useSpring(rawX, { stiffness: 300, damping: 30, mass: 1 });
+
     return (
-        <section className="py-4 border-t border-gray-50">
+        <section ref={containerRef} className="py-4 border-t border-gray-50">
             <div className="flex items-center justify-between px-4 mb-3">
                 <h2 className="text-lg font-bold text-gray-900">{title}</h2>
                 <Link href={viewAllLink} className="flex items-center text-xs font-semibold text-primary">
@@ -27,19 +41,29 @@ export function ProductRail({ title, products, viewAllLink = '#' }: ProductRailP
                 </Link>
             </div>
 
-            <div className="flex gap-4 overflow-x-auto pb-4 snap-x hide-scrollbar px-4">
-                {products.map((product) => (
-                    <div key={product.id} className="w-[160px] flex-none snap-start">
-                        <ProductCard
-                            id={product.id}
-                            name={product.name}
-                            price={String(product.price)}
-                            image={product.image}
-                            name_bn={(product as any).name_bn}
-                            price_bn={(product as any).price_bn}
-                        />
-                    </div>
-                ))}
+            <div className={`overflow-x-auto pb-4 hide-scrollbar ${enableScrollAnimation ? '' : 'snap-x'}`}>
+                <motion.div
+                    className="flex gap-4 px-4 w-max"
+                    style={{
+                        x: enableScrollAnimation ? x : 0,
+                        willChange: enableScrollAnimation ? 'transform' : 'auto'
+                    }}
+                >
+                    {products.map((product) => (
+                        <div key={product.id} className={`w-[160px] flex-none ${enableScrollAnimation ? '' : 'snap-start'}`}>
+                            <ProductCard
+                                id={product.id}
+                                name={product.name}
+                                price={String(product.price)}
+                                image={product.image}
+                                name_bn={(product as any).name_bn}
+                                price_bn={(product as any).price_bn}
+                                nutritionImage={(product as any).nutritionImage}
+                                cookingImage={(product as any).cookingImage}
+                            />
+                        </div>
+                    ))}
+                </motion.div>
             </div>
         </section>
     );
