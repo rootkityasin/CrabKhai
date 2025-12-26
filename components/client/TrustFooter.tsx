@@ -19,12 +19,24 @@ export default function TrustFooter({ config, ...props }: TrustFooterProps) {
     const email = config?.contactEmail || "crabkhaibangladesh@gmail.com";
     const address = config?.contactAddress || "195 Green Road, Dhaka";
     const allergenText = config?.allergensText || "Crustaceans";
-    const certificates = config?.certificates && config.certificates.length > 0
-        ? config.certificates
-        : [
-            "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/HACCP_Certification_Mark.svg/1200px-HACCP_Certification_Mark.svg.png",
-            "https://www.qualityaustria.com/fileadmin/_processed_/c/9/csm_GMP_Good_Manufacturing_Practice_Logo_3502845680.jpg"
-        ];
+    // Forcing local images to ensure they display correctly (bypassing potentially broken DB URLs)
+    const certificates = [
+        {
+            src: "/certifications/cert-1.png",
+            url: "https://www.fda.gov/food/guidance-regulation-food-and-dietary-supplements/hazard-analysis-critical-control-point-haccp",
+            alt: "HACCP Certified - Hazard Analysis Critical Control Point"
+        },
+        {
+            src: "/certifications/cert-2.png",
+            url: "https://www.ispe.org/initiatives/regulatory-resources/gmp",
+            alt: "GMP Certified - Good Manufacturing Practice"
+        },
+        {
+            src: "/certifications/cert-3.png",
+            url: "https://www.brcgs.com/our-standards/food-safety/",
+            alt: "BRGS Certified - Food Safety Standard"
+        }
+    ];
     return (
         <section className="bg-gradient-to-br from-red-600 to-red-700 text-white py-12 px-4 overflow-hidden relative">
             {/* Artistic Background Elements */}
@@ -46,25 +58,36 @@ export default function TrustFooter({ config, ...props }: TrustFooterProps) {
                     </div>
 
                     <div className="space-y-4">
-                        <a href={`tel:${phone.replace(/[^0-9+]/g, '')}`} className="flex items-center gap-4 group hover:opacity-80 transition-opacity">
-                            <div className="p-3 bg-white/10 rounded-full group-hover:bg-white/20 transition-colors">
+                        <a
+                            href={`tel:${phone.replace(/[^0-9+]/g, '')}`}
+                            className="flex items-center gap-4 group p-3 rounded-xl hover:bg-white/10 transition-all border border-transparent hover:border-white/10 cursor-pointer"
+                        >
+                            <div className="p-3 bg-white/10 rounded-full group-hover:bg-white/20 transition-colors shadow-sm">
                                 <Phone className="w-5 h-5" />
                             </div>
-                            <span className="font-mono text-lg tracking-wide">{phone}</span>
+                            <span className="font-mono text-lg tracking-wide group-hover:text-amber-200 transition-colors">{phone}</span>
                         </a>
 
-                        <div className="flex items-center gap-4 group">
-                            <div className="p-3 bg-white/10 rounded-full group-hover:bg-white/20 transition-colors">
+                        <a
+                            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-4 group p-3 rounded-xl hover:bg-white/10 transition-all border border-transparent hover:border-white/10 cursor-pointer"
+                        >
+                            <div className="p-3 bg-white/10 rounded-full group-hover:bg-white/20 transition-colors shadow-sm">
                                 <MapPin className="w-5 h-5" />
                             </div>
-                            <span className="font-medium">{address}</span>
-                        </div>
+                            <span className="font-medium group-hover:text-amber-200 transition-colors">{address}</span>
+                        </a>
 
-                        <a href={`mailto:${email}`} className="flex items-center gap-4 group hover:opacity-80 transition-opacity">
-                            <div className="p-3 bg-white/10 rounded-full group-hover:bg-white/20 transition-colors">
+                        <a
+                            href={`mailto:${email}`}
+                            className="flex items-center gap-4 group p-3 rounded-xl hover:bg-white/10 transition-all border border-transparent hover:border-white/10 cursor-pointer"
+                        >
+                            <div className="p-3 bg-white/10 rounded-full group-hover:bg-white/20 transition-colors shadow-sm">
                                 <Mail className="w-5 h-5" />
                             </div>
-                            <span className="text-sm opacity-90">{email}</span>
+                            <span className="text-sm opacity-90 group-hover:text-amber-200 transition-colors">{email}</span>
                         </a>
                     </div>
 
@@ -75,7 +98,7 @@ export default function TrustFooter({ config, ...props }: TrustFooterProps) {
                             <div>
                                 <h4 className="font-bold text-sm uppercase tracking-wider text-amber-200 mb-1">Consumer Advisory</h4>
                                 <p className="text-xs leading-relaxed opacity-90">
-                                    Contains Allergens: <strong className="text-white decoration-amber-400 underline decoration-wavy underline-offset-2">{allergenText}</strong>.
+                                    <strong className="text-amber-400">Allergen Advice:</strong> Contains <a href={`https://www.google.com/search?q=${encodeURIComponent(allergenText)}`} target="_blank" rel="noopener noreferrer" className="text-white font-bold border-b border-amber-400/50 hover:text-amber-300 hover:border-amber-300 transition-colors cursor-pointer" title="Search for this allergen">{allergenText}</a>.
                                     Please inform us about any food allergies before ordering.
                                 </p>
                             </div>
@@ -100,15 +123,23 @@ export default function TrustFooter({ config, ...props }: TrustFooterProps) {
                         Our products are processed in facilities adhering to the highest international safety standards.
                     </p>
 
+                    <div className="mt-8 text-xs font-mono text-white/40 tracking-widest uppercase mb-4">
+                        Verified & Certified By
+                    </div>
+
                     <div className="flex flex-wrap justify-center gap-6">
                         {certificates.map((cert, index) => (
-                            <motion.div
+                            <motion.a
                                 key={index}
+                                href={cert.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
                                 whileHover={{ scale: 1.1, rotate: 2 }}
-                                className="w-16 h-16 md:w-20 md:h-20 bg-white rounded-full p-2 shadow-lg flex items-center justify-center"
+                                className="w-20 h-20 bg-white rounded-full p-3 shadow-lg flex items-center justify-center transform hover:z-10 transition-all duration-300 border-2 border-white/50 cursor-pointer hover:border-amber-400"
+                                title={`Click to read about ${cert.alt}`}
                             >
-                                <img src={cert} alt="Certification" className="w-full h-full object-contain" />
-                            </motion.div>
+                                <img src={cert.src} alt={cert.alt} className="w-full h-full object-contain" />
+                            </motion.a>
                         ))}
                     </div>
 

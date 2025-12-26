@@ -77,7 +77,7 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
                                 <TabsList className="w-full justify-start rounded-none border-b bg-transparent p-0 h-auto">
                                     <TabsTrigger
                                         value="cooking"
-                                        className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-orange-600 rounded-none px-6 py-4 text-slate-500 data-[state=active]:text-orange-600 font-medium transition-all"
+                                        className="!outline-none !ring-0 !ring-offset-0 !shadow-none focus:!ring-0 focus-visible:!ring-0 focus-visible:!outline-none focus:!outline-none data-[state=active]:bg-transparent data-[state=active]:!shadow-none data-[state=active]:border-b-2 data-[state=active]:border-orange-600 rounded-none px-6 py-4 text-slate-500 data-[state=active]:text-orange-600 font-medium transition-all"
                                     >
                                         <div className="flex items-center gap-2">
                                             <Flame className="w-4 h-4" /> Cooking Guide
@@ -85,7 +85,7 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
                                     </TabsTrigger>
                                     <TabsTrigger
                                         value="nutrition"
-                                        className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-green-600 rounded-none px-6 py-4 text-slate-500 data-[state=active]:text-green-600 font-medium transition-all"
+                                        className="!outline-none !ring-0 !ring-offset-0 !shadow-none focus:!ring-0 focus-visible:!ring-0 focus-visible:!outline-none focus:!outline-none data-[state=active]:bg-transparent data-[state=active]:!shadow-none data-[state=active]:border-b-2 data-[state=active]:border-green-600 rounded-none px-6 py-4 text-slate-500 data-[state=active]:text-green-600 font-medium transition-all"
                                     >
                                         <div className="flex items-center gap-2">
                                             <Activity className="w-4 h-4" /> Nutrition
@@ -195,8 +195,15 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
                         </div>
 
                         <div className="p-4 border-t bg-white">
-                            <Button onClick={handleAddToCart} className="w-full h-12 text-lg bg-slate-900 hover:bg-orange-600 text-white rounded-xl shadow-lg hover:shadow-orange-200 transition-all font-bold">
-                                Add to Cart - ৳{product.price}
+                            <Button
+                                onClick={handleAddToCart}
+                                className="w-full h-14 text-xl bg-[#F40000] hover:bg-[#D90000] text-white rounded-xl shadow-lg hover:shadow-xl hover:shadow-red-500/20 transition-all font-bold border-t-2 border-white/20 border-b-4 border-[#B00000] active:border-b-0 active:translate-y-1 active:mt-1 relative overflow-hidden group"
+                            >
+                                <span className="absolute inset-0 bg-gradient-to-r from-transparent via-[#FEF08A]/40 to-transparent -translate-x-full group-hover:animate-shine" />
+                                <div className="flex items-center justify-center gap-3">
+                                    <Plus className="w-6 h-6 stroke-[3] text-white group-hover:text-[#FEF08A] transition-colors" />
+                                    <span className="tracking-wide">Add to Cart</span>
+                                </div>
                             </Button>
                         </div>
                     </div>
