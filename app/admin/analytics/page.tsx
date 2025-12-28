@@ -114,7 +114,7 @@ export default function AnalyticsPage() {
                                     </defs>
                                     <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
                                     <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-                                    <Tooltip contentStyle={{ borderRadius: '8px' }} formatter={(value: number) => `৳ ${value}`} />
+                                    <Tooltip contentStyle={{ borderRadius: '8px' }} formatter={(value: any) => `৳ ${value}`} />
                                     <Area type="monotone" dataKey="sales" stroke="#ea580c" strokeWidth={3} fillOpacity={1} fill="url(#colorSales)" />
                                 </AreaChart>
                             </ResponsiveContainer>
