@@ -63,6 +63,7 @@ model SiteConfig {
   contactEmail    String   @default("crabkhaibangladesh@gmail.com")
   contactAddress  String   @default("195 Green Road, Dhaka")
   allergensText   String   @default("Crustaceans")
+  certificates    String[]
 }
 
 enum Role {
