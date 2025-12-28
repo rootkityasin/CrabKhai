@@ -65,52 +65,25 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-4xl p-0 overflow-hidden bg-white border-0 shadow-2xl rounded-2xl">
+            <DialogContent className="max-w-md p-0 overflow-hidden bg-white border-0 shadow-2xl rounded-2xl h-[70vh] flex flex-col">
                 <button
                     onClick={onClose}
                     className="absolute top-4 right-4 z-[60] p-2 bg-black/10 hover:bg-black/20 rounded-full text-slate-800 transition-colors backdrop-blur-sm"
                 >
                     <X className="w-6 h-6" />
                 </button>
-                <div className="flex flex-col md:flex-row h-[80vh] md:h-[600px]">
-                    {/* Left Side: Product Image Showcase */}
-                    <div className="w-full md:w-5/12 h-72 md:h-full relative bg-slate-50 flex items-center justify-center p-8 overflow-hidden group shrink-0">
-                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-orange-50/50 to-transparent" />
+                {/* Background Image for Atmosphere */}
+                <div className="absolute inset-0 z-0">
+                    <img
+                        src={product.image}
+                        alt="Background"
+                        className="w-full h-full object-cover opacity-100 scale-105"
+                    />
+                </div>
+                <div className="flex flex-col h-full relative z-10">
 
-                        {(function () {
-                            const isVideo = product.image?.match(/\.(mp4|webm|ogg)$/i) || product.image?.includes('video');
-                            if (isVideo) {
-                                return (
-                                    <motion.video
-                                        src={product.image}
-                                        className="w-full h-full object-contain z-10 drop-shadow-xl"
-                                        initial={{ scale: 0.9, opacity: 0 }}
-                                        animate={{ scale: 1, opacity: 1 }}
-                                        transition={{ duration: 0.5 }}
-                                        autoPlay loop muted playsInline controls
-                                    />
-                                );
-                            }
-                            return (
-                                <motion.img
-                                    src={product.image}
-                                    alt={product.name}
-                                    className="w-full h-full object-contain z-10 drop-shadow-xl"
-                                    initial={{ scale: 0.9, opacity: 0 }}
-                                    animate={{ scale: 1, opacity: 1 }}
-                                    transition={{ duration: 0.5 }}
-                                />
-                            );
-                        })()}
-
-                        <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/50 to-transparent text-white z-20 pointer-events-none">
-                            <p className="font-medium opacity-90">Premium Quality</p>
-                            <p className="text-3xl font-bold">৳{product.price}</p>
-                        </div>
-                    </div>
-
-                    {/* Right Side: Details & Tabs */}
-                    <div className="w-full md:w-7/12 flex flex-col bg-white">
+                    {/* Main Content Area */}
+                    <div className="w-full flex flex-col flex-1 backdrop-blur-[3px] h-full">
                         <div className="p-6 border-b border-gray-100">
                             <DialogHeader className="mb-0 text-left">
                                 <motion.div
@@ -118,7 +91,7 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: 0.2 }}
                                 >
-                                    <DialogTitle className="text-3xl font-bold text-slate-900 tracking-tight">{product.name}</DialogTitle>
+                                    <DialogTitle className="text-2xl font-bold text-slate-900 tracking-tight">{product.name}</DialogTitle>
                                 </motion.div>
                                 <motion.p
                                     className="text-slate-500 mt-1 text-sm leading-relaxed"
@@ -164,9 +137,28 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
                                                 transition={{ duration: 0.2 }}
                                             >
                                                 {/* Constant (Default) Cooking Cards */}
-                                                <div className="space-y-4">
+                                                <motion.div
+                                                    className="space-y-4"
+                                                    variants={{
+                                                        hidden: { opacity: 0 },
+                                                        show: {
+                                                            opacity: 1,
+                                                            transition: { staggerChildren: 0.15 }
+                                                        }
+                                                    }}
+                                                    initial="hidden"
+                                                    animate="show"
+                                                >
                                                     {/* Deep Fry Card */}
-                                                    <div className="bg-white rounded-xl p-5 shadow-sm border border-orange-100 relative overflow-hidden">
+                                                    <motion.div
+                                                        variants={{
+                                                            hidden: { opacity: 0, y: 20 },
+                                                            show: { opacity: 1, y: 0 }
+                                                        }}
+                                                        whileHover={{ scale: 1.02, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)" }}
+                                                        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                                                        className="bg-white rounded-xl p-5 shadow-sm border border-orange-100 relative overflow-hidden"
+                                                    >
                                                         <div className="absolute top-0 right-0 w-24 h-24 bg-orange-50 rounded-bl-full -mr-4 -mt-4 z-0" />
                                                         <div className="relative z-10 flex items-center justify-between">
                                                             <div className="flex items-center gap-4">
@@ -188,10 +180,18 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                    </div>
+                                                    </motion.div>
 
                                                     {/* Oven Bake Card */}
-                                                    <div className="bg-white rounded-xl p-5 shadow-sm border border-blue-50">
+                                                    <motion.div
+                                                        variants={{
+                                                            hidden: { opacity: 0, y: 20 },
+                                                            show: { opacity: 1, y: 0 }
+                                                        }}
+                                                        whileHover={{ scale: 1.02, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)" }}
+                                                        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                                                        className="bg-white rounded-xl p-5 shadow-sm border border-blue-50"
+                                                    >
                                                         <div className="flex items-center justify-between">
                                                             <div className="flex items-center gap-4">
                                                                 <div className="p-3 bg-blue-50 rounded-lg text-blue-600">
@@ -209,8 +209,8 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                </div>
+                                                    </motion.div>
+                                                </motion.div>
                                             </motion.div>
                                         </TabsContent>
 
@@ -284,7 +284,7 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
                             </Tabs>
                         </div>
 
-                        <div className="p-4 border-t bg-white">
+                        <div className="p-4 border-t border-white/20 bg-white/30">
                             <Button
                                 onClick={handleAddToCart}
                                 className="w-full h-14 text-xl bg-[#F40000] hover:bg-[#D90000] text-white rounded-xl shadow-lg hover:shadow-xl hover:shadow-red-500/20 transition-all font-bold border-t-2 border-white/20 border-b-4 border-[#B00000] active:border-b-0 active:translate-y-1 active:mt-1 relative overflow-hidden group"
