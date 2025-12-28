@@ -144,7 +144,7 @@ export default function TrustFooter({ config, ...props }: TrustFooterProps) {
                     </div>
 
                     <div className="mt-8 text-xs font-mono text-white/40 tracking-widest uppercase">
-                        Verified & Certified
+                        Verified & Certified <span className="opacity-50 ml-2 text-[10px]">v2.0</span>
                     </div>
                 </motion.div>
             </div>
