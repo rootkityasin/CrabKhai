@@ -18,6 +18,7 @@ model Product {
   category    Category   @relation(fields: [categoryId], references: [id])
   modifiers   Modifier[] 
   orderItems  OrderItem[]
+  inventory   Inventory[]
 }
 
 model Modifier {
@@ -76,6 +77,7 @@ model Hub {
   users     User[]
   orders    Order[]
   inventory Inventory[]
+  freezers  Freezer[]
 }
 
 model User {
