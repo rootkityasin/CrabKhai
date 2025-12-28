@@ -73,5 +73,67 @@ model SiteConfig {
   contactEmail    String   @default("crabkhaibangladesh@gmail.com")
   contactAddress  String   @default("195 Green Road, Dhaka")
   allergensText   String   @default("Crustaceans")
-  certificates    String[] // URLs
+enum Role {
+  SUPER_ADMIN
+  HUB_ADMIN
+}
+
+model Hub {
+  id        String      @id @default(cuid())
+  name      String
+  location  String
+  users     User[]
+  orders    Order[]
+  inventory Inventory[]
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  role      Role     @default(HUB_ADMIN)
+  hubId     String?
+  hub       Hub?     @relation(fields: [hubId], references: [id])
+}
+
+model Inventory {
+  id        String   @id @default(cuid())
+  hubId     String
+  hub       Hub      @relation(fields: [hubId], references: [id])
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  quantity  Int      @default(0)
+  updatedAt DateTime @updatedAt
+  
+  // Can add Freezer details here if needed granularly
+  freezerId String? 
+  freezer   Freezer? @relation(fields: [freezerId], references: [id])
+}
+
+model Freezer {
+  id          String      @id @default(cuid())
+  name        String      // e.g., "Freezer A - Fish"
+  temperature Float       // e.g., -18.5
+  capacity    Int         // in KG or Units
+  hubId       String
+  hub         Hub         @relation(fields: [hubId], references: [id])
+  inventory   Inventory[]
+}
+
+// ... existing models ...
+
+model Order {
+  id              String   @id @default(cuid())
+  orderId         String   @unique
+  status          String   @default("PENDING") 
+  customerName    String
+  customerPhone   String
+  customerAddress String
+  source          String   @default("WEB") 
+  totalAmount     Int
+  items           OrderItem[]
+  createdAt       DateTime @default(now())
+  
+  hubId           String?
+  hub             Hub?     @relation(fields: [hubId], references: [id])
 }

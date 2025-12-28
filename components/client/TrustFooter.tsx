@@ -51,49 +51,49 @@ export default function TrustFooter({ config, ...props }: TrustFooterProps) {
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.6 }}
-                    className="space-y-6"
+                    className="space-y-3"
                 >
-                    <div className="inline-block px-4 py-1 bg-white/20 backdrop-blur-md rounded-full text-xs font-medium tracking-wider mb-2">
+                    <div className="inline-block px-4 py-1 bg-white/20 backdrop-blur-md rounded-full text-xs font-medium tracking-wider mb-1">
                         OFFICIAL CONTACT
                     </div>
 
-                    <div className="space-y-4">
+                    <div className="space-y-2">
                         <a
                             href={`tel:${phone.replace(/[^0-9+]/g, '')}`}
-                            className="flex items-center gap-4 group p-3 rounded-xl hover:bg-white/10 transition-all border border-transparent hover:border-white/10 cursor-pointer"
+                            className="flex items-center gap-4 group p-2 rounded-xl hover:bg-white/10 transition-all border border-transparent hover:border-white/10 cursor-pointer"
                         >
-                            <div className="p-3 bg-white/10 rounded-full group-hover:bg-white/20 transition-colors shadow-sm">
-                                <Phone className="w-5 h-5" />
+                            <div className="p-2 bg-white/10 rounded-full group-hover:bg-white/20 transition-colors shadow-sm">
+                                <Phone className="w-4 h-4" />
                             </div>
-                            <span className="font-mono text-lg tracking-wide group-hover:text-amber-200 transition-colors">{phone}</span>
+                            <span className="font-mono text-base tracking-wide group-hover:text-amber-200 transition-colors">{phone}</span>
                         </a>
 
                         <a
                             href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center gap-4 group p-3 rounded-xl hover:bg-white/10 transition-all border border-transparent hover:border-white/10 cursor-pointer"
+                            className="flex items-center gap-4 group p-2 rounded-xl hover:bg-white/10 transition-all border border-transparent hover:border-white/10 cursor-pointer"
                         >
-                            <div className="p-3 bg-white/10 rounded-full group-hover:bg-white/20 transition-colors shadow-sm">
-                                <MapPin className="w-5 h-5" />
+                            <div className="p-2 bg-white/10 rounded-full group-hover:bg-white/20 transition-colors shadow-sm">
+                                <MapPin className="w-4 h-4" />
                             </div>
-                            <span className="font-medium group-hover:text-amber-200 transition-colors">{address}</span>
+                            <span className="font-medium text-sm group-hover:text-amber-200 transition-colors">{address}</span>
                         </a>
 
                         <a
                             href={`mailto:${email}`}
-                            className="flex items-center gap-4 group p-3 rounded-xl hover:bg-white/10 transition-all border border-transparent hover:border-white/10 cursor-pointer"
+                            className="flex items-center gap-4 group p-2 rounded-xl hover:bg-white/10 transition-all border border-transparent hover:border-white/10 cursor-pointer"
                         >
-                            <div className="p-3 bg-white/10 rounded-full group-hover:bg-white/20 transition-colors shadow-sm">
-                                <Mail className="w-5 h-5" />
+                            <div className="p-2 bg-white/10 rounded-full group-hover:bg-white/20 transition-colors shadow-sm">
+                                <Mail className="w-4 h-4" />
                             </div>
                             <span className="text-sm opacity-90 group-hover:text-amber-200 transition-colors">{email}</span>
                         </a>
                     </div>
 
                     {/* Allergens Warning */}
-                    <div className="mt-8 pt-6 border-t border-white/20">
-                        <div className="flex items-start gap-3 text-red-100 bg-red-900/30 p-4 rounded-xl backdrop-blur-sm border border-red-500/30">
+                    <div className="mt-4 pt-4 border-t border-white/20">
+                        <div className="flex items-start gap-3 text-red-100 bg-red-900/30 p-3 rounded-xl backdrop-blur-sm border border-red-500/30">
                             <AlertTriangle className="w-5 h-5 flex-shrink-0 text-amber-300 animate-pulse" />
                             <div>
                                 <h4 className="font-bold text-sm uppercase tracking-wider text-amber-200 mb-1">Consumer Advisory</h4>
@@ -112,22 +112,22 @@ export default function TrustFooter({ config, ...props }: TrustFooterProps) {
                     whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.6, delay: 0.2 }}
-                    className="flex flex-col items-center text-center p-8 bg-white/5 backdrop-blur-sm rounded-3xl border border-white/10 shadow-2xl"
+                    className="flex flex-col items-center text-center p-6 bg-white/5 backdrop-blur-sm rounded-3xl border border-white/10 shadow-2xl"
                 >
-                    <div className="flex items-center gap-2 mb-6">
+                    <div className="flex items-center gap-2 mb-4">
                         <ShieldCheck className="w-6 h-6 text-green-300" />
-                        <h3 className="text-xl font-bold font-serif tracking-wide">Quality Guaranteed</h3>
+                        <h3 className="text-lg font-bold font-serif tracking-wide">Quality Guaranteed</h3>
                     </div>
 
-                    <p className="text-sm text-white/70 mb-8 max-w-xs">
+                    <p className="text-xs text-white/70 mb-4 max-w-xs">
                         Our products are processed in facilities adhering to the highest international safety standards.
                     </p>
 
-                    <div className="mt-8 text-xs font-mono text-white/40 tracking-widest uppercase mb-4">
+                    <div className="mt-4 text-[10px] font-mono text-white/40 tracking-widest uppercase mb-2">
                         Verified & Certified By
                     </div>
 
-                    <div className="flex flex-wrap justify-center gap-6">
+                    <div className="flex flex-wrap justify-center gap-4">
                         {certificates.map((cert, index) => (
                             <motion.a
                                 key={index}
@@ -135,7 +135,7 @@ export default function TrustFooter({ config, ...props }: TrustFooterProps) {
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 whileHover={{ scale: 1.1, rotate: 2 }}
-                                className="w-20 h-20 bg-white rounded-full p-3 shadow-lg flex items-center justify-center transform hover:z-10 transition-all duration-300 border-2 border-white/50 cursor-pointer hover:border-amber-400"
+                                className="w-16 h-16 bg-white rounded-full p-2 shadow-lg flex items-center justify-center transform hover:z-10 transition-all duration-300 border-2 border-white/50 cursor-pointer hover:border-amber-400"
                                 title={`Click to read about ${cert.alt}`}
                             >
                                 <img src={cert.src} alt={cert.alt} className="w-full h-full object-contain" />

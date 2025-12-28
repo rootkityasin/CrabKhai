@@ -133,10 +133,10 @@ export default function OrdersPage() {
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-slate-800">Orders</h1>
+                    <h1 className="text-2xl font-bold tracking-tight text-slate-800">🛍️ Orders</h1>
                     <p className="text-sm text-slate-500">Manage your kitchen flow here.</p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                     <div className="flex bg-gray-100 p-1 rounded-lg mr-2">
                         <button
                             onClick={() => setView('table')}
@@ -323,8 +323,8 @@ export default function OrdersPage() {
                         </div>
 
                         <TabsContent value={filterStatus} className="mt-4">
-                            <div className="overflow-hidden rounded-lg border border-gray-100 bg-white shadow-sm">
-                                <table className="w-full text-sm text-left">
+                            <div className="overflow-x-auto pb-4 rounded-lg border border-gray-100 bg-white shadow-sm custom-table-scrollbar">
+                                <table className="w-full text-sm text-left min-w-[800px]">
                                     <thead className="bg-gray-50 text-slate-500 font-medium border-b border-gray-100">
                                         <tr>
                                             <th className="p-4 w-4"><input type="checkbox" /></th>

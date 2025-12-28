@@ -19,9 +19,11 @@ interface ProductCardProps {
     categoryId?: string;
     nutritionImage?: string;
     cookingImage?: string;
+    nutrition?: string;
+    cookingInstructions?: string;
 }
 
-export function ProductCard({ id, name, name_bn, price, price_bn, image, nutritionImage, cookingImage }: ProductCardProps) {
+export function ProductCard({ id, name, name_bn, price, price_bn, image, nutritionImage, cookingImage, nutrition, cookingInstructions }: ProductCardProps) {
     const addItem = useCartStore((state) => state.addItem);
     const { language } = useLanguageStore();
     const { triggerFly } = useAnimationStore();
@@ -144,7 +146,7 @@ export function ProductCard({ id, name, name_bn, price, price_bn, image, nutriti
             <ProductModal
                 isOpen={showModal}
                 onClose={() => setShowModal(false)}
-                product={{ id, name, price, image, nutritionImage, cookingImage }}
+                product={{ id, name, price, image, nutritionImage, cookingImage, nutrition, cookingInstructions }}
             />
         </>
     );

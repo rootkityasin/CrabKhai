@@ -28,9 +28,9 @@ export function ProductRail({ title, products, viewAllLink = '#', enableScrollAn
         offset: ["start 90%", "end 10%"]
     });
 
-    // Gentle floating effect: starts slightly right (40px) and lands at 0px
-    const rawX = useTransform(scrollYProgress, [0, 1], [40, 0]);
-    const x = useSpring(rawX, { stiffness: 300, damping: 30, mass: 1 });
+    // Gentle floating effect: starts with offset (40px) and moves left (-120px) for speed
+    const rawX = useTransform(scrollYProgress, [0, 1], [40, -120]);
+    const x = useSpring(rawX, { stiffness: 150, damping: 20, mass: 0.5 });
 
     return (
         <section ref={containerRef} className="py-4 border-t border-gray-50">
@@ -60,6 +60,8 @@ export function ProductRail({ title, products, viewAllLink = '#', enableScrollAn
                                 price_bn={(product as any).price_bn}
                                 nutritionImage={(product as any).nutritionImage}
                                 cookingImage={(product as any).cookingImage}
+                                nutrition={(product as any).nutrition}
+                                cookingInstructions={(product as any).cookingInstructions}
                             />
                         </div>
                     ))}

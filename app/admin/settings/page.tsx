@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Plus, Trash2, Save, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { useAdmin } from '@/components/providers/AdminProvider';
 
 // Default values to mock "fetching"
 const initialConfig = {
@@ -22,13 +23,23 @@ const initialConfig = {
 };
 
 export default function SettingsPage() {
-    const [config, setConfig] = useState(initialConfig);
+    const { settings, updateSettings } = useAdmin();
+    // Local state for the "edit buffer" to avoid re-renders on every keystroke if desired, 
+    // but for simplicity we can sync one-way or just use local buffer.
+    // Let's use a local buffer `config` initialized from `settings` to allow "Save" behavior.
+    const [config, setConfig] = useState(settings);
+
+    // Sync local config when provider settings change (e.g. initial load)
+    useEffect(() => {
+        setConfig(settings);
+    }, [settings]);
+
     const [newCert, setNewCert] = useState('');
     const [isSaving, setIsSaving] = useState(false);
 
     const handleSave = () => {
         setIsSaving(true);
-        // Simulate API call
+        updateSettings(config);
         setTimeout(() => {
             setIsSaving(false);
             toast.success("Settings updated successfully!");

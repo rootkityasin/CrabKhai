@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Search, Plus, MoreVertical, Layers, Trash2, Edit2, X, Save } from 'lucide-react';
+import { Search, Plus, MoreVertical, Layers, Trash2, Edit, X, Save } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 const initialCategories = [
@@ -182,12 +182,12 @@ export default function CategoriesPage() {
                                         </Badge>
                                     </td>
                                     <td className="p-4 text-right">
-                                        <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <Button size="icon" variant="ghost" className="h-8 w-8 text-blue-500 hover:bg-blue-50" onClick={() => handleEdit(cat)}>
-                                                <Edit2 className="w-4 h-4" />
+                                        <div className="flex justify-end gap-2">
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50" onClick={() => handleEdit(cat)}>
+                                                <Edit className="h-4 w-4" />
                                             </Button>
-                                            <Button size="icon" variant="ghost" className="h-8 w-8 text-slate-400 hover:text-red-600 hover:bg-red-50" onClick={() => handleDelete(cat.id)}>
-                                                <Trash2 className="w-4 h-4" />
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => handleDelete(cat.id)}>
+                                                <Trash2 className="h-4 w-4" />
                                             </Button>
                                         </div>
                                     </td>

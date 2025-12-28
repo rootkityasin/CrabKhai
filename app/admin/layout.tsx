@@ -11,7 +11,7 @@ export default function AdminLayout({
 }) {
     return (
         <AdminProvider>
-            <div className="min-h-screen bg-gray-50 flex">
+            <div className="min-h-screen bg-gray-50">
                 <AdminSidebar />
                 <MainContentWrapper>
                     {children}
@@ -22,9 +22,9 @@ export default function AdminLayout({
 }
 
 function MainContentWrapper({ children }: { children: React.ReactNode }) {
-    const { isSidebarCollapsed } = useAdmin(); // Now we can use the hook!
+    const { isSidebarCollapsed } = useAdmin();
     return (
-        <main className={cn("flex-1 p-8 transition-all duration-300 ease-in-out", isSidebarCollapsed ? "ml-20" : "ml-64")}>
+        <main className={cn("p-4 pt-14 lg:p-8 transition-all duration-300 ease-in-out w-auto", isSidebarCollapsed ? "lg:ml-20" : "lg:ml-64")}>
             {children}
         </main>
     )

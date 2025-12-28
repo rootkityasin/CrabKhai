@@ -131,6 +131,27 @@
   scrollbar-width: none;
 }
 
+/* Specific Table Scrollbar for better visibility */
+.custom-table-scrollbar::-webkit-scrollbar {
+  height: 8px;
+  /* Horizontal scrollbar height */
+}
+
+.custom-table-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-table-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.1);
+  /* Visible but subtle */
+  border-radius: 4px;
+}
+
+.custom-table-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.4);
+  /* Darker on interaction */
+}
+
 /* --- Global Animations --- */
 
 @keyframes fadeIn {

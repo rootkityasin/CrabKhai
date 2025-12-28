@@ -39,9 +39,28 @@ const slides = [
 ];
 
 export function HeroCarousel() {
-    const [emblaRef] = useEmblaCarousel({ loop: true }, [Autoplay({ delay: 5000 })]);
+    // Memoize plugins to prevent re-initialization on every render
+    const plugins = React.useMemo(() => [Autoplay({ delay: 5000, stopOnInteraction: false })], []);
+
+    // Duration 60 makes the scroll transition slower and 'smoother' than the default snap
+    const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, duration: 60 }, plugins);
     const { language } = useLanguageStore();
     const t = translations[language];
+    const [selectedIndex, setSelectedIndex] = React.useState(0);
+
+    const onSelect = React.useCallback(() => {
+        if (!emblaApi) return;
+        setSelectedIndex(emblaApi.selectedScrollSnap());
+    }, [emblaApi]);
+
+    React.useEffect(() => {
+        if (!emblaApi) return;
+        onSelect();
+        emblaApi.on('select', onSelect);
+        return () => {
+            emblaApi.off('select', onSelect);
+        };
+    }, [emblaApi, onSelect]);
 
     return (
         <div className="relative overflow-hidden bg-gray-100 aspect-[4/3] md:aspect-[21/9]" ref={emblaRef}>
@@ -70,6 +89,18 @@ export function HeroCarousel() {
                             </Link>
                         </div>
                     </div>
+                ))}
+            </div>
+
+            {/* Glass-like Indicator */}
+            <div className="absolute bottom-6 right-6 z-30 flex items-center gap-1.5 px-2 py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/10 shadow-lg">
+                {slides.map((_, index) => (
+                    <button
+                        key={index}
+                        onClick={() => emblaApi?.scrollTo(index)}
+                        className={`transition-all duration-300 rounded-full ${index === selectedIndex ? 'w-4 h-1.5 bg-white shadow-[0_0_8px_rgba(255,255,255,0.6)]' : 'w-1.5 h-1.5 bg-white/50 hover:bg-white/80'}`}
+                        aria-label={`Go to slide ${index + 1}`}
+                    />
                 ))}
             </div>
         </div>

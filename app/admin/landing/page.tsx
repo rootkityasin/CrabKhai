@@ -12,6 +12,8 @@ const initialPages = [
     { id: 2, title: 'Corporate Platter Offer', image: 'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?q=80&w=200', default: false },
 ];
 
+import { MediaUpload } from '@/components/admin/MediaUpload';
+
 export default function LandingPages() {
     const [pages, setPages] = useState(initialPages);
     const [isAdding, setIsAdding] = useState(false);
@@ -49,7 +51,7 @@ export default function LandingPages() {
         <div className="space-y-6 relative">
             <div className="flex justify-between items-center">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-slate-800">Landing Pages</h1>
+                    <h1 className="text-2xl font-bold tracking-tight text-slate-800">📢 Landing Pages</h1>
                     <p className="text-sm text-slate-500">Manage your promotional landing pages.</p>
                 </div>
                 <Button onClick={() => setIsAdding(true)} className="bg-orange-600 hover:bg-orange-700 text-white">
@@ -79,19 +81,12 @@ export default function LandingPages() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-sm font-medium text-slate-700">Cover Image URL</label>
-                                    <div className="flex gap-2">
-                                        <div className="relative flex-1">
-                                            <ImageIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-                                            <Input
-                                                placeholder="https://..."
-                                                value={newPage.image}
-                                                onChange={(e) => setNewPage({ ...newPage, image: e.target.value })}
-                                                className="pl-9"
-                                            />
-                                        </div>
-                                    </div>
-                                    <p className="text-xs text-slate-400 mt-1">Leave empty for random placeholder.</p>
+                                    <label className="text-sm font-medium text-slate-700">Cover Media (Image or Video)</label>
+                                    <MediaUpload
+                                        value={newPage.image}
+                                        onChange={(url) => setNewPage({ ...newPage, image: url })}
+                                        onRemove={() => setNewPage({ ...newPage, image: '' })}
+                                    />
                                 </div>
                                 <Button type="submit" className="w-full bg-orange-600 hover:bg-orange-700 text-white">Create Page</Button>
                             </form>

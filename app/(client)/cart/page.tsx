@@ -71,10 +71,14 @@ export default function CartPage() {
     if (isOrderPlaced) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh] p-8 text-center">
-                <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-6">
-                    <span className="text-4xl">🎉</span>
+                <div className="w-64 h-64 mb-6 flex items-center justify-center overflow-hidden">
+                    <img
+                        src="/congrates_animation.gif"
+                        alt="Order Confirmed"
+                        className="w-full h-full object-contain scale-105"
+                    />
                 </div>
-                <h2 className={`text-3xl font-bold text-ocean-blue mb-2 ${headingClass}`}>{t.cartPage.orderReceived}</h2>
+                <h2 className={`text-2xl font-bold text-gray-900 mb-2 ${headingClass}`}>{t.cartPage.successTitle}</h2>
                 <p className={`text-gray-500 mb-8 max-w-xs mx-auto ${fontClass}`}>
                     We'll call you shortly at {formData.phone}.
                 </p>
@@ -101,7 +105,7 @@ export default function CartPage() {
 
                 <div className="w-full max-w-[450px] h-auto max-h-[40vh] aspect-square mb-2 flex items-center justify-center relative">
                     <img
-                        src="/mascot/empty-cart-final.gif"
+                        src="/empty_cart_animation.gif"
                         alt="Empty Cart"
                         className="w-full h-full object-contain"
                     />

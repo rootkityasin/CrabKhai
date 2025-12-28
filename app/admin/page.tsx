@@ -65,7 +65,7 @@ export default function AdminDashboard() {
                         <CardTitle className="text-lg text-slate-800">Sales Report (Last 7 Days)</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="h-[300px] w-full">
+                        <div className="h-[300px] w-full min-w-0">
                             <ResponsiveContainer width="100%" height="100%">
                                 <AreaChart data={data}>
                                     <defs>
