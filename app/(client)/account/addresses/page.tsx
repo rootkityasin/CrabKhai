@@ -1,3 +1,5 @@
+'use client';
+
 import { MapPin, Plus } from 'lucide-react';
 
 export default function AddressesPage() {
@@ -5,7 +7,10 @@ export default function AddressesPage() {
         <div className="p-4 min-h-screen bg-gray-50 pb-20">
             <div className="flex items-center justify-between mb-6">
                 <h1 className="text-2xl font-bold font-heading">Addresses</h1>
-                <button className="p-2 bg-crab-red text-white rounded-full shadow-lg shadow-orange-200">
+                <button
+                    onClick={() => alert("Add Address feature coming soon!")}
+                    className="p-2 bg-crab-red text-white rounded-full shadow-lg shadow-orange-200 hover:bg-orange-600 transition-colors"
+                >
                     <Plus className="w-5 h-5" />
                 </button>
             </div>

@@ -10,7 +10,7 @@ export default function ClientLayout({
     return (
         <div className="flex flex-col min-h-screen bg-gray-50 pb-20">
             <MobileHeader />
-            <main className="flex-1 w-full max-w-md mx-auto bg-white min-h-[calc(100vh-3.5rem)]">
+            <main className="flex-1 w-full max-w-md mx-auto relative">
                 <PageTransition>
                     {children}
                 </PageTransition>

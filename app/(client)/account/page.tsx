@@ -87,73 +87,70 @@ export default function AccountPage() {
 
     if (!isLoggedIn) {
         return (
-            <div className="pt-24 px-4 pb-12 bg-gray-50 flex justify-center">
-                <div className="w-full max-w-sm bg-white p-6 rounded-2xl shadow-lg">
-                    <div className="text-center mb-5">
-                        {/* Profile Picture Upload - Moved above title */}
-                        <div className="flex justify-center mb-4">
-                            <div className="relative group cursor-pointer">
-                                <div className="w-24 h-24 rounded-full bg-gray-50 flex items-center justify-center overflow-hidden border-2 border-dashed border-gray-200 group-hover:border-crab-red transition-colors">
-                                    {formData.image ? (
-                                        <img src={formData.image} alt="Preview" className="w-full h-full object-cover" />
-                                    ) : (
-                                        <User className="w-10 h-10 text-gray-300" />
-                                    )}
-                                </div>
-                                <label className="absolute bottom-0 right-0 bg-crab-red text-white p-2 rounded-full cursor-pointer shadow-sm hover:bg-orange-600 transition-colors">
-                                    <Camera className="w-4 h-4" />
-                                    <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
-                                </label>
+            <div className="pt-24 px-4 pb-12">
+                <div className="text-center mb-8">
+                    {/* Profile Picture Upload - Moved above title */}
+                    <div className="flex justify-center mb-6">
+                        <div className="relative group cursor-pointer">
+                            <div className="w-28 h-28 rounded-full bg-white flex items-center justify-center overflow-hidden border-4 border-white shadow-xl shadow-gray-200 group-hover:scale-105 transition-transform duration-300">
+                                {formData.image ? (
+                                    <img src={formData.image} alt="Preview" className="w-full h-full object-cover" />
+                                ) : (
+                                    <User className="w-12 h-12 text-gray-300" />
+                                )}
                             </div>
+                            <label className="absolute bottom-0 right-0 bg-crab-red text-white p-2.5 rounded-full cursor-pointer shadow-lg hover:bg-orange-600 transition-colors hover:scale-110 active:scale-95">
+                                <Camera className="w-5 h-5" />
+                                <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
+                            </label>
                         </div>
-
-                        <h2 className={`text-2xl font-bold text-gray-900 ${language === 'bn' ? 'font-bangla' : 'font-heading'}`}>{t.profile.loginTitle}</h2>
-                        <p className={`text-gray-500 text-sm mt-2 ${language === 'bn' ? 'font-bangla' : 'font-body'}`}>Enter your details to continue</p>
                     </div>
 
-                    <form onSubmit={handleLogin} className="space-y-4">
-                        {/* Profile Picture Upload in Login Form */}
+                    <h2 className={`text-3xl font-black text-gray-900 mb-2 ${language === 'bn' ? 'font-bangla' : 'font-heading'}`}>{t.profile.loginTitle}</h2>
+                    <p className={`text-gray-500 font-medium ${language === 'bn' ? 'font-bangla' : 'font-body'}`}>Enter your details to continue</p>
+                </div>
 
+                <form onSubmit={handleLogin} className="space-y-4">
+                    <div>
+                        <label className={`block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 ${language === 'bn' ? 'font-bangla' : 'font-body'}`}>{t.profile.nameLabel}</label>
+                        <input
+                            type="text"
+                            required
+                            className="w-full px-5 py-4 bg-white rounded-2xl border-0 shadow-sm ring-1 ring-gray-100 focus:outline-none focus:ring-2 focus:ring-crab-red/20 transition-all font-medium text-gray-900 placeholder:text-gray-400"
+                            placeholder={language === 'en' ? "e.g. Rakib Hassan" : "যেমন: রাকিব হাসান"}
+                            value={formData.name}
+                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        />
+                    </div>
 
-                        <div>
-                            <label className={`block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1 ${language === 'bn' ? 'font-bangla' : 'font-body'}`}>{t.profile.nameLabel}</label>
-                            <input
-                                type="text"
-                                required
-                                className="w-full px-4 py-3 bg-gray-50 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all"
-                                placeholder={language === 'en' ? "e.g. Rakib Hassan" : "যেমন: রাকিব হাসান"}
-                                value={formData.name}
-                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                            />
-                        </div>
+                    <div>
+                        <label className={`block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 ${language === 'bn' ? 'font-bangla' : 'font-body'}`}>{t.profile.phoneLabel}</label>
+                        <input
+                            type="tel"
+                            required
+                            className="w-full px-5 py-4 bg-white rounded-2xl border-0 shadow-sm ring-1 ring-gray-100 focus:outline-none focus:ring-2 focus:ring-crab-red/20 transition-all font-medium text-gray-900 placeholder:text-gray-400"
+                            placeholder="+880..."
+                            value={formData.phone}
+                            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                        />
+                    </div>
 
-                        <div>
-                            <label className={`block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1 ${language === 'bn' ? 'font-bangla' : 'font-body'}`}>{t.profile.phoneLabel}</label>
-                            <input
-                                type="tel"
-                                required
-                                className="w-full px-4 py-3 bg-gray-50 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all"
-                                placeholder="+880..."
-                                value={formData.phone}
-                                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                            />
-                        </div>
+                    <div>
+                        <label className={`block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 ${language === 'bn' ? 'font-bangla' : 'font-body'}`}>{t.profile.emailLabel}</label>
+                        <input
+                            type="email"
+                            className="w-full px-5 py-4 bg-white rounded-2xl border-0 shadow-sm ring-1 ring-gray-100 focus:outline-none focus:ring-2 focus:ring-crab-red/20 transition-all font-medium text-gray-900 placeholder:text-gray-400"
+                            placeholder="name@example.com"
+                            value={formData.email}
+                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        />
+                    </div>
 
-                        <div>
-                            <label className={`block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1 ${language === 'bn' ? 'font-bangla' : 'font-body'}`}>{t.profile.emailLabel}</label>
-                            <input
-                                type="email"
-                                className="w-full px-4 py-3 bg-gray-50 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all"
-                                placeholder="name@example.com"
-                                value={formData.email}
-                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                            />
-                        </div>
-
-                        <div>
-                            <label className={`block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1 ${language === 'bn' ? 'font-bangla' : 'font-body'}`}>{t.profile.areaLabel}</label>
+                    <div>
+                        <label className={`block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 ${language === 'bn' ? 'font-bangla' : 'font-body'}`}>{t.profile.areaLabel}</label>
+                        <div className="relative">
                             <select
-                                className="w-full px-4 py-3 bg-gray-50 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all appearance-none"
+                                className="w-full px-5 py-4 bg-white rounded-2xl border-0 shadow-sm ring-1 ring-gray-100 focus:outline-none focus:ring-2 focus:ring-crab-red/20 transition-all font-medium text-gray-900 appearance-none"
                                 value={formData.area || ''}
                                 onChange={(e) => setFormData({ ...formData, area: e.target.value })}
                             >
@@ -162,34 +159,35 @@ export default function AccountPage() {
                                     <option key={area} value={area}>{area}</option>
                                 ))}
                             </select>
+                            <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 rotate-90 pointer-events-none" />
                         </div>
+                    </div>
 
-                        <div>
-                            <label className={`block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1 ${language === 'bn' ? 'font-bangla' : 'font-body'}`}>{t.profile.addressLabel}</label>
-                            <textarea
-                                className="w-full px-4 py-3 bg-gray-50 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all resize-none"
-                                placeholder={language === 'en' ? "House, Road, Area..." : "বাড়ি, রাস্তা, এলাকা..."}
-                                rows={2}
-                                value={formData.address}
-                                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                            />
-                        </div>
+                    <div>
+                        <label className={`block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 ${language === 'bn' ? 'font-bangla' : 'font-body'}`}>{t.profile.addressLabel}</label>
+                        <textarea
+                            className="w-full px-5 py-4 bg-white rounded-2xl border-0 shadow-sm ring-1 ring-gray-100 focus:outline-none focus:ring-2 focus:ring-crab-red/20 transition-all resize-none font-medium text-gray-900 placeholder:text-gray-400"
+                            placeholder={language === 'en' ? "House, Road, Area..." : "বাড়ি, রাস্তা, এলাকা..."}
+                            rows={3}
+                            value={formData.address}
+                            onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                        />
+                    </div>
 
-                        <button
-                            type="submit"
-                            className={`w-full py-3.5 bg-crab-red text-white font-bold rounded-xl shadow-lg shadow-orange-500/20 hover:shadow-orange-500/30 hover:-translate-y-0.5 transition-all duration-200 ${language === 'bn' ? 'font-bangla' : 'font-body'}`}
-                        >
-                            {t.profile.saveProfile}
-                        </button>
-                    </form>
-                </div>
+                    <button
+                        type="submit"
+                        className={`w-full py-4 mt-4 bg-crab-red text-white font-bold rounded-2xl shadow-xl shadow-orange-500/20 hover:shadow-orange-500/30 hover:-translate-y-1 transition-all duration-300 text-lg ${language === 'bn' ? 'font-bangla' : 'font-body'}`}
+                    >
+                        {t.profile.saveProfile}
+                    </button>
+                </form>
             </div>
         );
     }
 
     // --- PROFILE VIEW ---
     return (
-        <div className="pb-20 bg-gray-50">
+        <div className="bg-gray-50">
             {/* Header Profile Card - Modernized Ocean Blue */}
             <div className="bg-crab-red text-white p-6 pt-20 pb-12 rounded-b-[2.5rem] shadow-xl mb-6 relative overflow-hidden animate-slide-down">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-20 -mt-20 blur-3xl pointer-events-none"></div>
@@ -277,7 +275,10 @@ export default function AccountPage() {
                     <h3 className={`text-sm font-bold text-gray-400 uppercase tracking-wider px-2 ${language === 'bn' ? 'font-bangla' : 'font-body'}`}>Support</h3>
 
                     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden divide-y divide-gray-50">
-                        <button className="w-full flex items-center justify-between p-4 hover:bg-gray-50 active:bg-gray-100 transition-all hover:scale-[1.01] active:scale-[0.99] group text-left">
+                        <button
+                            onClick={() => alert("Support chat is coming soon!")}
+                            className="w-full flex items-center justify-between p-4 hover:bg-gray-50 active:bg-gray-100 transition-all hover:scale-[1.01] active:scale-[0.99] group text-left"
+                        >
                             <div className="flex items-center gap-4">
                                 <div className="w-9 h-9 rounded-full bg-yellow-50 text-yellow-600 flex items-center justify-center group-hover:scale-110 transition-transform">
                                     <HelpCircle className="w-4 h-4" />

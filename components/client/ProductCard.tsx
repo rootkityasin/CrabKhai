@@ -1,10 +1,12 @@
 'use client';
 
-import { Plus } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
+import { useAnimationStore } from '@/lib/animationStore';
 import { useCartStore } from '@/lib/store';
-import { toast } from 'sonner';
 import { useLanguageStore } from '@/lib/languageStore';
-import { useState } from 'react';
+import { toast } from 'sonner';
+import { Plus } from 'lucide-react';
 import { ProductModal } from './ProductModal';
 
 interface ProductCardProps {
@@ -22,12 +24,53 @@ interface ProductCardProps {
 export function ProductCard({ id, name, name_bn, price, price_bn, image, nutritionImage, cookingImage }: ProductCardProps) {
     const addItem = useCartStore((state) => state.addItem);
     const { language } = useLanguageStore();
+    const { triggerFly } = useAnimationStore();
+    const imageRef = useRef<HTMLImageElement>(null);
 
-    const displayPrice = language === 'bn' && price_bn ? price_bn : price;
-    const displayName = language === 'bn' && name_bn ? name_bn : name;
+    // 3D Tilt Logic
+    const x = useMotionValue(0);
+    const y = useMotionValue(0);
+
+    const mouseX = useSpring(x, { stiffness: 500, damping: 50 });
+    const mouseY = useSpring(y, { stiffness: 500, damping: 50 });
+
+    const rotateX = useTransform(mouseY, [-0.5, 0.5], ["10deg", "-10deg"]);
+    const rotateY = useTransform(mouseX, [-0.5, 0.5], ["-10deg", "10deg"]);
+
+    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const width = rect.width;
+        const height = rect.height;
+        const mouseXFromCenter = e.clientX - rect.left - width / 2;
+        const mouseYFromCenter = e.clientY - rect.top - height / 2;
+
+        x.set(mouseXFromCenter / width);
+        y.set(mouseYFromCenter / height);
+    };
+
+    const handleMouseLeave = () => {
+        x.set(0);
+        y.set(0);
+    };
+
+    const displayPrice = language !== 'en' && price_bn ? price_bn : price;
+    const displayName = language !== 'en' && name_bn ? name_bn : name;
 
     const handleAddToCart = () => {
+        // Trigger Fly Animation
+        if (imageRef.current) {
+            const rect = imageRef.current.getBoundingClientRect();
+            triggerFly(image, {
+                top: rect.top,
+                left: rect.left,
+                width: rect.width,
+                height: rect.height
+            });
+        }
+
+        // Add to Store
         addItem({ id, name, price: Number(price.replace(/[^0-9.]/g, '')), image, quantity: 1 });
+
         toast.custom((t) => (
             <div className="flex items-center gap-4 w-full bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-xl border border-white/20">
                 <div className="h-12 w-12 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
@@ -48,24 +91,40 @@ export function ProductCard({ id, name, name_bn, price, price_bn, image, nutriti
 
     return (
         <>
-            <div
-                className="group relative bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 animate-scale-in hover-scale cursor-pointer"
+            <motion.div
+                className="group relative bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 cursor-pointer"
                 onClick={() => setShowModal(true)}
+                style={{
+                    rotateX,
+                    rotateY,
+                    perspective: 1000,
+                    transformStyle: "preserve-3d"
+                }}
+                onMouseMove={handleMouseMove}
+                onMouseLeave={handleMouseLeave}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                whileHover={{ scale: 1.02 }}
+                transition={{ duration: 0.2 }}
             >
-                <div className="aspect-square overflow-hidden bg-gray-100">
+                <div className="aspect-square overflow-hidden bg-gray-100 relative">
+                    {/* Glossy Overlay for 3D effect */}
+                    <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none" />
+
                     <img
+                        ref={imageRef}
                         src={image}
                         alt={name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        className="w-full h-full object-cover transition-transform duration-500 will-change-transform"
                         loading="lazy"
                     />
                 </div>
-                <div className="p-3">
-                    <h3 className={`font-bold text-gray-800 line-clamp-1 mb-1 ${language === 'bn' ? 'font-bangla text-base' : 'font-heading text-sm'}`}>
+                <div className="p-3 bg-white relative z-20">
+                    <h3 className={`font-bold text-gray-800 line-clamp-1 mb-1 ${language !== 'en' ? 'font-bangla text-base' : 'font-heading text-sm'}`}>
                         {displayName}
                     </h3>
                     <div className="flex items-center justify-between">
-                        <span className={`text-crab-red font-bold ${language === 'bn' ? 'font-bangla' : 'font-body'}`}>
+                        <span className={`text-crab-red font-bold ${language !== 'en' ? 'font-bangla' : 'font-body'}`}>
                             ৳{displayPrice}
                         </span>
                         <button
@@ -73,14 +132,14 @@ export function ProductCard({ id, name, name_bn, price, price_bn, image, nutriti
                                 e.stopPropagation();
                                 handleAddToCart();
                             }}
-                            className="p-1.5 bg-gray-900 text-white rounded-full hover:bg-crab-red transition-colors active:scale-95 z-10"
+                            className="p-1.5 bg-gray-900 text-white rounded-full hover:bg-crab-red transition-colors active:scale-95 z-30 shadow-lg"
                             aria-label="Add to cart"
                         >
                             <Plus className="w-4 h-4" />
                         </button>
                     </div>
                 </div>
-            </div>
+            </motion.div>
 
             <ProductModal
                 isOpen={showModal}

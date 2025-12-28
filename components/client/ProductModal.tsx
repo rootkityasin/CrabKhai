@@ -3,7 +3,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Plus, Flame, Activity, Timer, Utensils } from 'lucide-react';
+import { Plus, Flame, Activity, Timer, Utensils, X } from 'lucide-react';
 import { useCartStore } from '@/lib/store';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -42,7 +42,13 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-4xl p-0 overflow-hidden bg-white border-0 shadow-2xl rounded-2xl">
+            <DialogContent className="max-w-4xl p-0 overflow-hidden bg-white border-0 shadow-2xl rounded-2xl relative">
+                <button
+                    onClick={onClose}
+                    className="absolute top-4 right-4 z-[60] p-2 bg-black/10 hover:bg-black/20 rounded-full text-slate-800 transition-colors backdrop-blur-sm"
+                >
+                    <X className="w-6 h-6" />
+                </button>
                 <div className="flex flex-col md:flex-row h-[80vh] md:h-[600px]">
                     {/* Left Side: Product Image Showcase */}
                     <div className="w-full md:w-5/12 relative bg-slate-50 flex items-center justify-center p-8 overflow-hidden group">

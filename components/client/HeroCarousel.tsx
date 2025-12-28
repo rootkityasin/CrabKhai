@@ -57,10 +57,10 @@ export function HeroCarousel() {
                         />
 
                         <div className="absolute z-20 left-6 bottom-8 max-w-[80%] text-white">
-                            <span className={`inline-block px-3 py-1 rounded-sm bg-crab-red text-white text-[10px] uppercase tracking-widest font-bold mb-3 shadow-sm ${language === 'bn' ? 'font-bangla' : 'font-body'}`}>
+                            <span className={`inline-block px-3 py-1 rounded-sm bg-crab-red text-white text-[10px] uppercase tracking-widest font-bold mb-3 shadow-sm ${language !== 'en' ? 'font-bangla' : 'font-body'}`}>
                                 {language === 'en' ? slide.subtitle : slide.subtitle_bn}
                             </span>
-                            <h2 className={`text-4xl font-heading font-bold leading-tight drop-shadow-lg mb-2 ${language === 'bn' ? 'font-bangla' : 'font-heading'}`}>
+                            <h2 className={`text-4xl font-heading font-bold leading-tight drop-shadow-lg mb-2 ${language !== 'en' ? 'font-bangla' : 'font-heading'}`}>
                                 {language === 'en' ? slide.title : slide.title_bn}
                             </h2>
                             <Link href="/menu">

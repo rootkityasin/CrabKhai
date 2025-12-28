@@ -20,7 +20,7 @@ export function CategoryNav() {
 
     return (
         <div className="py-4 bg-white border-b border-gray-100">
-            <h2 className={`px-4 text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 ${language === 'bn' ? 'font-bangla' : 'font-body'}`}>
+            <h2 className={`px-4 text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 ${language !== 'en' ? 'font-bangla' : 'font-body'}`}>
                 {t.shopByCategory}
             </h2>
             <div className="flex gap-4 overflow-x-auto px-4 pb-2 snap-x hide-scrollbar">
@@ -29,7 +29,7 @@ export function CategoryNav() {
                         <div className="flex items-center justify-center w-16 h-16 rounded-full bg-gray-50 border border-gray-100 shadow-sm transition-colors group-hover:border-orange-200 group-hover:bg-orange-50">
                             <cat.icon className="w-7 h-7 text-gray-600 group-hover:text-orange-600 transition-colors" />
                         </div>
-                        <span className={`text-[10px] font-bold text-gray-600 uppercase tracking-wide group-hover:text-orange-600 transition-colors ${language === 'bn' ? 'font-bangla' : 'font-body'}`}>
+                        <span className={`text-[10px] font-bold text-gray-600 uppercase tracking-wide group-hover:text-orange-600 transition-colors ${language !== 'en' ? 'font-bangla' : 'font-body'}`}>
                             {t.categories[cat.name as keyof typeof t.categories]}
                         </span>
                     </Link>

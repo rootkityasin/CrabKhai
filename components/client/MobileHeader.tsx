@@ -9,6 +9,7 @@ import { useCartStore } from '@/lib/store';
 import { menuItems } from '@/lib/data';
 
 import { translations } from '@/lib/translations';
+import { Mascot } from './Mascot';
 
 export function MobileHeader() {
     const [mounted, setMounted] = useState(false);
@@ -43,14 +44,43 @@ export function MobileHeader() {
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const router = useRouter();
+    const searchTimeout = useRef<NodeJS.Timeout>(null);
+    const [mascotState, setMascotState] = useState<'idle' | 'searching' | 'found' | 'empty' | 'delivery'>('idle');
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
         if (searchTerm.trim()) {
+            setMascotState('searching');
             router.push(`/menu?search=${encodeURIComponent(searchTerm)}`);
             setIsSearchOpen(false);
+
+            // Check results (simple heuristic for demo)
+            const hasResults = menuItems.some(item => item.name.toLowerCase().includes(searchTerm.toLowerCase()));
+            setTimeout(() => {
+                setMascotState(hasResults ? 'found' : 'empty');
+            }, 500);
         }
     };
+
+    const handleSearchInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchTerm(e.target.value);
+        setMascotState('searching');
+
+        if (searchTimeout.current) clearTimeout(searchTimeout.current);
+        searchTimeout.current = setTimeout(() => {
+            // Peek result state while typing
+            const hasResults = menuItems.some(item => item.name.toLowerCase().includes(e.target.value.toLowerCase()));
+            setMascotState(hasResults ? 'found' : 'empty');
+        }, 800);
+    };
+
+    useEffect(() => {
+        // Reset mascot to idle after a delay if no interaction
+        if (mascotState !== 'idle' && !isSearchOpen) {
+            const timer = setTimeout(() => setMascotState('idle'), 2000);
+            return () => clearTimeout(timer);
+        }
+    }, [mascotState, isSearchOpen]);
 
     return (
         <>
@@ -67,9 +97,12 @@ export function MobileHeader() {
                         {/* Language Toggle */}
                         <button
                             onClick={toggleLanguage}
-                            className={`ml-1 px-2 py-1 rounded border border-white/20 text-[10px] font-bold tracking-wider hover:bg-white/10 transition-colors ${language === 'bn' ? 'font-bangla' : 'font-body'}`}
+                            className={`ml-1 px-2 py-1 rounded border border-white/20 text-[10px] font-bold tracking-wider hover:bg-white/10 transition-colors ${language !== 'en' ? 'font-bangla' : 'font-body'}`}
                         >
-                            {language === 'en' ? 'বাংলা' : 'EN'}
+                            {language === 'en' && 'EN'}
+                            {language === 'bn' && 'বাংলা'}
+                            {language === 'ctg' && 'চাটগাঁ'}
+                            {language === 'noa' && 'নোয়াখালী'}
                         </button>
                     </div>
 
@@ -156,9 +189,9 @@ export function MobileHeader() {
                                 type="text"
                                 autoFocus
                                 placeholder={t.searchPlaceholder}
-                                className={`w-full pl-9 pr-4 py-3 bg-gray-100 rounded-xl text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-crab-red/50 ${language === 'bn' ? 'font-bangla' : 'font-body'}`}
+                                className={`w-full pl-9 pr-4 py-3 bg-gray-100 rounded-xl text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-crab-red/50 ${language !== 'en' ? 'font-bangla' : 'font-body'}`}
                                 value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
+                                onChange={handleSearchInput}
                             />
                         </form>
 
@@ -188,7 +221,7 @@ export function MobileHeader() {
                                     ))
                                 }
                                 {menuItems.filter(item => item.name.toLowerCase().includes(searchTerm.toLowerCase())).length === 0 && (
-                                    <div className={`p-4 text-center text-sm text-gray-400 ${language === 'bn' ? 'font-bangla' : 'font-body'}`}>
+                                    <div className={`p-4 text-center text-sm text-gray-400 ${language !== 'en' ? 'font-bangla' : 'font-body'}`}>
                                         {t.noItemsFound}
                                     </div>
                                 )}
@@ -197,6 +230,7 @@ export function MobileHeader() {
                     </div>
                 )}
             </header>
+            {mascotState !== 'idle' && <Mascot state={mascotState} className="fixed top-14 left-4 z-[60]" />}
         </>
     );
 }
