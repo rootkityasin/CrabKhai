@@ -28,18 +28,7 @@ model Modifier {
   product   Product  @relation(fields: [productId], references: [id])
 }
 
-model Order {
-  id              String   @id @default(cuid())
-  orderId         String   @unique // Short ID like "CK-1024"
-  status          String   @default("PENDING") 
-  customerName    String
-  customerPhone   String
-  customerAddress String
-  source          String   @default("WEB") // WEB, WHATSAPP, FACEBOOK
-  totalAmount     Int
-  items           OrderItem[]
-  createdAt       DateTime @default(now())
-}
+
 
 model OrderItem {
   id        String  @id @default(cuid())
@@ -73,6 +62,8 @@ model SiteConfig {
   contactEmail    String   @default("crabkhaibangladesh@gmail.com")
   contactAddress  String   @default("195 Green Road, Dhaka")
   allergensText   String   @default("Crustaceans")
+}
+
 enum Role {
   SUPER_ADMIN
   HUB_ADMIN
