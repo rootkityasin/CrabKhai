@@ -60,34 +60,34 @@ export default function TrustFooter({ config, ...props }: TrustFooterProps) {
                     <div className="space-y-2">
                         <a
                             href={`tel:${phone.replace(/[^0-9+]/g, '')}`}
-                            className="flex items-center gap-4 group p-2 rounded-xl hover:bg-white/10 transition-all border border-transparent hover:border-white/10 cursor-pointer"
+                            className="flex items-start gap-4 group p-2 rounded-xl hover:bg-white/10 transition-all border border-transparent hover:border-white/10 cursor-pointer"
                         >
-                            <div className="p-2 bg-white/10 rounded-full group-hover:bg-white/20 transition-colors shadow-sm">
+                            <div className="p-2 bg-white/10 rounded-full group-hover:bg-white/20 transition-colors shadow-sm shrink-0">
                                 <Phone className="w-4 h-4" />
                             </div>
-                            <span className="font-mono text-base tracking-wide group-hover:text-amber-200 transition-colors">{phone}</span>
+                            <span className="font-mono text-base tracking-wide group-hover:text-amber-200 transition-colors break-all pt-1.5">{phone}</span>
                         </a>
 
                         <a
                             href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center gap-4 group p-2 rounded-xl hover:bg-white/10 transition-all border border-transparent hover:border-white/10 cursor-pointer"
+                            className="flex items-start gap-4 group p-2 rounded-xl hover:bg-white/10 transition-all border border-transparent hover:border-white/10 cursor-pointer"
                         >
-                            <div className="p-2 bg-white/10 rounded-full group-hover:bg-white/20 transition-colors shadow-sm">
+                            <div className="p-2 bg-white/10 rounded-full group-hover:bg-white/20 transition-colors shadow-sm shrink-0">
                                 <MapPin className="w-4 h-4" />
                             </div>
-                            <span className="font-medium text-sm group-hover:text-amber-200 transition-colors">{address}</span>
+                            <span className="font-medium text-sm group-hover:text-amber-200 transition-colors pt-1.5">{address}</span>
                         </a>
 
                         <a
                             href={`mailto:${email}`}
-                            className="flex items-center gap-4 group p-2 rounded-xl hover:bg-white/10 transition-all border border-transparent hover:border-white/10 cursor-pointer"
+                            className="flex items-start gap-4 group p-2 rounded-xl hover:bg-white/10 transition-all border border-transparent hover:border-white/10 cursor-pointer"
                         >
-                            <div className="p-2 bg-white/10 rounded-full group-hover:bg-white/20 transition-colors shadow-sm">
+                            <div className="p-2 bg-white/10 rounded-full group-hover:bg-white/20 transition-colors shadow-sm shrink-0">
                                 <Mail className="w-4 h-4" />
                             </div>
-                            <span className="text-sm opacity-90 group-hover:text-amber-200 transition-colors">{email}</span>
+                            <span className="text-sm opacity-90 group-hover:text-amber-200 transition-colors break-all pt-1.5">{email}</span>
                         </a>
                     </div>
 
@@ -144,7 +144,7 @@ export default function TrustFooter({ config, ...props }: TrustFooterProps) {
                     </div>
 
                     <div className="mt-8 text-xs font-mono text-white/40 tracking-widest uppercase">
-                        Verified & Certified <span className="opacity-50 ml-2 text-[10px]">v2.0</span>
+                        Verified & Certified
                     </div>
                 </motion.div>
             </div>
