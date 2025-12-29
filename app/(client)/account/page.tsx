@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { User, Package, MapPin, CreditCard, LogOut, ChevronRight, HelpCircle, Camera, Edit2 } from 'lucide-react';
+import { User, Package, MapPin, CreditCard, LogOut, ChevronRight, HelpCircle, Camera, Edit2, ChevronDown } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useLanguageStore } from '@/lib/languageStore';
@@ -24,6 +25,7 @@ export default function AccountPage() {
         points: 0,
         status: 'Bronze'
     });
+    const [isAreaDropdownOpen, setIsAreaDropdownOpen] = useState(false);
 
     useEffect(() => {
         // Check if user data exists in localStorage
@@ -149,17 +151,61 @@ export default function AccountPage() {
                     <div>
                         <label className={`block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 ${language === 'bn' ? 'font-bangla' : 'font-body'}`}>{t.profile.areaLabel}</label>
                         <div className="relative">
-                            <select
-                                className="w-full px-5 py-4 bg-white rounded-2xl border-0 shadow-sm ring-1 ring-gray-100 focus:outline-none focus:ring-2 focus:ring-crab-red/20 transition-all font-medium text-gray-900 appearance-none"
-                                value={formData.area || ''}
-                                onChange={(e) => setFormData({ ...formData, area: e.target.value })}
+                            <button
+                                type="button"
+                                onClick={() => setIsAreaDropdownOpen(!isAreaDropdownOpen)}
+                                className="w-full flex items-center justify-between px-5 py-4 bg-white rounded-2xl border-0 shadow-sm ring-1 ring-gray-100 focus:outline-none focus:ring-2 focus:ring-crab-red/20 transition-all font-medium text-gray-900 text-left"
                             >
-                                <option value="">{t.profile.selectArea}</option>
-                                {['Dhaka', 'Khulna', 'Chattogram'].map((area) => (
-                                    <option key={area} value={area}>{area}</option>
-                                ))}
-                            </select>
-                            <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 rotate-90 pointer-events-none" />
+                                <span className={!formData.area ? 'text-gray-400' : ''}>
+                                    {formData.area || t.profile.selectArea}
+                                </span>
+                                <motion.div
+                                    animate={{ rotate: isAreaDropdownOpen ? 180 : 0 }}
+                                    transition={{ duration: 0.2 }}
+                                >
+                                    <ChevronDown className="w-5 h-5 text-gray-400" />
+                                </motion.div>
+                            </button>
+
+                            <AnimatePresence>
+                                {isAreaDropdownOpen && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                        exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                                        transition={{ duration: 0.2, ease: "easeOut" }}
+                                        className="absolute z-50 left-0 right-0 mt-2 p-2 bg-white rounded-2xl shadow-2xl border border-gray-100 backdrop-blur-xl"
+                                    >
+                                        {['Dhaka', 'Khulna', 'Chattogram'].map((area) => (
+                                            <button
+                                                key={area}
+                                                type="button"
+                                                onClick={() => {
+                                                    setFormData({ ...formData, area });
+                                                    setIsAreaDropdownOpen(false);
+                                                }}
+                                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group
+                                                ${formData.area === area
+                                                        ? 'bg-crab-red text-white shadow-lg shadow-orange-500/20'
+                                                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 hover:translate-x-1'}`}
+                                            >
+                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors
+                                                ${formData.area === area ? 'bg-white/20' : 'bg-gray-100 text-gray-400 group-hover:bg-orange-50 group-hover:text-crab-red'}`}>
+                                                    <MapPin className="w-4 h-4" />
+                                                </div>
+                                                <span className="font-semibold">{area}</span>
+                                                {formData.area === area && (
+                                                    <motion.div
+                                                        initial={{ scale: 0 }}
+                                                        animate={{ scale: 1 }}
+                                                        className="ml-auto w-2 h-2 rounded-full bg-white"
+                                                    />
+                                                )}
+                                            </button>
+                                        ))}
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
                         </div>
                     </div>
 
