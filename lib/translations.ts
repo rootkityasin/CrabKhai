@@ -45,7 +45,11 @@ export const translations = {
             needHelp: "Need Help?",
             memberSince: "Member Since",
             points: "Points",
-            edit: "Edit"
+            edit: "Edit",
+            login: "Login",
+            signUp: "Sign Up",
+            dontHaveAccount: "Don't have an account?",
+            alreadyHaveAccount: "Already have an account?"
         },
         cartPage: {
             title: "Your Bag",
@@ -112,7 +116,11 @@ export const translations = {
             needHelp: "সাহায্য প্রয়োজন?",
             memberSince: "সদস্য সময়কাল",
             points: "পয়েন্ট",
-            edit: "এডিট"
+            edit: "এডিট",
+            login: "লগইন",
+            signUp: "সাইন আপ",
+            dontHaveAccount: "একাউন্ট নেই?",
+            alreadyHaveAccount: "একাউন্ট আছে?"
         },
         cartPage: {
             title: "আমার ব্যাগ",
@@ -179,7 +187,11 @@ export const translations = {
             needHelp: "হেল্প লাগতু নি?",
             memberSince: "সদস্য যহন তুন",
             points: "পয়েন্ট",
-            edit: "ঠিকঠাক"
+            edit: "ঠিকঠাক",
+            login: "লগইন",
+            signUp: "সাইন আপ",
+            dontHaveAccount: "একাউন্ট নাই নি?",
+            alreadyHaveAccount: "একাউন্ট আছে নি?"
         },
         cartPage: {
             title: "আর টুকরি",
@@ -246,7 +258,11 @@ export const translations = {
             needHelp: "সাহায্য লাগবো?",
             memberSince: "সদস্য",
             points: "পয়েন্ট",
-            edit: "এডিট"
+            edit: "এডিট",
+            login: "লগইন",
+            signUp: "সাইন আপ",
+            dontHaveAccount: "খাতা খুলেন নাই?",
+            alreadyHaveAccount: "খাতা আছে?"
         },
         cartPage: {
             title: "আঙ্গো বস্তা",
@@ -266,7 +282,78 @@ export const translations = {
             orderReceived: "অর্ডার পাইছি!",
             backHome: "বাইত যাই"
         }
+    },
+    bar: {
+        searchPlaceholder: "Search menu... (Barishailla)",
+        noItemsFound: "No items found",
+        quickLinks: "Quick Links",
+        home: "Home",
+        cart: "Cart",
+        account: "Account",
+        connect: "Connect",
+        ourStory: "Our Story",
+        menu: "Menu",
+        contact: "Contact",
+        terms: "Terms of Service",
+        rightsReserved: "All rights reserved.",
+        deliveryAreaSuccess: "Good news! We deliver in",
+        deliveryAreaFail: "You are currently outside our delivery zone. We serve Dhaka, Khulna, and Chottogram.",
+        locationError: "Could not get your location. Please enable location services.",
+        geoNotSupported: "Geolocation is not supported by your browser",
+        viewMenu: "View Menu",
+        orderNow: "Order Now",
+        popularItems: "Popular Items",
+        shopByCategory: "Shop By Category",
+        categories: {
+            "Live Crab": "Live Crab",
+            "Platters": "Platters",
+            "Best Sellers": "Best Sellers",
+            "Spicy": "Spicy",
+            "Sides": "Sides"
+        },
+        profile: {
+            title: "My Profile",
+            loginTitle: "Login / Sign Up",
+            nameLabel: "Full Name",
+            phoneLabel: "Phone Number",
+            emailLabel: 'Email Address',
+            addressLabel: 'Address',
+            areaLabel: 'Area / City',
+            selectArea: 'Select Area',
+            uploadPhoto: "Upload Photo",
+            saveProfile: "Save Profile",
+            logout: "Logout",
+            myOrders: "My Orders",
+            addresses: "Addresses",
+            paymentMethods: "Payment Methods",
+            needHelp: "Need Help?",
+            memberSince: "Member Since",
+            points: "Points",
+            edit: "Edit",
+            login: "Login",
+            signUp: "Sign Up",
+            dontHaveAccount: "Don't have an account?",
+            alreadyHaveAccount: "Already have an account?"
+        },
+        cartPage: {
+            title: "Your Bag",
+            emptyTitle: "Your Bag is Empty",
+            emptyMessage: "Looks like you haven't added any delicious crabs yet.",
+            browseMenu: "Browse Menu",
+            subtotal: "Subtotal",
+            deliveryFee: "Delivery Fee",
+            total: "Total",
+            deliveryDetails: "Delivery Details",
+            name: "Name",
+            phone: "Phone Number",
+            area: "Area / City",
+            selectArea: "Select Area",
+            address: "Address",
+            confirmOrder: "Confirm Order",
+            orderReceived: "Order Received!",
+            backHome: "Back to Home"
+        }
     }
 };
 
-export type Language = 'en' | 'bn' | 'ctg' | 'noa';
+export type Language = 'en' | 'bn' | 'ctg' | 'noa' | 'bar';

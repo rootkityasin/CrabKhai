@@ -40,21 +40,21 @@ const initialOrders = [
 
 const initialProducts = [
     // Best Sellers
-    { id: '1', sku: 'BS001', name: 'Signature Masala Crab wings', variants: 1, price: 350, image: 'https://www.easykoro.com/inventories/fit-in/400x400/651903648889884.png', stock: true, source: 'Self', stage: 'Selling', hubId: 'dhaka-central' },
-    { id: '2', sku: 'BS002', name: 'Signature Masala Crab Bomb', variants: 2, price: 350, image: 'https://www.easykoro.com/inventories/fit-in/400x400/1684482693291279.png', stock: true, source: 'Self', stage: 'Selling', hubId: 'dhaka-central' },
-    { id: '3', sku: 'BS003', name: 'Crispy Crab Wings', variants: 0, price: 330, image: 'https://www.easykoro.com/inventories/fit-in/400x400/604194297355933.png', stock: true, source: 'Self', stage: 'Selling', hubId: 'dhaka-central' },
+    { id: '1', sku: 'BS001', name: 'Signature Masala Crab wings', variants: 1, price: 350, image: 'https://www.easykoro.com/inventories/fit-in/400x400/651903648889884.png', stock: true, source: 'Self', stage: 'Selling', hubId: 'dhaka-central', pieces: 12 },
+    { id: '2', sku: 'BS002', name: 'Signature Masala Crab Bomb', variants: 2, price: 350, image: 'https://www.easykoro.com/inventories/fit-in/400x400/1684482693291279.png', stock: true, source: 'Self', stage: 'Selling', hubId: 'dhaka-central', pieces: 8 },
+    { id: '3', sku: 'BS003', name: 'Crispy Crab Wings', variants: 0, price: 330, image: 'https://www.easykoro.com/inventories/fit-in/400x400/604194297355933.png', stock: true, source: 'Self', stage: 'Selling', hubId: 'dhaka-central', pieces: 10 },
 
     // Super Savings
-    { id: '4', sku: 'SS001', name: 'WINGS & BOMB COMBO', variants: 1, price: 1200, image: 'https://www.easykoro.com/inventories/fit-in/400x400/4838007732246716.jpg', stock: true, source: 'Self', stage: 'Selling', hubId: 'dhaka-central' },
-    { id: '5', sku: 'SS002', name: 'Tempura Shrimp', variants: 3, price: 400, image: 'https://www.easykoro.com/inventories/fit-in/400x400/745402355963125.png', stock: true, source: 'Self', stage: 'Selling', hubId: 'khulna-hub' },
+    { id: '4', sku: 'SS001', name: 'WINGS & BOMB COMBO', variants: 1, price: 1200, image: 'https://www.easykoro.com/inventories/fit-in/400x400/4838007732246716.jpg', stock: true, source: 'Self', stage: 'Selling', hubId: 'dhaka-central', pieces: 20 },
+    { id: '5', sku: 'SS002', name: 'Tempura Shrimp', variants: 3, price: 400, image: 'https://www.easykoro.com/inventories/fit-in/400x400/745402355963125.png', stock: true, source: 'Self', stage: 'Selling', hubId: 'khulna-hub', pieces: 15 },
 
     // New Arrivals
-    { id: '6', sku: 'NA001', name: 'Raw Crab Clean', variants: 0, price: 450, image: 'https://www.easykoro.com/inventories/fit-in/400x400/587600975137614.png', stock: true, source: 'Self', stage: 'Selling', hubId: 'chattogram-hub' },
-    { id: '7', sku: 'NA002', name: 'Crispy Crab Bomb', variants: 1, price: 330, image: 'https://www.easykoro.com/inventories/fit-in/400x400/606088101401451.png', stock: true, source: 'Self', stage: 'Selling', hubId: 'dhaka-central' },
+    { id: '6', sku: 'NA001', name: 'Raw Crab Clean', variants: 0, price: 450, image: 'https://www.easykoro.com/inventories/fit-in/400x400/587600975137614.png', stock: true, source: 'Self', stage: 'Selling', hubId: 'chattogram-hub', pieces: 6 },
+    { id: '7', sku: 'NA002', name: 'Crispy Crab Bomb', variants: 1, price: 330, image: 'https://www.easykoro.com/inventories/fit-in/400x400/606088101401451.png', stock: true, source: 'Self', stage: 'Selling', hubId: 'dhaka-central', pieces: 9 },
 
     // Others
-    { id: '8', sku: '799245', name: 'Shell-less Crab Meat', variants: 3, price: 1850, image: 'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?q=80&w=300&fit=crop', stock: true, source: 'Self', stage: 'Process', hubId: 'dhaka-central' },
-    { id: '9', sku: '799246', name: 'Crab Masala Mix', variants: 1, price: 450, image: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=300&fit=crop', stock: false, source: 'Self', stage: 'Draft', hubId: 'khulna-hub' },
+    { id: '8', sku: '799245', name: 'Shell-less Crab Meat', variants: 3, price: 1850, image: 'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?q=80&w=300&fit=crop', stock: true, source: 'Self', stage: 'Process', hubId: 'dhaka-central', pieces: 18 },
+    { id: '9', sku: '799246', name: 'Crab Masala Mix', variants: 1, price: 450, image: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=300&fit=crop', stock: false, source: 'Self', stage: 'Draft', hubId: 'khulna-hub', pieces: 12 },
 ];
 
 interface AdminContextType {
@@ -158,7 +158,16 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
                 try {
                     const parsed = JSON.parse(savedData);
                     if (parsed.orders) setOrdersState(parsed.orders);
-                    if (parsed.products) setProductsState(parsed.products);
+
+                    // Migration: Add random pieces if missing
+                    if (parsed.products) {
+                        const migratedProducts = parsed.products.map((p: any) => ({
+                            ...p,
+                            pieces: p.pieces ? p.pieces : Math.floor(Math.random() * (20 - 5 + 1)) + 5
+                        }));
+                        setProductsState(migratedProducts);
+                    }
+
                     if (parsed.settings) setSettings(parsed.settings);
                 } catch (e) {
                     console.error("Failed to load admin data", e);

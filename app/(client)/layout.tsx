@@ -11,9 +11,9 @@ export default function ClientLayout({
 }) {
     return (
         <AdminProvider>
-            <div className="flex flex-col min-h-screen bg-gray-50 pb-20">
+            <div className="flex flex-col min-h-screen bg-white pb-20 md:max-w-lg md:mx-auto md:shadow-2xl md:border-x md:border-gray-200 relative">
                 <MobileHeader />
-                <main className="flex-1 w-full max-w-md mx-auto relative">
+                <main className="flex-1 w-full relative">
                     <PageTransition>
                         {children}
                     </PageTransition>

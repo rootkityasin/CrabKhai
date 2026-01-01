@@ -8,6 +8,9 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { ProductBoard } from '@/components/admin/ProductBoard';
 import { useAdmin } from '@/components/providers/AdminProvider';
@@ -22,9 +25,29 @@ export default function ProductsPage() {
 
     const [view, setView] = useState<'table' | 'kanban'>('table');
     const [isAdding, setIsAdding] = useState(false);
-    const [newProduct, setNewProduct] = useState({ name: '', price: 0, sku: '', image: '', nutrition: '', cookingInstructions: '' });
+    const [newProduct, setNewProduct] = useState({ name: '', price: 0, sku: '', image: '', nutrition: '', cookingInstructions: '', pointsReward: 0, weight: 0, pieces: 0 });
 
     const [editingId, setEditingId] = useState<string | null>(null);
+
+    // Filter States
+    const [filterStock, setFilterStock] = useState<string>('all');
+    const [filterStage, setFilterStage] = useState<string>('all');
+
+    // Unique Stages for Filter
+    const stages = Array.from(new Set(products.map(p => p.stage)));
+
+    const filteredProducts = products.filter(p => {
+        const matchesStock =
+            filterStock === 'all' ? true :
+                filterStock === 'instock' ? p.stock :
+                    !p.stock;
+
+        const matchesStage =
+            filterStage === 'all' ? true :
+                p.stage === filterStage;
+
+        return matchesStock && matchesStage;
+    });
 
     const handleDelete = (id: string) => {
         if (confirm('Delete this product?')) {
@@ -36,25 +59,17 @@ export default function ProductsPage() {
         updateProduct(id, { stage: newStage });
     };
 
-    const defaultNutrition = [
-        "Energy (calories): ",
-        "Fat: ",
-        "Of which saturated fat: ",
-        "Cholesterol: ",
-        "Carbohydrates: ",
-        "Of which sugars: ",
-        "Protein: ",
-        "Sodium: "
-    ].join('\n');
-
     const handleEdit = (product: any) => {
         setNewProduct({
             name: product.name,
             price: product.price,
             sku: product.sku,
             image: product.image,
-            nutrition: product.nutrition || defaultNutrition,
-            cookingInstructions: product.cookingInstructions || ''
+            nutrition: product.nutrition || '',
+            cookingInstructions: product.cookingInstructions || '',
+            pointsReward: product.pointsReward || 0,
+            weight: product.weight || 0,
+            pieces: product.pieces || 0
         });
         setEditingId(product.id);
         setIsAdding(true);
@@ -63,6 +78,19 @@ export default function ProductsPage() {
     const handleSave = (e: React.FormEvent) => {
         e.preventDefault();
 
+        // Calculate Nutrition based on Weight
+        const w = newProduct.weight || 0;
+        const nutritionCalc = [
+            `Energy (calories): ${(w * 1.25).toFixed(1)}`,
+            `Fat: ${(w * 0.0104).toFixed(2)} g`,
+            `Of which saturated fat: 0 g`,
+            `Cholesterol: ${(w * 0.3125).toFixed(2)} mg`,
+            `Carbohydrates: ${(w * 0.1979).toFixed(2)} g`,
+            `Of which sugars: 0 g`,
+            `Protein: ${(w * 0.0938).toFixed(2)} g`,
+            `Sodium: ${(w * 3.4375).toFixed(2)} mg`
+        ].join('\n');
+
         if (editingId) {
             // Update existing
             updateProduct(editingId, {
@@ -70,8 +98,11 @@ export default function ProductsPage() {
                 price: newProduct.price,
                 sku: newProduct.sku,
                 image: newProduct.image,
-                nutrition: newProduct.nutrition,
-                cookingInstructions: newProduct.cookingInstructions
+                nutrition: nutritionCalc,
+                cookingInstructions: newProduct.cookingInstructions,
+                pointsReward: newProduct.pointsReward,
+                weight: newProduct.weight,
+                pieces: newProduct.pieces
             });
             toast.success("Product updated successfully");
         } else {
@@ -86,8 +117,11 @@ export default function ProductsPage() {
                 stock: true,
                 source: 'Self',
                 stage: 'Draft',
-                nutrition: newProduct.nutrition,
-                cookingInstructions: newProduct.cookingInstructions
+                nutrition: nutritionCalc,
+                cookingInstructions: newProduct.cookingInstructions,
+                pointsReward: newProduct.pointsReward,
+                weight: newProduct.weight,
+                pieces: newProduct.pieces
             };
             addProduct(product);
             toast.success("Product created successfully");
@@ -95,7 +129,7 @@ export default function ProductsPage() {
 
         setIsAdding(false);
         setEditingId(null);
-        setNewProduct({ name: '', price: 0, sku: '', image: '', nutrition: '', cookingInstructions: '' });
+        setNewProduct({ name: '', price: 0, sku: '', image: '', nutrition: '', cookingInstructions: '', pointsReward: 0, weight: 0, pieces: 0 });
     };
 
     return (
@@ -126,10 +160,55 @@ export default function ProductsPage() {
                             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
                             <Input type="search" placeholder="Search products..." className="pl-9 w-[200px] lg:w-[300px] bg-white" />
                         </div>
-                        <Button variant="outline"><Filter className="w-4 h-4 mr-2" /> Filter</Button>
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button variant="outline" className={(filterStock !== 'all' || filterStage !== 'all') ? "bg-orange-50 border-orange-200 text-orange-700" : ""}>
+                                    <Filter className="w-4 h-4 mr-2" /> Filter {(filterStock !== 'all' || filterStage !== 'all') && '(Active)'}
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-80">
+                                <div className="grid gap-4">
+                                    <div className="space-y-2">
+                                        <h4 className="font-medium leading-none">Filter Products</h4>
+                                        <p className="text-sm text-muted-foreground">
+                                            Refine by stock or stage.
+                                        </p>
+                                    </div>
+                                    <div className="grid gap-2">
+                                        <div className="grid grid-cols-3 items-center gap-4">
+                                            <Label>Stock Status</Label>
+                                            <Select value={filterStock} onValueChange={setFilterStock}>
+                                                <SelectTrigger className="col-span-2 h-8">
+                                                    <SelectValue placeholder="All" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="all">All</SelectItem>
+                                                    <SelectItem value="instock">In Stock</SelectItem>
+                                                    <SelectItem value="outstock">Out of Stock</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div className="grid grid-cols-3 items-center gap-4">
+                                            <Label>Stage</Label>
+                                            <Select value={filterStage} onValueChange={setFilterStage}>
+                                                <SelectTrigger className="col-span-2 h-8">
+                                                    <SelectValue placeholder="All" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="all">All Stages</SelectItem>
+                                                    {stages.map(s => (
+                                                        <SelectItem key={s} value={s}>{s}</SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </PopoverContent>
+                        </Popover>
                         <Button className="bg-orange-600 hover:bg-orange-700 text-white" onClick={() => {
                             setEditingId(null);
-                            setNewProduct({ name: '', price: 0, sku: '', image: '', nutrition: defaultNutrition, cookingInstructions: '' });
+                            setNewProduct({ name: '', price: 0, sku: '', image: '', nutrition: '', cookingInstructions: '', pointsReward: 0, weight: 0, pieces: 0 });
                             setIsAdding(true);
                         }}>
                             <Plus className="w-4 h-4 mr-2" /> Add Product
@@ -159,9 +238,13 @@ export default function ProductsPage() {
                                             <Input type="number" value={newProduct.price} onChange={e => setNewProduct({ ...newProduct, price: parseInt(e.target.value) })} required />
                                         </div>
                                         <div>
-                                            <label className="text-sm font-medium">SKU (Optional)</label>
-                                            <Input value={newProduct.sku} onChange={e => setNewProduct({ ...newProduct, sku: e.target.value })} />
+                                            <label className="text-sm font-medium">Loyalty Points</label>
+                                            <Input type="number" placeholder="0" value={newProduct.pointsReward} onChange={e => setNewProduct({ ...newProduct, pointsReward: parseInt(e.target.value) })} />
                                         </div>
+                                    </div>
+                                    <div>
+                                        <label className="text-sm font-medium">SKU (Optional)</label>
+                                        <Input value={newProduct.sku} onChange={e => setNewProduct({ ...newProduct, sku: e.target.value })} />
                                     </div>
 
                                     <div className="space-y-2">
@@ -173,119 +256,38 @@ export default function ProductsPage() {
                                         />
                                     </div>
 
-                                    <label className="text-sm font-medium">Nutrition Info</label>
-                                    <div className="border border-gray-200 rounded-md overflow-hidden">
-                                        <table className="w-full text-sm">
-                                            <thead className="bg-gray-50 text-slate-500 font-medium">
-                                                <tr>
-                                                    <th className="px-3 py-2 text-left w-1/2">Label</th>
-                                                    <th className="px-3 py-2 text-left w-1/2">Value & Unit</th>
-                                                    <th className="px-3 py-2 w-10"></th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className="divide-y divide-gray-100">
-                                                {(function () {
-                                                    // Default standard labels from user request
-                                                    const defaultLabels = [
-                                                        "Energy (calories)",
-                                                        "Fat",
-                                                        "Of which saturated fat",
-                                                        "Cholesterol",
-                                                        "Carbohydrates",
-                                                        "Of which sugars",
-                                                        "Protein",
-                                                        "Sodium"
-                                                    ];
+                                    <Button type="button" onClick={() => {
+                                        // Quick auto-calc manual trigger if needed, but we do it on save primarily or useEffect
+                                        // Let's just rely on Save to generating it, or generate live for preview?
+                                        // User logic: "just take input how much gram it is... multiply it".
+                                        // We will save valid string to 'nutrition' field on submit.
+                                    }} className="hidden">Calc</Button>
 
-                                                    // Parse existing string to array, OR use defaults if empty
-                                                    const rows = newProduct.nutrition
-                                                        ? newProduct.nutrition.split('\n').filter(l => l.includes(':')).map(l => {
-                                                            const [label, val] = l.split(':');
-                                                            return { label: label.trim(), value: val.trim() };
-                                                        })
-                                                        : defaultLabels.map(label => ({ label, value: '' }));
-
-                                                    const updateRow = (index: number, field: 'label' | 'value', val: string) => {
-                                                        const newRows = [...rows];
-                                                        newRows[index] = { ...newRows[index], [field]: val };
-                                                        // Filter out rows with no value to keep string clean? 
-                                                        // Actually, user might want to save empty values as placeholders? 
-                                                        // Let's typically save all that have at least a label.
-                                                        const str = newRows.map(r => `${r.label}: ${r.value}`).join('\n');
-                                                        setNewProduct({ ...newProduct, nutrition: str });
-                                                    };
-
-                                                    const removeRow = (index: number) => {
-                                                        const newRows = rows.filter((_, i) => i !== index);
-                                                        const str = newRows.map(r => `${r.label}: ${r.value}`).join('\n');
-                                                        setNewProduct({ ...newProduct, nutrition: str });
-                                                    };
-
-                                                    const addRow = () => {
-                                                        const newRows = [...rows, { label: '', value: '' }];
-                                                        // We don't save immediately here to avoid empty lines, but for consistency let's update state
-                                                        // If we trigger state update, the mapped 'rows' above will re-render with new item
-                                                        // However, since 'rows' is derived from 'newProduct.nutrition' string, 
-                                                        // we must update the string to persist the new row.
-                                                        // A new row with empty value might look like ": " which is bad.
-                                                        // So we might need local state for the form if we want robust editing,
-                                                        // but for now, let's just append to string if we really need to adds it.
-                                                        // Actually, simplest way without local state refactor:
-                                                        // just force the update.
-                                                        const str = newRows.map(r => `${r.label}: ${r.value}`).join('\n');
-                                                        setNewProduct({ ...newProduct, nutrition: str });
-                                                    };
-
-                                                    return (
-                                                        <>
-                                                            {rows.map((row, i) => (
-                                                                <tr key={i} className="group hover:bg-slate-50">
-                                                                    <td className="p-2">
-                                                                        <Input
-                                                                            placeholder="e.g. Protein"
-                                                                            value={row.label}
-                                                                            onChange={(e) => updateRow(i, 'label', e.target.value)}
-                                                                            className="h-8 border-transparent hover:border-gray-200 focus:border-orange-500 bg-transparent px-2"
-                                                                        />
-                                                                    </td>
-                                                                    <td className="p-2">
-                                                                        <Input
-                                                                            placeholder="e.g. 20g"
-                                                                            value={row.value}
-                                                                            onChange={(e) => updateRow(i, 'value', e.target.value)}
-                                                                            className="h-8 border-transparent hover:border-gray-200 focus:border-orange-500 bg-transparent px-2"
-                                                                        />
-                                                                    </td>
-                                                                    <td className="p-2 text-center">
-                                                                        <button
-                                                                            type="button"
-                                                                            onClick={() => removeRow(i)}
-                                                                            className="text-slate-300 hover:text-red-500 transition-colors p-1"
-                                                                        >
-                                                                            <X className="w-4 h-4" />
-                                                                        </button>
-                                                                    </td>
-                                                                </tr>
-                                                            ))}
-                                                            <tr>
-                                                                <td colSpan={3} className="p-2">
-                                                                    <Button
-                                                                        type="button"
-                                                                        variant="ghost"
-                                                                        size="sm"
-                                                                        onClick={addRow}
-                                                                        className="w-full text-slate-500 hover:text-orange-600 hover:bg-orange-50 h-8 border border-dashed border-gray-200"
-                                                                    >
-                                                                        <Plus className="w-3 h-3 mr-1" /> Add Nutrition Row
-                                                                    </Button>
-                                                                </td>
-                                                            </tr>
-                                                        </>
-                                                    );
-                                                })()}
-                                            </tbody>
-                                        </table>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="text-sm font-medium">Weight (grams)</label>
+                                            <Input
+                                                type="number"
+                                                placeholder="e.g. 500"
+                                                value={newProduct.weight}
+                                                onChange={(e) => {
+                                                    const w = parseInt(e.target.value) || 0;
+                                                    setNewProduct({ ...newProduct, weight: w });
+                                                }}
+                                            />
+                                            <p className="text-xs text-slate-500 mt-1">Nutrition info will be auto-calculated.</p>
+                                        </div>
+                                        <div>
+                                            <label className="text-sm font-medium">Pieces (pcs)</label>
+                                            <Input
+                                                type="number"
+                                                placeholder="e.g. 6"
+                                                value={newProduct.pieces}
+                                                onChange={(e) => setNewProduct({ ...newProduct, pieces: parseInt(e.target.value) || 0 })}
+                                            />
+                                        </div>
                                     </div>
+
                                     <div className="space-y-2">
                                         <label className="text-sm font-medium">Cooking Instructions (Optional)</label>
                                         <Textarea
@@ -330,7 +332,7 @@ export default function ProductsPage() {
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-gray-50">
-                                            {products.map((product) => (
+                                            {filteredProducts.map((product) => (
                                                 <tr key={product.id} className="hover:bg-gray-50/50">
                                                     <td className="p-4"><input type="checkbox" /></td>
                                                     <td className="p-4">

@@ -1,15 +1,7 @@
 'use server';
 
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
-import { Pool } from 'pg';
-import { PrismaPg } from '@prisma/adapter-pg';
-
-const connectionString = `${process.env.DATABASE_URL}`;
-
-const pool = new Pool({ connectionString });
-const adapter = new PrismaPg(pool);
-const prisma = new PrismaClient({ adapter });
 
 export async function getSiteConfig() {
     try {
@@ -65,5 +57,60 @@ export async function updateSiteConfig(data: any) {
     } catch (error) {
         console.error("Failed to update settings:", error);
         return { success: false, error: "Failed to save settings" };
+    }
+}
+
+export async function getPaymentConfig() {
+    try {
+        const config = await prisma.paymentConfig.findFirst();
+        if (!config) {
+            return {
+                isActive: true,
+                codEnabled: true,
+                bkashEnabled: false,
+                bkashAppKey: '',
+                bkashSecretKey: '',
+                bkashUsername: '',
+                bkashPassword: '',
+                selfMfsEnabled: false,
+                selfMfsType: 'bkash',
+                selfMfsPhone: '',
+                selfMfsInstruction: '',
+                selfMfsQrCode: '',
+                advancePaymentType: 'FULL',
+                advancePaymentValue: 0
+            };
+        }
+        return config;
+    } catch (error) {
+        console.error("Failed to fetch payment config:", error);
+        return null;
+    }
+}
+
+export async function updatePaymentConfig(data: any) {
+    try {
+        const existing = await prisma.paymentConfig.findFirst();
+
+        if (existing) {
+            await prisma.paymentConfig.update({
+                where: { id: existing.id },
+                data: {
+                    ...data
+                }
+            });
+        } else {
+            await prisma.paymentConfig.create({
+                data: {
+                    ...data
+                }
+            });
+        }
+
+        revalidatePath('/admin/shop');
+        return { success: true };
+    } catch (error) {
+        console.error("Failed to update payment config:", error);
+        return { success: false, error: "Failed to save payment config" };
     }
 }

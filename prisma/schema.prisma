@@ -1,44 +1,58 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model Product {
-  id          String     @id @default(cuid())
-  name        String
-  price       Int
-  image       String?    // Cloudinary Public ID
+  id             String      @id @default(cuid())
+  name           String      // Default (English)
+  name_bn        String?
+  name_ctg       String?
+  name_noa       String?
+  name_bar       String?
+  
+  description    String?     // Default (English)
+  description_bn String?
+  description_ctg String?
+  description_noa String?
+  description_bar String?
+
+  price          Int
+  image          String? // Cloudinary Public ID
   nutritionImage String?
   cookingImage   String?
-  isAvailable Boolean    @default(true)
-  categoryId  String
-  category    Category   @relation(fields: [categoryId], references: [id])
-  modifiers   Modifier[] 
-  orderItems  OrderItem[]
-  inventory   Inventory[]
+  weight         Int         @default(0) // Weight in grams
+  pieces         Int         @default(0) // Number of pieces
+  isAvailable    Boolean     @default(true)
+  pointsReward   Int         @default(0) // Points user gets for buying this
+  categoryId     String
+  category       Category    @relation(fields: [categoryId], references: [id])
+  modifiers      Modifier[]
+  orderItems     OrderItem[]
+  inventory      Inventory[]
 }
 
 model Modifier {
   id        String   @id @default(cuid())
-  name      String   // e.g., "Spice Level"
+  name      String // e.g., "Spice Level"
   options   String[] // e.g., ["Mild", "Medium", "Naga"]
   productId String
   product   Product  @relation(fields: [productId], references: [id])
 }
 
-
-
 model OrderItem {
-  id        String  @id @default(cuid())
-  quantity  Int
-  price     Int     
-  productId String
-  product   Product @relation(fields: [productId], references: [id])
-  orderId   String
-  order     Order   @relation(fields: [orderId], references: [id])
+  id                String  @id @default(cuid())
+  quantity          Int
+  price             Int
+  productId         String
+  product           Product @relation(fields: [productId], references: [id])
+  orderId           String
+  order             Order   @relation(fields: [orderId], references: [id])
   selectedModifiers String? // Stores "Spice: Naga"
 }
 
@@ -58,17 +72,18 @@ model PromoCard {
 }
 
 model SiteConfig {
-  id              String   @id @default(cuid())
-  contactPhone    String   @default("+880 1804 221 161")
-  contactEmail    String   @default("crabkhaibangladesh@gmail.com")
-  contactAddress  String   @default("195 Green Road, Dhaka")
-  allergensText   String   @default("Crustaceans")
-  certificates    String[]
+  id             String   @id @default(cuid())
+  contactPhone   String   @default("+880 1804 221 161")
+  contactEmail   String   @default("crabkhaibangladesh@gmail.com")
+  contactAddress String   @default("195 Green Road, Dhaka")
+  allergensText  String   @default("Crustaceans")
+  certificates   String[]
 }
 
 enum Role {
   SUPER_ADMIN
   HUB_ADMIN
+  USER
 }
 
 model Hub {
@@ -82,12 +97,61 @@ model Hub {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  name      String
-  email     String   @unique
-  role      Role     @default(HUB_ADMIN)
-  hubId     String?
-  hub       Hub?     @relation(fields: [hubId], references: [id])
+  id       Int     @id @default(autoincrement())
+  name     String
+  email    String  @unique
+  phone    String? @unique
+  role     Role    @default(USER)
+  hubId    String?
+  hub      Hub?    @relation(fields: [hubId], references: [id])
+  image    String?
+  password String?
+
+  // Profile Fields
+  address String?
+  points  Int     @default(0)
+  status  String  @default("Bronze")
+
+  accounts Account[]
+  sessions Session[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            Int
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       Int
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
 }
 
 model Inventory {
@@ -98,17 +162,17 @@ model Inventory {
   product   Product  @relation(fields: [productId], references: [id])
   quantity  Int      @default(0)
   updatedAt DateTime @updatedAt
-  
+
   // Can add Freezer details here if needed granularly
-  freezerId String? 
+  freezerId String?
   freezer   Freezer? @relation(fields: [freezerId], references: [id])
 }
 
 model Freezer {
   id          String      @id @default(cuid())
-  name        String      // e.g., "Freezer A - Fish"
-  temperature Float       // e.g., -18.5
-  capacity    Int         // in KG or Units
+  name        String // e.g., "Freezer A - Fish"
+  temperature Float // e.g., -18.5
+  capacity    Int // in KG or Units
   hubId       String
   hub         Hub         @relation(fields: [hubId], references: [id])
   inventory   Inventory[]
@@ -117,17 +181,46 @@ model Freezer {
 // ... existing models ...
 
 model Order {
-  id              String   @id @default(cuid())
-  orderId         String   @unique
-  status          String   @default("PENDING") 
+  id              String      @id @default(cuid())
+  orderId         String      @unique
+  status          String      @default("PENDING")
   customerName    String
   customerPhone   String
   customerAddress String
-  source          String   @default("WEB") 
+  source          String      @default("WEB")
   totalAmount     Int
   items           OrderItem[]
-  createdAt       DateTime @default(now())
-  
-  hubId           String?
-  hub             Hub?     @relation(fields: [hubId], references: [id])
+  createdAt       DateTime    @default(now())
+
+  hubId String?
+  hub   Hub?    @relation(fields: [hubId], references: [id])
+}
+
+model PaymentConfig {
+  id       String  @id @default(cuid())
+  isActive Boolean @default(true)
+
+  // Payment Methods
+  codEnabled Boolean @default(true)
+
+  // bKash Merchant
+  bkashEnabled   Boolean @default(false)
+  bkashAppKey    String?
+  bkashSecretKey String?
+  bkashUsername  String?
+  bkashPassword  String?
+
+  // Manual / Self MFS
+  selfMfsEnabled     Boolean @default(false)
+  selfMfsType        String? // 'bkash' | 'nagad' | 'rocket'
+  selfMfsPhone       String?
+  selfMfsInstruction String?
+  selfMfsQrCode      String?
+
+  // Advance Payment
+  advancePaymentType  String? // 'FULL' | 'DELIVERY' | 'PERCENTAGE' | 'FIXED'
+  advancePaymentValue Int? // Percentage or Fixed Value
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

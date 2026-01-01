@@ -103,6 +103,7 @@ export function MobileHeader() {
                             {language === 'bn' && 'বাংলা'}
                             {language === 'ctg' && 'চাটগাঁ'}
                             {language === 'noa' && 'নোয়াখালী'}
+                            {language === 'bar' && 'বরিশাইলা'}
                         </button>
                     </div>
 

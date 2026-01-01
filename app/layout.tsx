@@ -1,7 +1,15 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
 import { Inter, Hind_Siliguri, Playfair_Display } from "next/font/google";
 import { Toaster } from '@/components/ui/sonner';
 import PromoPopup from '@/components/client/PromoPopup';
+import SessionProvider from '@/components/providers/SessionProvider';
 import "./globals.css";
 
 const inter = Inter({
@@ -33,12 +41,16 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${inter.variable} ${hindSiliguri.variable} ${playfair.variable} antialiased bg-sand text-ocean-blue font-body`}
+        className={`${inter.variable} ${hindSiliguri.variable} ${playfair.variable} antialiased bg-sand text-ocean-blue font-body md:bg-gray-100`}
         suppressHydrationWarning
       >
-        {children}
-        <PromoPopup />
-        <Toaster richColors position="top-center" />
+        <main className="min-h-screen bg-sand relative">
+          <SessionProvider>
+            {children}
+            <PromoPopup />
+            <Toaster richColors position="top-center" />
+          </SessionProvider>
+        </main>
       </body>
     </html>
   );

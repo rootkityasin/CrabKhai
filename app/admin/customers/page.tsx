@@ -1,29 +1,60 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Search, Filter, MoreVertical, User, Plus, X, Phone, Mail, Edit, Trash2 } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Search, Filter, MoreVertical, User, Plus, X, Phone, Mail, Edit, Trash2, Download } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-
-const initialCustomers = [
-    { id: 1, name: 'Shiham Chowdhury', email: 'shiham@example.com', phone: '01856241009', orders: 12, spent: 15200 },
-    { id: 2, name: 'Rakib Hasan', email: 'rakib@example.com', phone: '01711223344', orders: 5, spent: 4500 },
-    { id: 3, name: 'Karim Ullah', email: 'karim@example.com', phone: '01998877665', orders: 2, spent: 1200 },
-];
+import { getAllUsers } from '@/app/actions/user';
 
 export default function CustomersPage() {
-    const [customers, setCustomers] = useState(initialCustomers);
+    const [customers, setCustomers] = useState<any[]>([]);
     const [isAdding, setIsAdding] = useState(false);
     const [editingId, setEditingId] = useState<number | null>(null);
     const [newCustomer, setNewCustomer] = useState({ name: '', phone: '', email: '' });
     const [search, setSearch] = useState('');
 
-    const filteredCustomers = customers.filter(c =>
-        c.name.toLowerCase().includes(search.toLowerCase()) ||
-        c.phone.includes(search)
-    );
+    useEffect(() => {
+        const fetchUsers = async () => {
+            const users = await getAllUsers();
+            // Map Prisma users to the UI shape
+            const formatted = users.map(u => ({
+                id: u.id,
+                name: u.name,
+                email: u.email,
+                phone: u.phone || 'N/A',
+                orders: 0, // Placeholder
+                spent: 0   // Placeholder
+            }));
+            setCustomers(formatted);
+        };
+        fetchUsers();
+    }, []);
+
+    const [minSpent, setMinSpent] = useState(0);
+    const [minOrders, setMinOrders] = useState(0);
+    const [sortBy, setSortBy] = useState('newest');
+
+    const filteredCustomers = customers
+        .filter(c =>
+            (c.name.toLowerCase().includes(search.toLowerCase()) ||
+                (c.phone && c.phone.includes(search))) &&
+            c.spent >= minSpent &&
+            c.orders >= minOrders
+        )
+        .sort((a, b) => {
+            if (sortBy === 'spent_high') return b.spent - a.spent;
+            if (sortBy === 'spent_low') return a.spent - b.spent;
+            if (sortBy === 'orders_high') return b.orders - a.orders;
+            // 'newest' fallback depends on ID or joining date if available. 
+            // Since ID is mock 'customer.length + 1' or string, let's assume higher ID = newer or implementation specific.
+            // But real users have string IDs. Let's just return 0 for now or rely on array order.
+            return 0;
+        });
 
     const handleEdit = (customer: any) => {
         setNewCustomer({ name: customer.name, phone: customer.phone, email: customer.email });
@@ -60,6 +91,32 @@ export default function CustomersPage() {
         setEditingId(null);
     };
 
+    const handleDownload = () => {
+        const headers = ['ID', 'Name', 'Phone', 'Email', 'Orders', 'Spent', 'Points'];
+        const csvContent = [
+            headers.join(','),
+            ...filteredCustomers.map(c => [
+                c.id,
+                `"${c.name}"`,
+                c.phone,
+                c.email || '',
+                c.orders,
+                c.spent,
+                Math.floor(c.spent / 10) // Mock points calculation
+            ].join(','))
+        ].join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `customers_SortedBy_${sortBy}_${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     return (
         <div className="space-y-6 relative">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -68,7 +125,64 @@ export default function CustomersPage() {
                     <p className="text-sm text-slate-500">View and manage your customer base.</p>
                 </div>
                 <div className="flex gap-2">
-                    <Button variant="outline"><Filter className="w-4 h-4 mr-2" /> Filter</Button>
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <Button variant="outline" className={minSpent > 0 || minOrders > 0 || sortBy !== 'newest' ? "bg-orange-50 border-orange-200 text-orange-700" : ""}>
+                                <Filter className="w-4 h-4 mr-2" /> Filter {(minSpent > 0 || minOrders > 0 || sortBy !== 'newest') && '(Active)'}
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-80">
+                            <div className="grid gap-4">
+                                <div className="space-y-2">
+                                    <h4 className="font-medium leading-none">Filter & Sort</h4>
+                                    <p className="text-sm text-muted-foreground">
+                                        Refine list for export.
+                                    </p>
+                                </div>
+                                <div className="grid gap-2">
+                                    <div className="grid grid-cols-3 items-center gap-4">
+                                        <Label htmlFor="sort">Sort By</Label>
+                                        <Select value={sortBy} onValueChange={setSortBy}>
+                                            <SelectTrigger className="col-span-2 h-8">
+                                                <SelectValue placeholder="Sort By" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="newest">Newest First</SelectItem>
+                                                <SelectItem value="spent_high">Top Spenders (High)</SelectItem>
+                                                <SelectItem value="spent_low">Low Spenders</SelectItem>
+                                                <SelectItem value="orders_high">Most Orders</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="grid grid-cols-3 items-center gap-4">
+                                        <Label htmlFor="minSpent">Min. Spent</Label>
+                                        <Input
+                                            id="minSpent"
+                                            type="number"
+                                            value={minSpent}
+                                            onChange={(e) => setMinSpent(Number(e.target.value))}
+                                            className="col-span-2 h-8"
+                                            placeholder="0"
+                                        />
+                                    </div>
+                                    <div className="grid grid-cols-3 items-center gap-4">
+                                        <Label htmlFor="minOrders">Min. Orders</Label>
+                                        <Input
+                                            id="minOrders"
+                                            type="number"
+                                            value={minOrders}
+                                            onChange={(e) => setMinOrders(Number(e.target.value))}
+                                            className="col-span-2 h-8"
+                                            placeholder="0"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </PopoverContent>
+                    </Popover>
+                    <Button variant="outline" onClick={handleDownload}>
+                        <Download className="w-4 h-4 mr-2" /> Download CSV
+                    </Button>
                     <Button onClick={() => { setIsAdding(true); setEditingId(null); setNewCustomer({ name: '', phone: '', email: '' }); }} className="bg-orange-600 hover:bg-orange-700 text-white">
                         <Plus className="w-4 h-4 mr-2" /> Add Customer
                     </Button>
@@ -143,6 +257,7 @@ export default function CustomersPage() {
                                 <th className="p-4 w-4"><input type="checkbox" /></th>
                                 <th className="p-4">Customer</th>
                                 <th className="p-4">Contact</th>
+                                <th className="p-4">Points</th>
                                 <th className="p-4">History</th>
                                 <th className="p-4 text-right">Action</th>
                             </tr>
@@ -165,6 +280,11 @@ export default function CustomersPage() {
                                     <td className="p-4 text-slate-600">
                                         <div className="flex items-center gap-2 text-sm"><Phone className="w-3 h-3" /> {customer.phone}</div>
                                         {customer.email && <div className="flex items-center gap-2 text-xs text-slate-400 mt-1"><Mail className="w-3 h-3" /> {customer.email}</div>}
+                                    </td>
+                                    <td className="p-4">
+                                        <Badge variant="secondary" className="bg-orange-100 text-orange-700 hover:bg-orange-100">
+                                            {Math.floor(customer.spent / 10)} pts
+                                        </Badge>
                                     </td>
                                     <td className="p-4">
                                         <div className="font-bold text-slate-800">৳{customer.spent.toLocaleString()}</div>

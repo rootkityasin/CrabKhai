@@ -62,6 +62,7 @@ export function ProductRail({ title, products, viewAllLink = '#', enableScrollAn
                                 cookingImage={(product as any).cookingImage}
                                 nutrition={(product as any).nutrition}
                                 cookingInstructions={(product as any).cookingInstructions}
+                                pieces={(product as any).pieces}
                             />
                         </div>
                     ))}

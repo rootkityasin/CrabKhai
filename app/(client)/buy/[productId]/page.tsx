@@ -7,20 +7,22 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowRight, MessageCircle } from 'lucide-react';
 import Image from 'next/image';
 
-// Mock Product Fetcher
-const getProduct = (id: string) => {
-    return {
-        id,
-        name: 'Live Mud Crab (XL)',
-        price: 1250,
-        image: 'https://images.unsplash.com/photo-1565557623262-b51c2513a641',
-        description: 'Fresh giant mud crab from Sundarbans. Guaranteed live delivery.',
-    };
-};
+import { useAdmin } from '@/components/providers/AdminProvider';
+
+// ...
 
 export default function SmartLinkPage() {
     const params = useParams();
-    const product = getProduct(params.productId as string);
+    const { allProducts } = useAdmin();
+    // Find product from real data or fallback to mock if not found (for safety)
+    const product = allProducts.find(p => p.id === params.productId) || {
+        id: params.productId as string,
+        name: 'Product Not Found',
+        price: 0,
+        image: 'https://images.unsplash.com/photo-1565557623262-b51c2513a641',
+        description: 'Product unavailable or loading...',
+        pieces: 0
+    };
 
     const handleWhatsAppOrder = () => {
         const text = `Hi, I want to order *${product.name}* (Price: ৳${product.price}). Please confirm.`;
@@ -30,7 +32,16 @@ export default function SmartLinkPage() {
     return (
         <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
             <Card className="w-full max-w-md bg-white shadow-xl border-t-4 border-t-orange-600">
-                <div className="h-48 relative bg-gray-100">
+                <div className="h-48 relative bg-gray-100 group">
+                    {/* Glass Pieces Tag */}
+                    {(product as any).pieces && (product as any).pieces > 0 && (
+                        <div className="absolute top-3 right-3 z-20">
+                            <span className="px-2.5 py-1 rounded-lg bg-white/70 backdrop-blur-md border border-white/50 text-xs font-bold text-gray-900 shadow-sm flex items-center gap-1">
+                                <span className="w-1.5 h-1.5 rounded-full bg-crab-red inline-block" />
+                                {(product as any).pieces} pcs
+                            </span>
+                        </div>
+                    )}
                     <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
                 </div>
                 <CardHeader>

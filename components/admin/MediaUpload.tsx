@@ -30,8 +30,19 @@ export function MediaUpload({
         const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
         const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
 
+        // Helper for fallback
+        const useLocalFallback = () => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                onChange(reader.result as string);
+                toast.success("Saved locally (Cloudinary config invalid)");
+            };
+            reader.readAsDataURL(file);
+            setIsUploading(false);
+        };
+
         if (!cloudName || !uploadPreset) {
-            toast.error("Cloudinary not configured. Please check environment variables.");
+            useLocalFallback();
             return;
         }
 
@@ -58,14 +69,15 @@ export function MediaUpload({
             if (data.secure_url) {
                 onChange(data.secure_url);
                 toast.success("Media uploaded successfully!");
+                setIsUploading(false);
             } else {
-                toast.error("Upload failed: " + (data.error?.message || "Unknown error"));
+                console.error("Cloudinary Error:", data.error);
+                // If specific API error (like preset not found), use fallback
+                useLocalFallback();
             }
         } catch (error) {
-            console.error("Upload Error:", error);
-            toast.error("Something went wrong during upload.");
-        } finally {
-            setIsUploading(false);
+            console.error("Upload Network Error:", error);
+            useLocalFallback();
         }
     }, [onChange]);
 

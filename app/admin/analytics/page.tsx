@@ -1,8 +1,17 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis, BarChart, Bar, Legend, PieChart, Pie, Cell } from 'recharts';
-import { ArrowUpRight, TrendingUp, Users, ShoppingCart, Activity, DollarSign, XCircle } from 'lucide-react';
+import { ArrowUpRight, TrendingUp, Users, ShoppingCart, Activity, DollarSign, XCircle, Download } from 'lucide-react';
 import { useAdmin } from '@/components/providers/AdminProvider';
 
 // Data for Line/Bar Charts
@@ -27,6 +36,48 @@ const COLORS = ['#ea580c', '#f97316', '#fbbf24', '#94a3b8'];
 
 export default function AnalyticsPage() {
     const { orders } = useAdmin();
+
+    const handleExport = (days: number) => {
+        const now = new Date();
+        const cutoffDate = new Date();
+        cutoffDate.setDate(now.getDate() - days);
+
+        const filteredOrders = orders.filter(o => {
+            const orderDate = new Date(o.date); // Assumes "Oct 04, 2024..." parses correctly
+            return orderDate >= cutoffDate;
+        });
+
+        if (filteredOrders.length === 0) {
+            alert(`No orders found for the last ${days} days.`);
+            return;
+        }
+
+        // CSV Creation
+        const headers = ['Order ID', 'Date', 'Customer', 'Phone', 'Items', 'Total Price', 'Status', 'Source'];
+        const rows = filteredOrders.map(o => [
+            o.id,
+            `"${o.date}"`, // Quote to handle commas
+            `"${o.customer}"`,
+            o.phone,
+            o.items,
+            o.price,
+            o.status,
+            o.source
+        ]);
+
+        const csvContent = [
+            headers.join(','),
+            ...rows.map(r => r.join(','))
+        ].join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Sales_Report_${days}Days_${now.toISOString().split('T')[0]}.csv`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+    };
 
     // 1. Calculate Summary Metrics
     const totalRevenue = orders.reduce((acc, o) => acc + (o.status !== 'Cancelled' ? o.price : 0), 0);
@@ -75,8 +126,25 @@ export default function AnalyticsPage() {
                     <h1 className="text-2xl font-bold tracking-tight text-slate-800">📊 Analytics Reports</h1>
                     <p className="text-sm text-slate-500">Real-time business performance based on your orders.</p>
                 </div>
-                <div className="text-sm font-medium text-slate-500 bg-white px-3 py-1 rounded-md border border-gray-200">
-                    Live Data
+                <div className="flex gap-2">
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" className="text-sm gap-2">
+                                <Download className="w-4 h-4" /> Export Excel
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Select Duration</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => handleExport(7)}>Last 7 Days</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleExport(15)}>Last 15 Days</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleExport(30)}>Last 30 Days</DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+
+                    <div className="text-sm font-medium text-slate-500 bg-white px-3 py-1 rounded-md border border-gray-200 flex items-center">
+                        Live Data
+                    </div>
                 </div>
             </div>
 

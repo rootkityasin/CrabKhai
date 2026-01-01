@@ -8,10 +8,30 @@ import { motion } from 'framer-motion';
 import { useLanguageStore } from '@/lib/languageStore';
 import { translations } from '@/lib/translations';
 
+import { getPaymentConfig } from '@/app/actions/settings';
+import { useEffect } from 'react';
+
 export default function CartPage() {
     const { items, removeItem, addItem, clearCart, total } = useCartStore();
     const [isOrderPlaced, setIsOrderPlaced] = useState(false);
     const [isAnimating, setIsAnimating] = useState(false);
+
+    // Payment State
+    const [paymentConfig, setPaymentConfig] = useState<any>(null);
+    const [paymentMethod, setPaymentMethod] = useState('COD');
+    const [trxId, setTrxId] = useState('');
+
+    useEffect(() => {
+        getPaymentConfig().then(config => {
+            if (config) {
+                setPaymentConfig(config);
+                // Auto-select first available
+                if (config.codEnabled) setPaymentMethod('COD');
+                else if (config.bkashEnabled) setPaymentMethod('BKASH');
+                else if (config.selfMfsEnabled) setPaymentMethod('MANUAL');
+            }
+        });
+    }, []);
 
     // Form State
     const [formData, setFormData] = useState({
@@ -250,6 +270,91 @@ export default function CartPage() {
                             value={formData.address}
                             onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                         />
+                    </div>
+
+                    {/* Payment Method Selection */}
+                    <div className="pt-4 border-t border-gray-100">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Payment Method</label>
+
+                        <div className="grid grid-cols-1 gap-3">
+                            {paymentConfig?.codEnabled && (
+                                <div
+                                    onClick={() => setPaymentMethod('COD')}
+                                    className={`relative p-4 border rounded-xl cursor-pointer transition-all ${paymentMethod === 'COD' ? 'border-crab-red bg-red-50/50' : 'border-gray-200 hover:border-gray-300'}`}
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'COD' ? 'border-crab-red' : 'border-gray-300'}`}>
+                                            {paymentMethod === 'COD' && <div className="w-2.5 h-2.5 bg-crab-red rounded-full" />}
+                                        </div>
+                                        <span className="font-bold text-gray-800">Cash On Delivery</span>
+                                    </div>
+                                    {paymentConfig.advancePaymentType !== 'FULL' && paymentConfig.advancePaymentValue > 0 && (
+                                        <p className="text-xs text-orange-600 mt-2 ml-8">
+                                            Note: {paymentConfig.advancePaymentType === 'FIXED' ? `৳${paymentConfig.advancePaymentValue}` : `${paymentConfig.advancePaymentValue}%`} advance payment required.
+                                        </p>
+                                    )}
+                                </div>
+                            )}
+
+                            {paymentConfig?.bkashEnabled && (
+                                <div
+                                    onClick={() => setPaymentMethod('BKASH')}
+                                    className={`relative p-4 border rounded-xl cursor-pointer transition-all ${paymentMethod === 'BKASH' ? 'border-pink-500 bg-pink-50/30' : 'border-gray-200 hover:border-gray-300'}`}
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'BKASH' ? 'border-pink-500' : 'border-gray-300'}`}>
+                                            {paymentMethod === 'BKASH' && <div className="w-2.5 h-2.5 bg-pink-500 rounded-full" />}
+                                        </div>
+                                        <img src="/images/bkash-logo.png" alt="bKash" className="h-6 object-contain" />
+                                        <span className="font-bold text-gray-800">Pay with bKash</span>
+                                    </div>
+                                </div>
+                            )}
+
+                            {paymentConfig?.selfMfsEnabled && (
+                                <div
+                                    onClick={() => setPaymentMethod('MANUAL')}
+                                    className={`relative p-4 border rounded-xl cursor-pointer transition-all ${paymentMethod === 'MANUAL' ? 'border-purple-500 bg-purple-50/30' : 'border-gray-200 hover:border-gray-300'}`}
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'MANUAL' ? 'border-purple-500' : 'border-gray-300'}`}>
+                                            {paymentMethod === 'MANUAL' && <div className="w-2.5 h-2.5 bg-purple-500 rounded-full" />}
+                                        </div>
+                                        <span className="font-bold text-gray-800">Manual Send Money</span>
+                                    </div>
+
+                                    {paymentMethod === 'MANUAL' && (
+                                        <div className="mt-4 ml-8 space-y-3 p-3 bg-white rounded-lg border border-gray-100 text-sm animate-in fade-in slide-in-from-top-2">
+                                            <p className="text-gray-600 font-medium">
+                                                Send money to: <span className="font-bold text-gray-900">{paymentConfig.selfMfsPhone}</span> ({paymentConfig.selfMfsType})
+                                            </p>
+
+                                            {paymentConfig.selfMfsQrCode && (
+                                                <div className="w-32 h-32 bg-gray-50 rounded-lg p-2 border border-gray-200">
+                                                    <img src={paymentConfig.selfMfsQrCode} alt="QR Code" className="w-full h-full object-contain" />
+                                                </div>
+                                            )}
+
+                                            <div className="text-gray-500 text-xs bg-gray-50 p-2 rounded">
+                                                {paymentConfig.selfMfsInstruction || "Use 'Send Money' option in your app."}
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Transaction ID (TrxID)</label>
+                                                <input
+                                                    type="text"
+                                                    required
+                                                    placeholder="e.g. 8X3..."
+                                                    className="w-full p-2 border rounded-md font-mono text-sm uppercase"
+                                                    value={trxId}
+                                                    onChange={(e) => setTrxId(e.target.value)}
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
                     </div>
 
                     <button

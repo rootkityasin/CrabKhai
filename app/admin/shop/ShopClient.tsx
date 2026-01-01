@@ -1,6 +1,7 @@
 'use client';
 
-import { Settings, Globe, Shield, Truck, ChevronRight, Store, Mail, Phone, MapPin, AlertTriangle, BadgeCheck, Plus, Trash2, LayoutTemplate } from 'lucide-react';
+import { Settings, Globe, Shield, Truck, ChevronRight, Store, Mail, Phone, MapPin, AlertTriangle, BadgeCheck, Plus, Trash2, LayoutTemplate, CreditCard } from 'lucide-react';
+import { PaymentSettings } from '@/components/admin/PaymentSettings';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -153,6 +154,7 @@ export function ShopClient({ initialConfig }: { initialConfig: any }) {
     const modules = [
         { id: 'general', label: 'General Information', icon: Settings, desc: 'Store Name, Address, Contacts' },
         { id: 'footer', label: 'Footer & Trust', icon: LayoutTemplate, desc: 'Certifications, Allergens, Warnings' },
+        { id: 'payment', label: 'Payment Gateways', icon: CreditCard, desc: 'bKash, COD, Manual MFS, Advance' },
         { id: 'domain', label: 'Shop Domain', icon: Globe, desc: 'Connect custom domain (Pro Only)' },
         { id: 'policy', label: 'Policies', icon: Shield, desc: 'Refund & Privacy policies' },
         { id: 'shipping', label: 'Delivery Settings', icon: Truck, desc: 'Shipping zones & fees' },
@@ -189,6 +191,19 @@ export function ShopClient({ initialConfig }: { initialConfig: any }) {
                         <p className="text-sm text-slate-500">Manage certifications, safety warnings, and footer appearance.</p>
                     </div>
                     <FooterSettings initialConfig={initialConfig} />
+                </Card>
+            ) : activeModule === 'payment' ? (
+                <Card className="p-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
+                    <div className="mb-6">
+                        <Button variant="ghost" size="sm" onClick={() => setActiveModule(null)} className="mb-2 pl-0 hover:bg-transparent hover:text-orange-600">
+                            ← Back to Menu
+                        </Button>
+                        <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                            <CreditCard className="w-5 h-5 text-green-600" /> Payment Configuration
+                        </h2>
+                        <p className="text-sm text-slate-500">Configure gateways, manual payments, and advance requirements.</p>
+                    </div>
+                    <PaymentSettings />
                 </Card>
             ) : activeModule ? (
                 <Card className="p-12 text-center animate-in fade-in zoom-in-95">

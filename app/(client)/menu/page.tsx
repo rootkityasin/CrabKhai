@@ -4,14 +4,14 @@ import { ProductCard } from '@/components/client/ProductCard';
 import { Search } from 'lucide-react';
 
 // Scraped Data from crabkhaibd.com
-import { menuItems } from '@/lib/data';
+// import { menuItems } from '@/lib/data';
 
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useState, useEffect } from 'react';
-
-// ... (keep menuItems as is)
+import { useAdmin } from '@/components/providers/AdminProvider';
 
 function MenuContent() {
+    const { allProducts } = useAdmin();
     const searchParams = useSearchParams();
     const initialQuery = searchParams.get('search') || '';
     const category = searchParams.get('category');
@@ -23,10 +23,16 @@ function MenuContent() {
     }, [initialQuery]);
 
     // Filter logic
-    const filteredItems = menuItems.filter(item => {
+    // We filter based on 'allProducts' from AdminProvider now
+    const filteredItems = allProducts.filter(item => {
         const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesCategory = category ? item.categoryId === category : true;
-        return matchesSearch && matchesCategory;
+        // Note: AdminProvider products might not have 'categoryId' explicitly matching the old data schema
+        // But for now we focus on search and listing.
+        const matchesCategory = category ? (item as any).categoryId === category : true;
+        // Only show valid selling products
+        const isActive = item.stage === 'Selling' || item.stage === 'Published';
+
+        return matchesSearch && matchesCategory && isActive;
     });
 
     return (
@@ -54,10 +60,12 @@ function MenuContent() {
                             key={item.id}
                             id={item.id}
                             name={item.name}
-                            price={item.price}
+                            price={String(item.price)}
                             image={item.image}
-                            name_bn={item.name_bn}
-                            price_bn={item.price_bn}
+                            // Fallbacks for missing fields in AdminProvider 
+                            name_bn={(item as any).name_bn || item.name}
+                            price_bn={(item as any).price_bn || String(item.price)}
+                            pieces={(item as any).pieces}
                         />
                     ))
                 ) : (
