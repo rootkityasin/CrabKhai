@@ -68,7 +68,7 @@ export async function getAllUsers() {
 export async function getUserProfile(userId: string) {
     try {
         const user = await prisma.user.findUnique({
-            where: { id: userId }
+            where: { id: parseInt(userId, 10) }
         });
         return user;
     } catch (error) {
