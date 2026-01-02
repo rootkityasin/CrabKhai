@@ -82,13 +82,15 @@ export function MobileHeader() {
         }
     }, [mascotState, isSearchOpen]);
 
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
     return (
         <>
             <header className="sticky top-0 z-50 w-full bg-crab-red border-b border-white/10 shadow-md relative">
                 <div className="flex items-center justify-between px-4 h-16 text-white">
-                    {/* Left: Logo Area */}
+                    {/* Left: Logo Area & Hamburger */}
                     <div className="flex items-center gap-3">
-                        <button className="p-1 -ml-1 text-white" onClick={() => router.push('/menu')}>
+                        <button className="p-1 -ml-1 text-white" onClick={() => setIsSidebarOpen(true)}>
                             <Menu className="w-6 h-6" />
                         </button>
                         <Link href="/" className="flex items-center gap-2">
@@ -149,7 +151,6 @@ export function MobileHeader() {
                                             }
                                         });
 
-                                        // Allowing a generous city-wide radius (e.g. 20km from center)
                                         if (minDistance <= 20) {
                                             alert(`${t.deliveryAreaSuccess} ${nearestCity}.`);
                                         } else {
@@ -231,6 +232,35 @@ export function MobileHeader() {
                     </div>
                 )}
             </header>
+
+            {/* Sidebar / Hamburger Menu */}
+            {isSidebarOpen && (
+                <>
+                    <div
+                        className="fixed inset-0 bg-black/50 z-[60] backdrop-blur-sm"
+                        onClick={() => setIsSidebarOpen(false)}
+                    />
+                    <div className="fixed top-0 left-0 bottom-0 w-[280px] bg-slate-950 z-[70] shadow-2xl p-6 flex flex-col animate-in slide-in-from-left duration-300">
+                        <div className="flex items-center justify-between mb-8">
+                            <span className="text-white font-bold text-xl uppercase tracking-widest">Menu</span>
+                            <button onClick={() => setIsSidebarOpen(false)} className="text-white/70 hover:text-white">
+                                <Menu className="w-6 h-6 rotate-90" /> {/* Using rotate for close effect or replace with X */}
+                            </button>
+                        </div>
+                        <nav className="space-y-6">
+                            <Link href="/" className="block text-2xl font-black text-white hover:text-crab-red transition-colors" onClick={() => setIsSidebarOpen(false)}>HOME</Link>
+                            <Link href="/menu" className="block text-2xl font-black text-white hover:text-crab-red transition-colors" onClick={() => setIsSidebarOpen(false)}>MENU</Link>
+                            <Link href="/story" className="block text-2xl font-black text-crab-red transition-colors" onClick={() => setIsSidebarOpen(false)}>OUR STORY</Link>
+                            <Link href="/account" className="block text-2xl font-black text-white hover:text-crab-red transition-colors" onClick={() => setIsSidebarOpen(false)}>ACCOUNT</Link>
+                        </nav>
+
+                        <div className="mt-auto pt-8 border-t border-white/10">
+                            <p className="text-white/40 text-sm">© 2026 CrabKhai</p>
+                        </div>
+                    </div>
+                </>
+            )}
+
             {mascotState !== 'idle' && <Mascot state={mascotState} className="fixed top-14 left-4 z-[60]" />}
         </>
     );

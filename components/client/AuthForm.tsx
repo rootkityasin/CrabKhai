@@ -181,7 +181,11 @@ export function AuthForm() {
                 </div>
 
                 <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="pt-4">
-                    <Button type="submit" disabled={isLoading} className="w-full py-6 bg-crab-red text-white font-bold rounded-2xl shadow-xl shadow-orange-500/20 hover:bg-orange-600 hover:shadow-orange-500/30 transition-all text-lg">
+                    <Button
+                        type="submit"
+                        disabled={isLoading || !formData.contact || formData.password.length < 6}
+                        className="w-full py-6 bg-crab-red text-white font-bold rounded-2xl shadow-xl shadow-orange-500/20 hover:bg-orange-600 hover:shadow-orange-500/30 transition-all text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
                         {isLoading ? <Loader2 className="animate-spin w-5 h-5" /> : (isLogin ? 'Login' : 'Sign Up')}
                     </Button>
                 </motion.div>

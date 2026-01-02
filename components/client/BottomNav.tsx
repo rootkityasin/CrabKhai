@@ -1,6 +1,6 @@
 'use client';
 
-import { Home, Grid, ShoppingCart, User } from 'lucide-react';
+import { Home, Grid, ShoppingCart, User, BookOpen } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { usePathname } from 'next/navigation';
@@ -28,6 +28,7 @@ export function BottomNav() {
     const navItems = [
         { label: t.home, icon: Home, href: '/' },
         { label: t.menu, icon: Grid, href: '/menu' },
+        { label: 'Story', icon: BookOpen, href: '/story' },
         { label: t.cart, icon: ShoppingCart, href: '/cart', badge: cartCount },
         { label: t.account, icon: User, href: '/account' },
     ];
