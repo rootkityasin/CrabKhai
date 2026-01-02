@@ -1,41 +1,83 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import { useRef } from 'react';
 
-export default function HeroStory() {
+export function HeroStory() {
+    const containerRef = useRef<HTMLDivElement>(null);
+    const { scrollYProgress } = useScroll({
+        target: containerRef,
+        offset: ["start start", "end start"]
+    });
+
+    const y = useTransform(scrollYProgress, [0, 1], ['0%', '50%']);
+    const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
+    const scale = useTransform(scrollYProgress, [0, 1], [1, 0.8]);
+
     return (
-        <section className="min-h-[80vh] flex flex-col items-center justify-center relative z-10 p-6 text-center">
-
+        <div ref={containerRef} className="relative h-screen flex items-center justify-center overflow-hidden bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
+            {/* Parallax Background Crab */}
             <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8 }}
-                className="bg-crab-red/10 text-crab-red px-6 py-2 rounded-full font-bold uppercase tracking-widest text-sm mb-6 border border-crab-red/20 backdrop-blur-sm"
+                style={{ y, opacity }}
+                className="absolute inset-0 flex items-center justify-center pointer-events-none"
             >
-                Since 2023
+                <motion.img
+                    src="/mascot/story-character.png"
+                    alt="CrabKhai Mascot"
+                    className="w-64 h-64 md:w-96 md:h-96 object-contain opacity-10"
+                    animate={{ rotate: [0, 5, -5, 0] }}
+                    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                />
             </motion.div>
 
-            <motion.h1
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.8, delay: 0.2 }}
-                className="text-5xl md:text-8xl font-black text-ocean-blue mb-6 font-heading leading-tight"
+            {/* Hero Content */}
+            <motion.div
+                style={{ scale }}
+                className="relative z-10 text-center px-6"
             >
-                The Story of <br />
-                <span className="text-crab-red">Authentic Flow.</span>
-            </motion.h1>
+                <motion.div
+                    initial={{ opacity: 0, y: 50 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 1, delay: 0.2 }}
+                    className="mb-4"
+                >
+                    <span className="text-crab-red text-lg font-semibold tracking-widest uppercase">Est. 2023</span>
+                </motion.div>
 
-            <motion.p
+                <motion.h1
+                    initial={{ opacity: 0, y: 50 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 1, delay: 0.4 }}
+                    className="text-4xl sm:text-6xl md:text-8xl font-black mb-6 bg-gradient-to-r from-crab-red via-orange-500 to-yellow-500 bg-clip-text text-transparent leading-tight"
+                >
+                    Our Story
+                </motion.h1>
+
+                <motion.p
+                    initial={{ opacity: 0, y: 50 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 1, delay: 0.6 }}
+                    className="text-slate-300 text-base sm:text-lg md:text-xl max-w-2xl mx-auto leading-relaxed px-4"
+                >
+                    A journey of flavor, quality, and passion. Bringing Bangladesh's finest crabs to your table since 2023.
+                </motion.p>
+            </motion.div>
+
+            {/* Scroll Indicator */}
+            <motion.div
                 initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                transition={{ duration: 0.8, delay: 0.4 }}
-                className="max-w-2xl text-lg md:text-xl text-gray-500 font-medium leading-relaxed"
+                animate={{ opacity: 1 }}
+                transition={{ duration: 1, delay: 1.2 }}
+                className="absolute bottom-10 left-1/2 -translate-x-1/2"
             >
-                From the depths of the ocean to the heart of Dhaka. We started with a simple belief:
-                freshness isn't just a promise, it's our only rule.
-            </motion.p>
-
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-sand to-sand/50 -z-10 pointer-events-none" />
-        </section>
+                <motion.div
+                    animate={{ y: [0, 10, 0] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                    className="w-6 h-10 border-2 border-crab-red rounded-full flex items-start justify-center p-2"
+                >
+                    <motion.div className="w-1 h-2 bg-crab-red rounded-full" />
+                </motion.div>
+            </motion.div>
+        </div>
     );
 }

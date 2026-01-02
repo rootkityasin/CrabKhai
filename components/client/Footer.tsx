@@ -38,7 +38,7 @@ export function Footer({ config }: FooterProps) {
                     <div>
                         <h4 className={`font-bold uppercase tracking-widest text-xs mb-4 text-sand ${language === 'bn' ? 'font-bangla' : 'font-body'}`}>{t.quickLinks}</h4>
                         <ul className={`space-y-2 text-sm text-white/80 ${language === 'bn' ? 'font-bangla' : 'font-body'}`}>
-                            <li><Link href="/" className="hover:text-sand transition-colors">{t.ourStory}</Link></li>
+                            <li><Link href="/story" className="hover:text-sand transition-colors">{t.ourStory}</Link></li>
                             <li><Link href="/menu" className="hover:text-sand transition-colors">{t.menu}</Link></li>
                             <li><a href={`mailto:${email}`} className="hover:text-sand transition-colors">{t.contact}</a></li>
                             <li><Link href="/" className="hover:text-sand transition-colors">{t.terms}</Link></li>

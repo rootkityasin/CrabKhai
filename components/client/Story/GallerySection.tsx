@@ -1,54 +1,73 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import { useRef } from 'react';
 
-// Using placeholders if specific food images aren't handy, but ideally these should be product images
-const images = [
-    "/mascot-avatar.png", // reusing for demo
-    "/logo.png",
-    "/mascot-avatar.png",
-    "/logo.png",
-    "/mascot-avatar.png",
-    "/logo.png", // Repeat to ensure seamless loop
+const galleryImages = [
+    { src: '/story/lover.jpg', alt: 'Rainy Day Combo ❤️', rotate: -6 },
+    { src: '/story/gallery_hq_1.jpg', alt: 'Fresh Catch 2026', rotate: 4 },
+    { src: '/story/gallery_hq_2.jpg', alt: 'Pizza Flame & Crab', rotate: -3 },
+    { src: '/story/gallery_hq_3.jpg', alt: 'We are in Feni', rotate: 5 },
 ];
 
-export default function GallerySection() {
+export function GallerySection() {
+    const containerRef = useRef<HTMLDivElement>(null);
+    const { scrollYProgress } = useScroll({
+        target: containerRef,
+        offset: ["start end", "end start"]
+    });
+
+    const y = useTransform(scrollYProgress, [0, 1], [0, -100]);
+    const opacity = useTransform(scrollYProgress, [0, 0.2, 0.9, 1], [0, 1, 1, 0]);
+
     return (
-        <section className="py-24 relative z-10 overflow-hidden bg-ocean-blue/5">
-            <div className="absolute inset-0 bg-gradient-to-r from-sand via-transparent to-sand z-20 pointer-events-none" />
-
-            <div className="mb-12 text-center relative z-20">
-                <h2 className="text-3xl md:text-5xl font-black text-ocean-blue font-heading">
-                    Visual <span className="text-crab-red">Feast</span>
-                </h2>
-                <p className="text-gray-500 mt-2">A glimpse into our kitchen</p>
-            </div>
-
-            <div className="flex relative items-center">
-                {/* Marquee Container */}
-                <motion.div
-                    className="flex gap-8 whitespace-nowrap min-w-full"
-                    animate={{ x: ["0%", "-50%"] }}
-                    transition={{
-                        repeat: Infinity,
-                        duration: 20,
-                        ease: "linear",
-                    }}
+        <section ref={containerRef} className="relative py-32 overflow-hidden bg-slate-900 perspective-1000">
+            <div className="max-w-7xl mx-auto px-6 mb-20 text-center">
+                <motion.h2
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    className="text-4xl md:text-6xl font-black text-white mb-6"
                 >
-                    {[...images, ...images].map((src, i) => (
-                        <div
-                            key={i}
-                            className="w-64 h-80 flex-shrink-0 rounded-3xl overflow-hidden shadow-2xl bg-white relative border-4 border-white transform rotate-2 hover:rotate-0 transition-transform duration-300"
-                        >
-                            <img
-                                src={src}
-                                alt="Gallery Item"
-                                className="w-full h-full object-cover"
-                            />
-                        </div>
-                    ))}
-                </motion.div>
+                    Vibes & Good Times
+                </motion.h2>
+                <p className="text-slate-400 text-lg max-w-2xl mx-auto">
+                    Capturing the journey, one delivery at a time.
+                </p>
             </div>
+
+            {/* 3D Scroll Container */}
+            <motion.div
+                style={{ y, opacity }}
+                className="flex flex-wrap justify-center gap-8 md:gap-12 px-4"
+            >
+                {galleryImages.map((img, index) => (
+                    <motion.div
+                        key={index}
+                        initial={{ opacity: 0, scale: 0.8, rotateX: 20 }}
+                        whileInView={{ opacity: 1, scale: 1, rotateX: 0 }}
+                        viewport={{ margin: "-100px" }}
+                        transition={{ duration: 0.8, delay: index * 0.1 }}
+                        whileHover={{
+                            scale: 1.1,
+                            rotate: 0,
+                            zIndex: 10,
+                            transition: { duration: 0.3 }
+                        }}
+                        style={{ rotate: img.rotate }}
+                        className="relative group w-full max-w-xs md:max-w-sm aspect-[4/5] rounded-2xl overflow-hidden shadow-2xl border-4 border-white/5 bg-slate-800"
+                    >
+                        <img
+                            src={img.src}
+                            alt={img.alt}
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
+                            <span className="text-white font-bold text-lg">{img.alt}</span>
+                        </div>
+                    </motion.div>
+                ))}
+            </motion.div>
         </section>
     );
 }
