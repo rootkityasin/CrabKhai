@@ -14,6 +14,7 @@ export interface Hub {
 export interface User {
     id: string;
     name: string;
+    email: string;
     role: Role;
     hubId?: string; // If null/undefined, effectively Super Admin access to all
 }
@@ -26,9 +27,9 @@ const HUBS: Hub[] = [
 ];
 
 const MOCK_USERS: User[] = [
-    { id: 'super-admin', name: 'Super Admin', role: 'SUPER_ADMIN' },
-    { id: 'khulna-admin', name: 'Khulna Manager', role: 'HUB_ADMIN', hubId: 'khulna-hub' },
-    { id: 'dhaka-admin', name: 'Dhaka Manager', role: 'HUB_ADMIN', hubId: 'dhaka-central' },
+    { id: 'super-admin', name: 'Super Admin', email: 'admin@crabkhai.com', role: 'SUPER_ADMIN' },
+    { id: 'khulna-admin', name: 'Khulna Manager', email: 'khulna@crabkhai.com', role: 'HUB_ADMIN', hubId: 'khulna-hub' },
+    { id: 'dhaka-admin', name: 'Dhaka Manager', email: 'dhaka@crabkhai.com', role: 'HUB_ADMIN', hubId: 'dhaka-central' },
 ];
 
 const initialOrders = [
@@ -144,6 +145,9 @@ interface AdminContextType {
         contactPhone: string;
         contactEmail: string;
         contactAddress: string;
+        shopName: string;
+        logoUrl: string;
+        measurementUnit: string;
         allergensText: string;
         certificates: string[];
     };
@@ -169,6 +173,7 @@ interface AdminContextType {
     toggleStock: (id: string) => void;
     isSidebarCollapsed: boolean;
     toggleSidebar: () => void;
+    logout: () => void;
 }
 
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
@@ -221,6 +226,9 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
         contactPhone: "+880 1804 221 161",
         contactEmail: "crabkhaibangladesh@gmail.com",
         contactAddress: "195 Green Road, Dhaka",
+        shopName: "Crab & Khai",
+        logoUrl: "/logo.svg",
+        measurementUnit: "PCS",
         allergensText: "Crustaceans",
         certificates: [
             "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/HACCP_Certification_Mark.svg/1200px-HACCP_Certification_Mark.svg.png",
@@ -228,32 +236,28 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
         ]
     });
 
-    // Load from LocalStorage on Mount
+    // Load from LocalStorage on Mount AND fetch fresh config
     React.useEffect(() => {
         if (typeof window !== 'undefined') {
+            // 1. Try LocalStorage for instant render
             const savedData = localStorage.getItem('crab-khai-admin-data-v7');
             if (savedData) {
                 try {
                     const parsed = JSON.parse(savedData);
                     if (parsed.orders) setOrdersState(parsed.orders);
-
-                    // Migration: Add missing fields for v6
-                    if (parsed.products) {
-                        const migratedProducts = parsed.products.map((p: any) => ({
-                            ...p,
-                            pieces: p.pieces ? p.pieces : Math.floor(Math.random() * (20 - 5 + 1)) + 5,
-                            totalSold: p.totalSold !== undefined ? p.totalSold : Math.floor(Math.random() * 500) + 50,
-                            weightOptions: p.weightOptions ? p.weightOptions : ['500g', '1kg'],
-                            images: p.images ? p.images : [p.image]
-                        }));
-                        setProductsState(migratedProducts);
-                    }
-
-                    if (parsed.settings) setSettings(parsed.settings);
-                } catch (e) {
-                    console.error("Failed to load admin data", e);
-                }
+                    if (parsed.products) setProductsState(parsed.products);
+                    if (parsed.settings) setSettings(prev => ({ ...prev, ...parsed.settings }));
+                } catch (e) { console.error(e); }
             }
+
+            // 2. Fetch fresh from DB (Background)
+            import('@/app/actions/settings').then(mod => {
+                mod.getSiteConfig().then(dbConfig => {
+                    if (dbConfig) {
+                        setSettings(prev => ({ ...prev, ...dbConfig }));
+                    }
+                });
+            });
         }
     }, []);
 
@@ -312,7 +316,8 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
             setOrders, setProducts, updateSettings,
             addOrder, updateOrder, deleteOrder,
             addProduct, updateProduct, deleteProduct, toggleStock,
-            isSidebarCollapsed, toggleSidebar
+            isSidebarCollapsed, toggleSidebar,
+            logout: () => window.location.href = '/'
         }}>
             {children}
         </AdminContext.Provider>

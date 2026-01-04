@@ -24,7 +24,11 @@ import {
     LogOut,
     Menu,
     Store,
-    ShieldCheck
+    ShieldCheck,
+    ClipboardList,
+    Megaphone, // Added
+    Paintbrush, // Added
+    LayoutTemplate // Added
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useEffect } from 'react';
@@ -90,12 +94,12 @@ export function AdminSidebar() {
             items: [
                 { label: 'Manage Shop', href: '/admin/shop', icon: Settings },
                 { label: 'Customize Theme', href: '/admin/theme', icon: Palette },
-                { label: 'Shop Settings', icon: Store, href: '/admin/settings' },
-                { label: 'Security', icon: ShieldCheck, href: '/admin/security' },
-                { label: 'Landing Pages', href: '/admin/landing', icon: FileText },
-                { label: 'Automation', href: '/admin/automation', icon: Zap, badge: 'HOT', badgeColor: "bg-red-100 text-red-600" },
+                { label: 'Landing Page', href: '/admin/landing', icon: LayoutTemplate },
                 { label: 'Promo Codes', href: '/admin/promos', icon: Ticket },
-                { label: 'Users & Permissions', href: '/admin/users', icon: Shield },
+
+                { label: 'Security', icon: ShieldCheck, href: '/admin/security', badge: 'NEW', badgeColor: "bg-blue-100 text-blue-600" },
+                { label: 'Inventory', icon: ClipboardList, href: '/admin/inventory' },
+                { label: 'Automation', href: '/admin/automation', icon: Zap, badge: 'HOT', badgeColor: "bg-red-100 text-red-600" },
             ],
         },
         {

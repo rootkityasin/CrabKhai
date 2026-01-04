@@ -5,18 +5,26 @@ import { Star, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 
-// Mock Review Data
-const REVIEWS = [
-    { id: 1, name: "Tanvir Hasan", rating: 5, comment: "Absolutely fresh! The packaging was premium and the taste was authentic.", date: "2 days ago" },
-    { id: 2, name: "Sarah Ahmed", rating: 5, comment: "Best crab delivery in Dhaka. Loved the ready-to-eat options.", date: "1 week ago" },
-    { id: 3, name: "Rahim Chowdhury", rating: 4, comment: "Great service, fast delivery. Will order again.", date: "2 weeks ago" },
-];
+interface ReviewProps {
+    data: {
+        featuredImage: string;
+        gridImages: { id: number; src: string; alt: string }[];
+        reviews: { id: number; name: string; rating: number; comment: string; date: string }[];
+    } | null;
+}
 
-export function ReviewSection() {
+export function ReviewSection({ data }: ReviewProps) {
     const [isReviewFormOpen, setIsReviewFormOpen] = useState(false);
 
+    const featuredImage = data?.featuredImage || "/story/reviews/review_new.jpg";
+    const gridImages = data?.gridImages || [
+        { id: 1, src: '/story/reviews/review_3.jpg', alt: "Day 1 Review" },
+        { id: 2, src: '/story/reviews/review_2.jpg', alt: "Day 2 Review" },
+        { id: 3, src: '/story/reviews/review_1.jpg', alt: "Day 3 Review" }
+    ];
+
     return (
-        <section className="relative py-24 px-6 bg-slate-950">
+        <section className="relative py-24 px-6 bg-slate-900">
             <div className="max-w-7xl mx-auto">
                 <div className="text-center mb-16">
                     <h2 className="text-3xl md:text-5xl font-black text-white mb-6">Customer Stories</h2>
@@ -32,7 +40,7 @@ export function ReviewSection() {
                 >
                     <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-slate-800">
                         <img
-                            src="/story/reviews/review_new.jpg"
+                            src={featuredImage}
                             alt="A heartfelt note from our team"
                             className="w-full h-auto object-contain"
                         />
@@ -42,11 +50,7 @@ export function ReviewSection() {
 
                 {/* Customer Stories Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12 justify-items-center">
-                    {[
-                        { id: 1, src: '/story/reviews/review_3.jpg', alt: "Day 1 Review" },
-                        { id: 2, src: '/story/reviews/review_2.jpg', alt: "Day 2 Review" },
-                        { id: 3, src: '/story/reviews/review_1.jpg', alt: "Day 3 Review" }
-                    ].map((item, i) => (
+                    {gridImages.map((item, i) => (
                         <motion.div
                             key={item.id}
                             initial={{ opacity: 0, y: 20 }}

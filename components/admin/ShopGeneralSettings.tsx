@@ -8,29 +8,36 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { Loader2, Save, MapPin, Phone, Mail, FileWarning } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Loader2, Save, MapPin, Phone, Mail, FileWarning, SlidersHorizontal, Image as ImageIcon } from 'lucide-react';
+import { MediaUpload } from '@/components/admin/MediaUpload';
 
-export function ShopGeneralSettings() {
-    const [loading, setLoading] = useState(true);
+export function ShopGeneralSettings({ initialConfig }: { initialConfig?: any }) {
+    const [loading, setLoading] = useState(!initialConfig);
     const [saving, setSaving] = useState(false);
-    const [config, setConfig] = useState<any>({
+    const [config, setConfig] = useState<any>(initialConfig || {
         contactPhone: '',
         contactEmail: '',
         contactAddress: '',
+        shopName: '',
+        logoUrl: '',
+        measurementUnit: 'PCS',
         allergensText: '',
         certificates: [] // Future use
     });
 
     useEffect(() => {
-        async function load() {
-            const data = await getSiteConfig();
-            if (data) {
-                setConfig(data);
+        if (!initialConfig) {
+            async function load() {
+                const data = await getSiteConfig();
+                if (data) {
+                    setConfig(data);
+                }
+                setLoading(false);
             }
-            setLoading(false);
+            load();
         }
-        load();
-    }, []);
+    }, [initialConfig]);
 
     const handleSave = async () => {
         setSaving(true);
@@ -88,23 +95,74 @@ export function ShopGeneralSettings() {
                     </CardContent>
                 </Card>
 
-                {/* Location */}
                 <Card className="h-full">
                     <CardHeader>
                         <CardTitle className="text-base flex items-center gap-2">
-                            <MapPin className="w-4 h-4 text-slate-500" /> Location
+                            <MapPin className="w-4 h-4 text-slate-500" /> Location & Branding
                         </CardTitle>
-                        <CardDescription>Your physical store or office address.</CardDescription>
+                        <CardDescription>Your store identity and physical address.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                            <Label>Shop Name</Label>
+                            <Input
+                                value={config.shopName}
+                                onChange={(e) => setConfig({ ...config, shopName: e.target.value })}
+                                placeholder="e.g. Crab & Khai"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Shop Logo</Label>
+                            <MediaUpload
+                                value={config.logoUrl || ''}
+                                onChange={(url) => setConfig({ ...config, logoUrl: url })}
+                                onRemove={() => setConfig({ ...config, logoUrl: '' })}
+                            />
+                            <p className="text-xs text-slate-500">
+                                Recommended size: <strong>500x500px</strong>.
+                                <br />
+                                Supported formats: JPG, PNG, WEBP.
+                            </p>
+                        </div>
                         <div className="space-y-2">
                             <Label>Address</Label>
                             <Textarea
                                 value={config.contactAddress}
                                 onChange={(e) => setConfig({ ...config, contactAddress: e.target.value })}
                                 placeholder="Street Address, City, Country"
-                                className="h-32 resize-none"
+                                className="h-20 resize-none"
                             />
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* Settings & Units */}
+                <Card className="h-full">
+                    <CardHeader>
+                        <CardTitle className="text-base flex items-center gap-2">
+                            <SlidersHorizontal className="w-4 h-4 text-slate-500" /> Settings
+                        </CardTitle>
+                        <CardDescription>Configure measurement units and system preferences.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                            <Label>Measurement Unit</Label>
+                            <Select
+                                value={config.measurementUnit || 'PCS'}
+                                onValueChange={(val) => setConfig({ ...config, measurementUnit: val })}
+                            >
+                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="PCS">Pieces (Default)</SelectItem>
+                                    <SelectItem value="WEIGHT">Weight (Kg/Gm)</SelectItem>
+                                    <SelectItem value="VOLUME">Volume (Litre/Ml)</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <p className="text-xs text-slate-500">
+                                Controls how stock is displayed and calculated.
+                                {config.measurementUnit === 'WEIGHT' && ' (1 Unit = 200g)'}
+                                {config.measurementUnit === 'VOLUME' && ' (1 Unit = 1 Litre)'}
+                            </p>
                         </div>
                     </CardContent>
                 </Card>

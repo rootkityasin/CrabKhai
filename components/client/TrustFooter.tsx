@@ -13,12 +13,24 @@ interface TrustFooterProps extends React.HTMLAttributes<HTMLDivElement> {
     } | null;
 }
 
-export default function TrustFooter({ config, ...props }: TrustFooterProps) {
+import { getSiteConfig } from '@/app/actions/settings';
+import { useEffect, useState } from 'react';
+
+export default function TrustFooter({ config: initialConfig, ...props }: TrustFooterProps) {
+    const [config, setConfig] = useState<any>(initialConfig || null);
+
+    useEffect(() => {
+        getSiteConfig().then((data) => {
+            if (data) setConfig(data);
+        });
+    }, []);
     // Default Fallbacks
     const phone = config?.contactPhone || "+880 1804 221 161";
     const email = config?.contactEmail || "crabkhaibangladesh@gmail.com";
     const address = config?.contactAddress || "195 Green Road, Dhaka";
     const allergenText = config?.allergensText || "Crustaceans";
+    const shopName = config?.shopName || "CrabKhai";
+    const logoUrl = config?.logoUrl || "/logo.svg";
     // Forcing local images to ensure they display correctly (bypassing potentially broken DB URLs)
     const certificates = [
         {
@@ -144,7 +156,7 @@ export default function TrustFooter({ config, ...props }: TrustFooterProps) {
                     </div>
 
                     <div className="mt-8 text-xs font-mono text-white/40 tracking-widest uppercase">
-                        Verified & Certified
+                        Verified & Certified for {shopName}
                     </div>
                 </motion.div>
             </div>

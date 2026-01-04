@@ -4,11 +4,24 @@ import { motion } from 'framer-motion';
 import { ArrowRight, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-export function WholesaleCTA() {
+interface WholesaleProps {
+    data: {
+        title: string;
+        description: string;
+        whatsappNumber: string;
+        image: string;
+    } | null;
+}
+
+export function WholesaleCTA({ data }: WholesaleProps) {
     // Verified WhatsApp number from user
-    const whatsappNumber = '8801804221161';
+    const whatsappNumber = data?.whatsappNumber || '8801804221161';
     const message = encodeURIComponent("Hi, I'm interested in wholesale/business partnership with CrabKhai.");
     const whatsappLink = `https://wa.me/${whatsappNumber}?text=${message}`;
+
+    const title = data?.title || "Want to buy in Wholesale?";
+    const description = data?.description || "We supply premium quality crabs to restaurants, hotels, and event caterers across Bangladesh. Partner with us for consistent quality and special bulk pricing.";
+    const image = data?.image || "/mascot/story-character.png";
 
     return (
         <section className="relative py-24 px-6 bg-slate-900 overflow-hidden">
@@ -30,10 +43,10 @@ export function WholesaleCTA() {
                         >
                             <span className="text-crab-red font-bold tracking-wider uppercase mb-2 block">Business Partnership</span>
                             <h2 className="text-3xl md:text-5xl font-black text-white mb-6 leading-tight">
-                                Want to buy in <span className="text-transparent bg-clip-text bg-gradient-to-r from-crab-red to-orange-500">Wholesale?</span>
+                                {title}
                             </h2>
                             <p className="text-slate-400 text-lg mb-8 leading-relaxed">
-                                We supply premium quality crabs to restaurants, hotels, and event caterers across Bangladesh. Partner with us for consistent quality and special bulk pricing.
+                                {description}
                             </p>
 
                             <motion.div
@@ -60,7 +73,7 @@ export function WholesaleCTA() {
                             className="relative hidden md:block"
                         >
                             <img
-                                src="/mascot/story-character.png" // Valid existing mascot path
+                                src={image} // Valid existing mascot path
                                 alt="Wholesale Delivery"
                                 className="w-full max-w-md mx-auto object-contain drop-shadow-2xl"
                             />

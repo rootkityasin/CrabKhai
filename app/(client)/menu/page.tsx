@@ -24,16 +24,53 @@ function MenuContent() {
 
     // Filter logic
     // We filter based on 'allProducts' from AdminProvider now
+    const filterId = searchParams.get('filter'); // 'new-arrivals', 'best-sellers', 'super-savings'
+
+    // Filter logic
     const filteredItems = allProducts.filter(item => {
         const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
-        // Note: AdminProvider products might not have 'categoryId' explicitly matching the old data schema
-        // But for now we focus on search and listing.
         const matchesCategory = category ? (item as any).categoryId === category : true;
-        // Only show valid selling products
-        const isActive = item.stage === 'Selling' || item.stage === 'Published';
 
-        return matchesSearch && matchesCategory && isActive;
+        // Virtual filters (mirroring landing page logic)
+        // In a real app these would be DB fields, but for now we mimic the slice behavior or specific IDs if we had them.
+        // Since we can't easily replicate the exact "slice" without order context, we'll try to approximate or just show all if no better signal.
+        // ACTUALLY: The landing page slices are arbitrary (best sellers = first 4). 
+        // Better strategy: Filter based on simple rules or assumed metadata.
+        // For this user's existing logic:
+        // New Arrivals = items with high IDs or recent dates? (We don't have created_at sorted easily here without sorting first)
+        // Best Sellers = items with high totalSold
+        // Super Savings = items with price < X or specific IDs?
+
+        // Let's implement simplified logic for the view all page:
+        let matchesFilter = true;
+        if (filterId === 'best-sellers') {
+            // Show all items, but sorted by popularity.
+            // If data is missing (undefined), it falls back to 0.
+            matchesFilter = true;
+        } else if (filterId === 'super-savings') {
+            // For savings, we focus on Combo packs which are usually deals.
+            matchesFilter = item.type === 'COMBO';
+        } else if (filterId === 'new-arrivals') {
+            // Show all, sorted by date.
+            matchesFilter = true;
+        }
+
+        const isActive = item.stage === 'Selling' || item.stage === 'Published' || item.stage === 'Coming Soon';
+
+        return matchesSearch && matchesCategory && matchesFilter && isActive;
     });
+
+    // Special sorting for filters
+    if (filterId === 'best-sellers') {
+        filteredItems.sort((a, b) => ((b as any).totalSold || 0) - ((a as any).totalSold || 0));
+    } else if (filterId === 'new-arrivals') {
+        // Sort by createdAt descending (newest first)
+        filteredItems.sort((a, b) => {
+            const dateA = (a as any).createdAt ? new Date((a as any).createdAt).getTime() : 0;
+            const dateB = (b as any).createdAt ? new Date((b as any).createdAt).getTime() : 0;
+            return dateB - dateA;
+        });
+    }
 
     return (
         <div className="bg-gray-50 min-h-screen pb-20">

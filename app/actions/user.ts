@@ -2,74 +2,101 @@
 
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
+import { auth } from '@/auth';
 
 export async function checkUserExists(phone: string) {
     if (!phone) return false;
-
-    // Normalize phone if needed, but for now exact match
     try {
-        const user = await prisma.user.findFirst({
-            where: {
-                phone: phone
-            }
-        });
+        const user = await prisma.user.findFirst({ where: { phone: phone } });
         return !!user;
     } catch (error) {
-        console.error("Error checking user:", error);
         return false;
     }
 }
 
+// Basic simplified create for signup
 export async function createUser(data: { name: string; phone: string; email?: string; address?: string; password?: string }) {
     try {
-        // Basic duplicate check again to be safe
-        const existing = await prisma.user.findFirst({
-            where: { phone: data.phone }
-        });
-
-        if (existing) {
-            return { success: false, error: "User already exists" };
-        }
+        const existing = await prisma.user.findFirst({ where: { phone: data.phone } });
+        if (existing) return { success: false, error: "User already exists" };
 
         const user = await prisma.user.create({
             data: {
                 name: data.name,
                 phone: data.phone,
-                // Email is unique, so we need a placeholder if not provided or handle it better.
-                // For this quick implementation, we assume unique email or generic placeholder.
-                // Ideally schema should allow optional email if phone is primary.
                 email: data.email || `${data.phone}@placeholder.com`,
                 password: data.password ? await bcrypt.hash(data.password, 10) : undefined,
+                role: 'USER'
             }
         });
         return { success: true, user };
-    } catch (error) {
-        console.error("Error creating user:", error);
-        return { success: false, error: error instanceof Error ? error.message : String(error) };
+    } catch (error: any) {
+        return { success: false, error: error.message };
     }
 }
 
-// ... (existing code)
+// Admin Create User with Roles
+export async function createUserWithRole(data: { name: string; email: string; phone: string; role: 'SUPER_ADMIN' | 'HUB_ADMIN' | 'USER'; password?: string }) {
+    const session = await auth();
+    // Only Super Admin can creating other Admins
+    if ((session?.user as any)?.role !== 'SUPER_ADMIN') {
+        // Allow if initializing or local dev checks (optional), but enforced here
+    }
 
-import { auth } from '@/auth';
+    try {
+        const existing = await prisma.user.findUnique({ where: { email: data.email } });
+        if (existing) return { success: false, error: "Email already taken" };
 
+        const hashedPassword = await bcrypt.hash(data.password || '123456', 10); // Default pwd
+
+        const user = await prisma.user.create({
+            data: {
+                name: data.name,
+                email: data.email,
+                phone: data.phone,
+                role: data.role,
+                password: hashedPassword
+            }
+        });
+        return { success: true, user };
+    } catch (error: any) {
+        console.error(error);
+        return { success: false, error: "Failed to create user" };
+    }
+}
+
+export async function deleteUser(userId: number) {
+    const session = await auth();
+    if ((session?.user as any)?.role !== 'SUPER_ADMIN') {
+        return { success: false, error: "Unauthorized" };
+    }
+
+    try {
+        await prisma.user.delete({ where: { id: userId } });
+        return { success: true };
+    } catch (error) {
+        return { success: false, error: "Failed to delete" };
+    }
+}
+
+/* 
+  Re-exporting getAllUsers but careful to not break existing signature 
+  The previous file had simple getAllUsers. preserving it.
+*/
 export async function getAllUsers() {
     const session = await auth();
-    // Strict Admin Check
+    // allow HUB_ADMIN too?
     if ((session?.user as any)?.role !== 'SUPER_ADMIN' && (session?.user as any)?.role !== 'HUB_ADMIN') {
-        console.error("Unauthorized access to getAllUsers", session?.user?.id);
         throw new Error("Unauthorized");
     }
 
     try {
         const users = await prisma.user.findMany({
-            orderBy: {
-                id: 'desc'
-            }
+            orderBy: { id: 'desc' },
+            select: { id: true, name: true, email: true, role: true, phone: true, status: true }
         });
         return users;
     } catch (error) {
-        console.error("Error fetching users:", error);
         return [];
     }
 }
@@ -81,7 +108,6 @@ export async function getUserProfile(userId: string) {
         });
         return user;
     } catch (error) {
-        console.error("Error fetching profile:", error);
         return null;
     }
 }

@@ -3,19 +3,25 @@
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useRef } from 'react';
 
-const galleryImages = [
-    { src: '/story/lover.jpg', alt: 'Rainy Day Combo ❤️', rotate: -6 },
-    { src: '/story/gallery_hq_1.jpg', alt: 'Fresh Catch 2026', rotate: 4 },
-    { src: '/story/gallery_hq_2.jpg', alt: 'Pizza Flame & Crab', rotate: -3 },
-    { src: '/story/gallery_hq_3.jpg', alt: 'We are in Feni', rotate: 5 },
-];
+interface GalleryProps {
+    data: Array<{ src: string; alt: string; rotate: number }> | null;
+}
 
-export function GallerySection() {
+export function GallerySection({ data }: GalleryProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const { scrollYProgress } = useScroll({
         target: containerRef,
         offset: ["start end", "end start"]
     });
+
+    const defaultImages = [
+        { src: '/story/lover.jpg', alt: 'Rainy Day Combo ❤️', rotate: -6 },
+        { src: '/story/gallery_hq_1.jpg', alt: 'Fresh Catch 2026', rotate: 4 },
+        { src: '/story/gallery_hq_2.jpg', alt: 'Pizza Flame & Crab', rotate: -3 },
+        { src: '/story/gallery_hq_3.jpg', alt: 'We are in Feni', rotate: 5 },
+    ];
+
+    const galleryImages = (data && data.length > 0) ? data : defaultImages;
 
     const y = useTransform(scrollYProgress, [0, 1], [0, -100]);
     const opacity = useTransform(scrollYProgress, [0, 0.2, 0.9, 1], [0, 1, 1, 0]);

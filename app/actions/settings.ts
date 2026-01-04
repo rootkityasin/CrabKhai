@@ -12,8 +12,13 @@ export async function getSiteConfig() {
                 contactPhone: "+880 1804 221 161",
                 contactEmail: "crabkhaibangladesh@gmail.com",
                 contactAddress: "195 Green Road, Dhaka",
+                shopName: "Crab & Khai",
+                logoUrl: "/logo.svg",
+                measurementUnit: "PCS",
                 allergensText: "Crustaceans",
-                certificates: []
+                certificates: [],
+                primaryColor: "#ea0000", // Default Crab Red
+                secondaryColor: "#0f172a" // Default Slate-900
             };
         }
         return config;
@@ -36,8 +41,13 @@ export async function updateSiteConfig(data: any) {
                     contactPhone: data.contactPhone,
                     contactEmail: data.contactEmail,
                     contactAddress: data.contactAddress,
+                    shopName: data.shopName,
+                    logoUrl: data.logoUrl,
+                    measurementUnit: data.measurementUnit,
                     allergensText: data.allergensText,
-                    certificates: data.certificates
+                    certificates: data.certificates,
+                    primaryColor: data.primaryColor,
+                    secondaryColor: data.secondaryColor
                 }
             });
         } else {
@@ -46,8 +56,13 @@ export async function updateSiteConfig(data: any) {
                     contactPhone: data.contactPhone,
                     contactEmail: data.contactEmail,
                     contactAddress: data.contactAddress,
+                    shopName: data.shopName,
+                    logoUrl: data.logoUrl,
+                    measurementUnit: data.measurementUnit,
                     allergensText: data.allergensText,
-                    certificates: data.certificates
+                    certificates: data.certificates,
+                    primaryColor: data.primaryColor || "#ea0000",
+                    secondaryColor: data.secondaryColor || "#0f172a"
                 }
             });
         }

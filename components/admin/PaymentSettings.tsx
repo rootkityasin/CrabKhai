@@ -204,7 +204,11 @@ export function PaymentSettings() {
                                             onChange={(url) => setConfig({ ...config, selfMfsQrCode: url })}
                                             onRemove={() => setConfig({ ...config, selfMfsQrCode: '' })}
                                         />
-                                        <p className="text-xs text-slate-400 mt-2 text-center">Supported: JPG, PNG, WEBP. Max 2MB.</p>
+                                        <p className="text-xs text-slate-400 mt-2 text-center">
+                                            Supported: JPG, PNG, WEBP. Max 2MB.
+                                            <br />
+                                            Recommended size: <strong>300x300px</strong>.
+                                        </p>
                                     </div>
                                 </div>
                             </div>

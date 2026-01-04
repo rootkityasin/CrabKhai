@@ -5,28 +5,49 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowRight, MessageCircle } from 'lucide-react';
-import Image from 'next/image';
-
-import { useAdmin } from '@/components/providers/AdminProvider';
-
-// ...
+import { useEffect, useState } from 'react';
+import { getProduct } from '@/app/actions/product';
 
 export default function SmartLinkPage() {
     const params = useParams();
-    const { allProducts } = useAdmin();
-    // Find product from real data or fallback to mock if not found (for safety)
-    const product = allProducts.find(p => p.id === params.productId) || {
-        id: params.productId as string,
-        name: 'Product Not Found',
-        price: 0,
-        image: 'https://images.unsplash.com/photo-1565557623262-b51c2513a641',
-        description: 'Product unavailable or loading...',
-        pieces: 0
-    };
+    const [product, setProduct] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const loadProduct = async () => {
+            const productId = Array.isArray(params.productId) ? params.productId[0] : params.productId;
+            if (productId) {
+                const data = await getProduct(productId);
+                if (data) setProduct(data);
+            }
+            setLoading(false);
+        };
+        loadProduct();
+    }, [params.productId]);
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"></div>
+            </div>
+        );
+    }
+
+    if (!product) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+                <Card className="w-full max-w-md p-8 text-center">
+                    <h2 className="text-xl font-bold text-gray-800">Product Not Found</h2>
+                    <p className="text-gray-500 mt-2">The product you are looking for does not exist or has been removed.</p>
+                    <Button variant="outline" className="mt-4" onClick={() => window.location.href = '/'}>Go Home</Button>
+                </Card>
+            </div>
+        );
+    }
 
     const handleWhatsAppOrder = () => {
         const text = `Hi, I want to order *${product.name}* (Price: ৳${product.price}). Please confirm.`;
-        window.open(`https://wa.me/8801700000000?text=${encodeURIComponent(text)}`, '_blank');
+        window.open(`https://wa.me/8801804221161?text=${encodeURIComponent(text)}`, '_blank');
     };
 
     return (
@@ -42,7 +63,7 @@ export default function SmartLinkPage() {
                             </span>
                         </div>
                     )}
-                    <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+                    <img src={product.image || '/placeholder.png'} alt={product.name} className="w-full h-full object-cover" />
                 </div>
                 <CardHeader>
                     <div className="flex justify-between items-start">
@@ -60,8 +81,8 @@ export default function SmartLinkPage() {
                     <Button onClick={handleWhatsAppOrder} className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold h-12 text-md">
                         <MessageCircle className="w-5 h-5 mr-2" /> Order on WhatsApp
                     </Button>
-                    <Button variant="outline" className="w-full">
-                        Add to Cart & Browsing
+                    <Button variant="outline" className="w-full" onClick={() => window.location.href = '/'}>
+                        <ArrowRight className="w-4 h-4 mr-2" /> Add to Cart & Browsing
                     </Button>
                 </CardFooter>
             </Card>

@@ -1,7 +1,7 @@
 'use server';
 
 import { prisma } from '@/lib/prisma';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { UAParser } from 'ua-parser-js';
 
 const SETUP_SECRET = process.env.ADMIN_SETUP_SECRET || "crab-secret-setup-123";
@@ -12,13 +12,23 @@ function generateDeviceId() {
 }
 
 export async function authorizeDevice(token: string, userAgentString: string) {
-    if (token !== SETUP_SECRET) {
+    const config = await prisma.siteConfig.findFirst();
+    const VALID_TOKEN = config?.adminSetupToken || process.env.ADMIN_SETUP_SECRET || "crab-secret-setup-123";
+
+    if (token !== VALID_TOKEN) {
         return { success: false, error: "Invalid Setup Token" };
     }
 
     const deviceId = generateDeviceId();
     const ua = new UAParser(userAgentString);
-    const deviceName = `${ua.getBrowser().name} on ${ua.getOS().name}`;
+    const os = ua.getOS().name || "Unknown OS";
+    const browser = ua.getBrowser().name || "Unknown Browser";
+    const deviceType = ua.getDevice().type || "Desktop";
+    const deviceName = `${browser} on ${os}`;
+
+    const headersList = await headers();
+    const ip = headersList.get('x-forwarded-for') || "127.0.0.1";
+
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 30); // 30 Days Validity
 
@@ -28,6 +38,10 @@ export async function authorizeDevice(token: string, userAgentString: string) {
                 deviceId,
                 name: deviceName,
                 userAgent: userAgentString,
+                ipAddress: ip,
+                os,
+                browser,
+                deviceType,
                 expiresAt
             }
         });
@@ -43,13 +57,24 @@ export async function authorizeDevice(token: string, userAgentString: string) {
         // Log it
         await prisma.securityLog.create({
             data: {
-                ipAddress: "UNKNOWN", // Hard to get in server action without headers hack
+                ipAddress: ip,
                 action: "DEVICE_AUTHORIZED",
                 severity: "HIGH",
-                details: `Authorized: ${deviceName}`,
+                details: `Authorized: ${deviceName} (${ip})`,
                 userAgent: userAgentString
             }
         });
+
+        // Notify Admins
+        if (prisma.notification) {
+            await prisma.notification.create({
+                data: {
+                    title: "Security Alert: New Device",
+                    message: `Authorized ${deviceName} from IP ${ip}. Review if suspicious.`,
+                    type: "WARNING"
+                }
+            });
+        }
 
         return { success: true };
     } catch (error) {

@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { motion, AnimatePresence, useSpring, useTransform } from 'framer-motion';
 import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
+import { useAdmin } from '@/components/providers/AdminProvider';
 
 const AnimatedCounter = ({ value }: { value: string | number }) => {
     const numericValue = typeof value === 'string' ? parseFloat(value.replace(/[^0-9.]/g, '')) : value;
@@ -50,6 +51,7 @@ interface ProductModalProps {
 
 export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
     const addItem = useCartStore((state) => state.addItem);
+    const { settings } = useAdmin();
     const [quantity, setQuantity] = useState(1);
     const [selectedVariant, setSelectedVariant] = useState(product.weightOptions?.[0] || 'Standard');
 
@@ -110,7 +112,7 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
                 <DialogTitle className="sr-only">{product.name} Details</DialogTitle>
 
                 {/* Hero Gallery Section */}
-                <div className="relative h-[320px] bg-slate-100 flex-shrink-0">
+                <div className="relative h-[250px] bg-slate-100 flex-shrink-0">
                     <button
                         onClick={onClose}
                         className="absolute top-4 right-4 z-[60] p-2 bg-black/20 hover:bg-black/40 rounded-full text-white transition-colors backdrop-blur-md"
@@ -159,34 +161,16 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
                         </>
                     )}
 
-                    {/* Gradient Overlay & Content */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent pointer-events-none" />
+                    {/* Gradient Overlay (Only minimal for depth) */}
+                    <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
 
                     {/* Zoom Hint Button */}
                     <button
                         onClick={() => setIsZoomed(true)}
-                        className="absolute top-4 left-4 z-30 p-2 bg-black/20 hover:bg-black/40 rounded-full text-white backdrop-blur-md transition-all opacity-0 group-hover:opacity-100"
+                        className="absolute bottom-4 right-4 z-30 p-2 bg-black/20 hover:bg-black/40 rounded-full text-white backdrop-blur-md transition-all opacity-0 group-hover:opacity-100"
                     >
                         <ZoomIn className="w-5 h-5" />
                     </button>
-
-                    <div className="absolute bottom-0 left-0 right-0 p-6 z-20 pointer-events-none">
-                        <motion.div
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.2 }}
-                        >
-                            <h2 className="text-2xl font-bold text-white shadow-sm leading-tight">{product.name}</h2>
-                        </motion.div>
-                        <motion.p
-                            className="text-white/80 mt-1.5 text-sm leading-relaxed font-medium line-clamp-2"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ delay: 0.3 }}
-                        >
-                            Sustainably sourced, fresh soft shell crab. Cleaned and processed for immediate cooking.
-                        </motion.p>
-                    </div>
                 </div>
 
                 {/* Full Screen Zoom Overlay */}
@@ -223,8 +207,15 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
 
                 {/* Main Content Area */}
                 <div className="flex flex-col flex-1 bg-white relative z-10 overflow-hidden">
+                    <div className="px-6 pt-5 pb-2">
+                        <h2 className="text-xl font-heading font-bold text-slate-900 leading-tight">{product.name}</h2>
+                        <p className="text-slate-500 mt-1.5 text-xs leading-relaxed font-medium">
+                            Sustainably sourced, fresh soft shell crab. Cleaned and processed for immediate cooking.
+                        </p>
+                    </div>
+
                     <Tabs defaultValue="overview" className="w-full h-full flex flex-col">
-                        <TabsList className="w-full justify-start rounded-none border-b bg-white p-0 h-auto shrink-0 z-20 shadow-sm relative">
+                        <TabsList className="w-full justify-start rounded-none border-b bg-white p-0 h-auto shrink-0 z-20 relative px-6">
                             <TabsTrigger
                                 value="overview"
                                 className="flex-1 !outline-none !ring-0 !ring-offset-0 !shadow-none focus:!ring-0 focus-visible:!ring-0 focus-visible:!outline-none focus:!outline-none data-[state=active]:bg-transparent data-[state=active]:!shadow-none data-[state=active]:border-b-2 data-[state=active]:border-red-600 rounded-none py-3.5 text-slate-500 data-[state=active]:text-red-600 font-bold transition-all"
@@ -252,7 +243,7 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
                         <div className="p-0 flex-1 bg-slate-50/50 overflow-hidden relative">
                             <AnimatePresence mode="wait">
 
-                                <TabsContent key="overview" value="overview" className="mt-0 space-y-4 focus-visible:ring-0 absolute inset-0 p-6 overflow-y-auto">
+                                <TabsContent key="overview" value="overview" className="mt-0 space-y-4 focus-visible:ring-0 absolute inset-0 p-6 pb-24 overflow-y-auto">
                                     <motion.div
                                         initial={{ opacity: 0, x: -10 }}
                                         animate={{ opacity: 1, x: 0 }}
@@ -296,7 +287,7 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
                                     </motion.div>
                                 </TabsContent>
 
-                                <TabsContent key="cooking" value="cooking" className="mt-0 space-y-4 focus-visible:ring-0 absolute inset-0 p-6 overflow-y-auto">
+                                <TabsContent key="cooking" value="cooking" className="mt-0 space-y-4 focus-visible:ring-0 absolute inset-0 p-6 pb-24 overflow-y-auto">
                                     <motion.div
                                         initial={{ opacity: 0, x: -10 }}
                                         animate={{ opacity: 1, x: 0 }}
@@ -381,7 +372,7 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
                                     </motion.div>
                                 </TabsContent>
 
-                                <TabsContent key="nutrition" value="nutrition" className="mt-0 focus-visible:ring-0 absolute inset-0 p-6 overflow-y-auto">
+                                <TabsContent key="nutrition" value="nutrition" className="mt-0 focus-visible:ring-0 absolute inset-0 p-6 pb-24 overflow-y-auto">
                                     <motion.div
                                         initial={{ opacity: 0, x: 10 }}
                                         animate={{ opacity: 1, x: 0 }}
@@ -452,15 +443,23 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
 
                     <div className="p-4 border-t border-white/20 bg-white/50 backdrop-blur-sm flex items-center gap-3 absolute bottom-0 left-0 right-0 z-50">
                         {/* Sticky Quantity Stepper */}
-                        <div className="flex items-center bg-white rounded-xl h-12 border border-gray-200 shadow-sm px-1">
+                        <div className="flex items-center bg-white rounded-xl h-12 border border-gray-200 shadow-sm px-1 min-w-[140px]">
                             <button
                                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
                                 className="w-10 h-full flex items-center justify-center text-slate-600 hover:text-red-600 active:scale-90 transition-transform"
                             >
                                 <Minus className="w-5 h-5" />
                             </button>
-                            <div className="w-8 flex justify-center font-bold text-lg text-slate-900">
-                                {quantity}
+                            <div className="w-24 flex justify-center font-bold text-lg text-slate-900">
+                                {(() => {
+                                    const unit = settings.measurementUnit || 'PCS';
+                                    if (unit === 'VOLUME') return `${quantity} Ltr`;
+                                    if (unit === 'WEIGHT') {
+                                        const totalWeight = quantity * 200;
+                                        return totalWeight >= 1000 ? `${(totalWeight / 1000).toFixed(1)} kg` : `${totalWeight} g`;
+                                    }
+                                    return quantity;
+                                })()}
                             </div>
                             <button
                                 onClick={() => setQuantity(quantity + 1)}

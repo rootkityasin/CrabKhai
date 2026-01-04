@@ -66,6 +66,7 @@ export function ProductRail({ title, products, viewAllLink = '#', enableScrollAn
                                 totalSold={(product as any).totalSold}
                                 weightOptions={(product as any).weightOptions}
                                 images={(product as any).images}
+                                stage={(product as any).stage}
                             />
                         </div>
                     ))}

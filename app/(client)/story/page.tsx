@@ -12,19 +12,30 @@ export const metadata: Metadata = {
     description: 'Discover the journey of CrabKhai - from humble beginnings to becoming Bangladesh\'s premier crab delivery service. Experience our story through stunning animations and interactive scrollytelling.',
 };
 
-export default function StoryPage() {
+import { getStorySections, getProductsByIds } from '@/app/actions/story';
+import { StoryProducts } from '@/components/client/Story/StoryProducts';
+
+export default async function StoryPage() {
+    const sections = await getStorySections();
+
+    // Helper to find content by type
+    const getContent = (type: string) => sections.find((s: any) => s.type === type)?.content as any || null;
+
+    const productsContent = getContent('PRODUCTS');
+    const products = productsContent?.productIds ? await getProductsByIds(productsContent.productIds) : [];
+
     return (
         <main className="relative bg-slate-950 min-h-screen overflow-x-hidden">
-            <HeroStory />
+            <HeroStory data={getContent('HERO')} />
 
-            <StickyFooterWrapper footer={null /* Footer is handled by layout, but needed for sticky effect logic if local */}>
+            <StickyFooterWrapper footer={null}>
                 <div className="relative bg-slate-950 z-10 shadow-2xl pb-20">
-                    {/* Shadow helps separate content from footer during reveal */}
-                    <ValuesSection />
-                    <GallerySection />
-                    <TeamSection />
-                    <WholesaleCTA />
-                    <ReviewSection />
+                    <ValuesSection data={getContent('VALUES')} />
+                    <StoryProducts data={productsContent} products={products} />
+                    <GallerySection data={getContent('GALLERY')} />
+                    <TeamSection data={getContent('TEAM')} />
+                    <WholesaleCTA data={getContent('WHOLESALE')} />
+                    <ReviewSection data={getContent('REVIEWS')} />
                 </div>
             </StickyFooterWrapper>
         </main>

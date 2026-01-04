@@ -9,12 +9,16 @@ import { useLanguageStore } from '@/lib/languageStore';
 import { translations } from '@/lib/translations';
 
 import { getPaymentConfig } from '@/app/actions/settings';
+import { createOrder } from '@/app/actions/order';
+import { toast } from 'sonner';
 import { useEffect } from 'react';
+import { useAdmin } from '@/components/providers/AdminProvider';
 
 export default function CartPage() {
     const { items, removeItem, addItem, clearCart, total } = useCartStore();
     const [isOrderPlaced, setIsOrderPlaced] = useState(false);
     const [isAnimating, setIsAnimating] = useState(false);
+    const { settings } = useAdmin();
 
     // Payment State
     const [paymentConfig, setPaymentConfig] = useState<any>(null);
@@ -49,36 +53,54 @@ export default function CartPage() {
         }
     };
 
-    const handlePlaceOrder = (e: React.FormEvent) => {
+    const handlePlaceOrder = async (e: React.FormEvent) => {
         e.preventDefault();
 
         setIsAnimating(true);
 
-        // Calculate Points (1 point per 100 Taka)
-        const pointsEarned = Math.floor(total() / 100);
+        const orderData = {
+            customerName: formData.name,
+            customerPhone: formData.phone,
+            customerAddress: `${formData.address}, ${formData.area}`,
+            items: items.map(item => ({
+                productId: item.id,
+                quantity: item.quantity,
+                price: item.price
+            })),
+            totalAmount: total() + 60 // Including delivery fee
+        };
 
-        // Update User Points in LocalStorage if logged in
-        const storedUser = localStorage.getItem('crabkhai_user');
-        if (storedUser) {
-            const user = JSON.parse(storedUser);
-            const newPoints = (user.points || 0) + pointsEarned;
+        const res = await createOrder(orderData);
 
-            // Determine Status
-            let newStatus = 'Bronze';
-            if (newPoints >= 500) newStatus = 'Gold';
-            else if (newPoints >= 100) newStatus = 'Silver';
+        if (res.success) {
+            // Calculate Points (1 point per 100 Taka)
+            const pointsEarned = Math.floor(orderData.totalAmount / 100);
 
-            const updatedUser = { ...user, points: newPoints, status: newStatus };
-            localStorage.setItem('crabkhai_user', JSON.stringify(updatedUser));
-        }
+            // Update User Points in LocalStorage if logged in
+            const storedUser = localStorage.getItem('crabkhai_user');
+            if (storedUser) {
+                const user = JSON.parse(storedUser);
+                const newPoints = (user.points || 0) + pointsEarned;
 
-        // Simulate Success
-        // Simulate Success
-        setTimeout(() => {
-            setIsOrderPlaced(true);
+                // Determine Status
+                let newStatus = 'Bronze';
+                if (newPoints >= 500) newStatus = 'Gold';
+                else if (newPoints >= 100) newStatus = 'Silver';
+
+                const updatedUser = { ...user, points: newPoints, status: newStatus };
+                localStorage.setItem('crabkhai_user', JSON.stringify(updatedUser));
+            }
+
+            toast.success("Order placed successfully!");
+            setTimeout(() => {
+                setIsOrderPlaced(true);
+                setIsAnimating(false);
+                clearCart();
+            }, 2000);
+        } else {
+            toast.error(res.error || "Failed to place order");
             setIsAnimating(false);
-            clearCart();
-        }, 4000); // 4 second delay to show animation
+        }
     };
 
     // Translation Hook
@@ -180,14 +202,24 @@ export default function CartPage() {
                                 {/* Quantity Control */}
                                 <div className="flex items-center gap-3 bg-gray-50 rounded-full px-2 py-1">
                                     <button
-                                        className="w-6 h-6 flex items-center justify-center bg-white rounded-full shadow-sm text-gray-600 active:scale-95"
+                                        className="w-6 h-6 flex items-center justify-center bg-white rounded-full shadow-sm text-gray-600 active:scale-95 flex-shrink-0"
                                         onClick={() => handleQuantityChange(item, -1)}
                                     >
                                         <Minus className="w-3 h-3" />
                                     </button>
-                                    <span className="text-sm font-bold w-4 text-center">{item.quantity}</span>
+                                    <span className="text-sm font-bold min-w-[3rem] px-2 text-center whitespace-nowrap">
+                                        {(() => {
+                                            const unit = settings.measurementUnit || 'PCS';
+                                            if (unit === 'VOLUME') return `${item.quantity} Ltr`;
+                                            if (unit === 'WEIGHT') {
+                                                const weight = item.quantity * 200;
+                                                return weight >= 1000 ? `${(weight / 1000).toFixed(1)} kg` : `${weight} g`;
+                                            }
+                                            return item.quantity;
+                                        })()}
+                                    </span>
                                     <button
-                                        className="w-6 h-6 flex items-center justify-center bg-crab-red text-white rounded-full shadow-sm active:scale-95"
+                                        className="w-6 h-6 flex items-center justify-center bg-crab-red text-white rounded-full shadow-sm active:scale-95 flex-shrink-0"
                                         onClick={() => handleQuantityChange(item, 1)}
                                     >
                                         <Plus className="w-3 h-3" />

@@ -11,6 +11,8 @@ interface FooterProps {
         contactPhone: string;
         contactEmail: string;
         contactAddress: string;
+        shopName?: string;
+        logoUrl?: string;
     } | null;
 }
 
@@ -20,6 +22,7 @@ export function Footer({ config }: FooterProps) {
 
     const phone = config?.contactPhone || "+880 1804 221 161";
     const email = config?.contactEmail || "crabkhaibangladesh@gmail.com";
+    const shopName = config?.shopName || "CrabKhai";
 
     // Clean phone for tel link (remove spaces/dashes)
     const cleanPhone = phone.replace(/[^0-9+]/g, '');
@@ -29,7 +32,7 @@ export function Footer({ config }: FooterProps) {
             <div className="container mx-auto px-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
                     <div>
-                        <h3 className="font-heading text-2xl font-bold mb-4">CrabKhai</h3>
+                        <h3 className="font-heading text-2xl font-bold mb-4">{shopName}</h3>
                         <p className={`text-white/70 text-sm leading-relaxed max-w-xs ${language === 'bn' ? 'font-bangla' : 'font-body'}`}>
                             {language === 'en' ? 'Bringing the freshest flavors of the Sundarbans directly to your doorstep. Premium quality, guaranteed.' : 'সুন্দরবনের তাজা স্বাদ সরাসরি আপনার দরজায়। প্রিমিয়াম টি, গ্যারান্টিযুক্ত।'}
                         </p>
@@ -70,7 +73,7 @@ export function Footer({ config }: FooterProps) {
                 </div>
 
                 <div className="pt-8 border-t border-white/10 text-center text-xs text-white/50">
-                    <p>&copy; {new Date().getFullYear()} CrabKhai. {t.rightsReserved}</p>
+                    <p>&copy; {new Date().getFullYear()} {shopName}. {t.rightsReserved}</p>
                 </div>
             </div>
         </footer>

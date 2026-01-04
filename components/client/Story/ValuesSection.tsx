@@ -3,12 +3,21 @@
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useRef } from 'react';
 
-// Marquee Brand Attributes
-const BRAND_VALUES = ["FRESH", "ORGANIC", "PREMIUM", "SUSTAINABLE", "LOCAL", "AUTHENTIC", "HYGIENIC", "DELICIOUS", "CRABTASTIC", "OCEANIC"];
+interface ValuesProps {
+    data: {
+        manifestoTitle: string;
+        manifestoText: string;
+        brandValues: string[];
+    } | null;
+}
 
-export function ValuesSection() {
-    // Casual & Funny Brand Story
-    const paragraph = "So, it's 2023. We're in Dhaka, craving good crab. Not the sad, frozen kind—we wanted the REAL deal. But finding it? Harder than finding a rickshaw in the rain. So we said, 'Forget it, let's do it ourselves.' Now we bring the fattest, juiciest crabs from the Bay straight to you. No middlemen, no nonsense. Just pure, messy, delicious happiness. Get your bibs ready!";
+export function ValuesSection({ data }: ValuesProps) {
+    const defaultParagraph = "So, it's 2023. We're in Dhaka, craving good crab. Not the sad, frozen kind—we wanted the REAL deal. But finding it? Harder than finding a rickshaw in the rain. So we said, 'Forget it, let's do it ourselves.' Now we bring the fattest, juiciest crabs from the Bay straight to you. No middlemen, no nonsense. Just pure, messy, delicious happiness. Get your bibs ready!";
+    const defaultValues = ["FRESH", "ORGANIC", "PREMIUM", "SUSTAINABLE", "LOCAL", "AUTHENTIC", "HYGIENIC", "DELICIOUS", "CRABTASTIC", "OCEANIC"];
+
+    const paragraph = data?.manifestoText || defaultParagraph;
+    const values = (data?.brandValues && data.brandValues.length > 0) ? data.brandValues : defaultValues;
+    const title = data?.manifestoTitle || "The Manifesto";
 
     return (
         <section className="relative py-32 bg-slate-950 overflow-hidden min-h-screen flex flex-col justify-center">
@@ -22,7 +31,7 @@ export function ValuesSection() {
                         animate={{ y: [0, -1000] }}
                         transition={{ repeat: Infinity, ease: "linear", duration: 20 }}
                     >
-                        {[...BRAND_VALUES, ...BRAND_VALUES, ...BRAND_VALUES, ...BRAND_VALUES].map((value, i) => (
+                        {[...values, ...values, ...values, ...values].map((value, i) => (
                             <span key={i} className="text-6xl md:text-8xl font-black text-white writing-vertical-lr rotate-180 text-center">
                                 {value}
                             </span>
@@ -37,7 +46,7 @@ export function ValuesSection() {
                         animate={{ y: [-1000, 0] }}
                         transition={{ repeat: Infinity, ease: "linear", duration: 25 }}
                     >
-                        {[...BRAND_VALUES, ...BRAND_VALUES, ...BRAND_VALUES, ...BRAND_VALUES].map((value, i) => (
+                        {[...values, ...values, ...values, ...values].map((value, i) => (
                             <span key={i} className="text-6xl md:text-8xl font-black text-white writing-vertical-lr text-center">
                                 {value}
                             </span>
@@ -53,7 +62,7 @@ export function ValuesSection() {
                     whileInView={{ opacity: 1, y: 0 }}
                     className="text-crab-red font-bold tracking-widest uppercase mb-12 text-sm md:text-base"
                 >
-                    The Manifesto
+                    {title}
                 </motion.h3>
 
                 <div className="space-y-4">

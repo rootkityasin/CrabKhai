@@ -8,6 +8,7 @@ import { useLanguageStore } from '@/lib/languageStore';
 import { toast } from 'sonner';
 import { Plus } from 'lucide-react';
 import { ProductModal } from './ProductModal';
+import { useAdmin } from '@/components/providers/AdminProvider';
 
 interface ProductCardProps {
     id: string;
@@ -25,16 +26,18 @@ interface ProductCardProps {
     pieces?: number;
     totalSold?: number;
     weightOptions?: string[];
+    stage?: string;
 }
 
 export function ProductCard({
     id, name, name_bn, price, price_bn, image, images = [],
     nutritionImage, cookingImage, nutrition, cookingInstructions, pieces,
-    totalSold, weightOptions
+    totalSold, weightOptions, stage
 }: ProductCardProps) {
     const addItem = useCartStore((state) => state.addItem);
     const { language } = useLanguageStore();
     const { triggerFly } = useAnimationStore();
+    const { settings } = useAdmin();
     const imageRef = useRef<HTMLImageElement>(null);
 
     // Active image state for gallery
@@ -117,7 +120,7 @@ export function ProductCard({
                         <div className="absolute top-3 right-3 z-30 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 pointer-events-none">
                             <span className="px-2.5 py-1 rounded-lg bg-white/70 backdrop-blur-md border border-white/50 text-xs font-bold text-gray-900 shadow-sm flex items-center gap-1">
                                 <span className="w-1.5 h-1.5 rounded-full bg-crab-red inline-block" />
-                                {pieces} pcs
+                                {pieces} pcs inside
                             </span>
                         </div>
                     )}
@@ -187,17 +190,28 @@ export function ProductCard({
                         <span className={`text-crab-red font-bold ${language !== 'en' ? 'font-bangla' : 'font-body'}`}>
                             ৳{displayPrice}
                         </span>
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                handleAddToCart();
-                            }}
-                            className="p-1.5 bg-gray-900 text-white rounded-full hover:bg-crab-red transition-colors active:scale-95 z-30 shadow-lg"
-                            aria-label="Add to cart"
-                        >
-                            <Plus className="w-4 h-4" />
-                        </button>
+                        {(pieces === 0 || pieces === undefined) ? (
+                            <span className="text-[10px] font-bold text-red-500 bg-red-50 px-2 py-1 rounded-full uppercase tracking-wide">Out of Stock</span>
+                        ) : (
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleAddToCart();
+                                }}
+                                className="p-1.5 bg-gray-900 text-white rounded-full hover:bg-crab-red transition-colors active:scale-95 z-30 shadow-lg"
+                                aria-label="Add to cart"
+                            >
+                                <Plus className="w-4 h-4" />
+                            </button>
+                        )}
                     </div>
+                    {/* Coming Soon Overlay */}
+                    {(pieces === -1) && ( // Using pieces -1 as a proxy or pass explicit stage? Let's check props.
+                        // Wait, better to let parent pass a 'stage' prop or check visibility.
+                        // Since I can't easily change the prop signature everywhere without ripple effects, I'll rely on a new visual overlay if I can detect it,
+                        // OR, cleaner: just add 'stage' prop to interface.
+                        null
+                    )}
                 </div>
             </motion.div>
 

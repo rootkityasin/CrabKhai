@@ -43,6 +43,16 @@ export const authConfig = {
 
                 return true;
             }
+
+            // Redirect Admin to Dashboard if they try to access Login/Account page
+            const isOnAccount = nextUrl.nextUrl.pathname.startsWith('/account');
+            if (isOnAccount && isLoggedIn) {
+                const userRole = (auth?.user as any)?.role;
+                if (userRole === 'SUPER_ADMIN' || userRole === 'HUB_ADMIN') {
+                    return Response.redirect(new URL('/admin', nextUrl.url));
+                }
+            }
+
             return true;
         },
     },

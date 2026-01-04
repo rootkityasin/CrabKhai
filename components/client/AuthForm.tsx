@@ -159,8 +159,11 @@ export function AuthForm() {
                             className="overflow-hidden"
                         >
                             <div className="space-y-2 pb-2">
-                                <Label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Full Name</Label>
+                                <Label htmlFor="name" className="text-xs font-bold text-gray-500 uppercase tracking-wider">Full Name</Label>
                                 <Input
+                                    id="name"
+                                    name="name"
+                                    autoComplete="name"
                                     required
                                     placeholder="e.g. Rakib Hassan"
                                     value={formData.name}
@@ -173,8 +176,11 @@ export function AuthForm() {
                 </AnimatePresence>
 
                 <div className="space-y-2">
-                    <Label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Phone or Email</Label>
+                    <Label htmlFor="contact" className="text-xs font-bold text-gray-500 uppercase tracking-wider">Phone or Email</Label>
                     <Input
+                        id="contact"
+                        name="contact"
+                        autoComplete="username"
                         required
                         placeholder={isLogin ? "+8801..." : "+8801..."}
                         value={formData.contact}
@@ -184,8 +190,11 @@ export function AuthForm() {
                 </div>
 
                 <div className="space-y-2">
-                    <Label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Password</Label>
+                    <Label htmlFor="password" className="text-xs font-bold text-gray-500 uppercase tracking-wider">Password</Label>
                     <Input
+                        id="password"
+                        name="password"
+                        autoComplete="current-password"
                         required
                         type="password"
                         placeholder="••••••••"

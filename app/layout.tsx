@@ -33,6 +33,10 @@ export const metadata: Metadata = {
   description: "Best Crab and Seafood Restaurant in Dhaka",
 };
 
+// remove imports
+import { getSiteConfig } from '@/app/actions/settings';
+import { ThemeInjector } from '@/components/client/ThemeInjector';
+
 export default function RootLayout({
   children,
 }: Readonly<{

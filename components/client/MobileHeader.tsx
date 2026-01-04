@@ -8,12 +8,15 @@ import { useLanguageStore } from '@/lib/languageStore';
 import { useState, useEffect, useRef } from 'react';
 import { useCartStore } from '@/lib/store';
 import { menuItems } from '@/lib/data';
+import { toast } from 'sonner';
+import { getSiteConfig } from '@/app/actions/settings';
 
 import { translations } from '@/lib/translations';
 import { Mascot } from './Mascot';
 
 export function MobileHeader() {
     const [mounted, setMounted] = useState(false);
+    const [config, setConfig] = useState<any>(null);
     const cartItems = useCartStore((state) => state.items);
     const { language, toggleLanguage } = useLanguageStore();
     const t = translations[language];
@@ -23,6 +26,7 @@ export function MobileHeader() {
 
     useEffect(() => {
         setMounted(true);
+        getSiteConfig().then(setConfig);
 
         function handleClickOutside(event: MouseEvent) {
             if (
@@ -108,7 +112,14 @@ export function MobileHeader() {
                             </motion.svg>
                         </button>
                         <Link href="/" className="flex items-center gap-2">
-                            <img src="/logo.svg" alt="CrabKhai" className="h-14 w-auto" />
+                            <img
+                                src={config?.logoUrl || "/logo.svg"}
+                                alt={config?.shopName || "CrabKhai"}
+                                className="h-14 w-auto object-contain"
+                                onError={(e) => {
+                                    (e.target as HTMLImageElement).src = "/logo.svg";
+                                }}
+                            />
                         </Link>
                         {/* Language Toggle */}
                         <button
@@ -171,11 +182,10 @@ export function MobileHeader() {
                                             alert(t.deliveryAreaFail);
                                         }
                                     }, (error) => {
-                                        alert(t.locationError);
-                                        console.error(error);
+                                        toast.error(t.locationError || "Location access denied.");
                                     });
                                 } else {
-                                    alert(t.geoNotSupported);
+                                    toast.error(t.geoNotSupported || "Geolocation is not supported by this browser.");
                                 }
                             }}
                             className="p-1 text-white hover:text-green-400"
@@ -296,7 +306,7 @@ export function MobileHeader() {
                             </nav>
 
                             <div className="mt-auto pt-8 border-t border-white/10">
-                                <p className="text-white/40 text-sm">© 2026 CrabKhai</p>
+                                <p className="text-white/40 text-sm">© {new Date().getFullYear()} {config?.shopName || "CrabKhai"}</p>
                             </div>
                         </motion.div>
                     </>

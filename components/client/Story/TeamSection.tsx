@@ -2,34 +2,40 @@
 
 import { motion } from 'framer-motion';
 
-const TEAM_MEMBERS = [
-    {
-        name: "S. Rahman",
-        role: "Founder & Chief Crab Officer",
-        image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alexander&backgroundColor=b6e3f4&facialHair=beardLight&top=shortHairShortFlat", // Forced Male
-        story: "Started with a bucket and a dream. Now feeds Dhaka's crab cravings."
-    },
-    {
-        name: "Abir H.",
-        role: "Head of Operations",
-        image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Mason&backgroundColor=c0aede&facialHair=beardMedium&top=shortHairTheCaesar", // Forced Male
-        story: "Ensures your order gets there faster than you can say 'CrabKhai'."
-    },
-    {
-        name: "Uncle J.",
-        role: "Quality Control",
-        image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Robert&backgroundColor=ffdfbf&clothing=collarAndSweater&top=shortHairSides&accessories=prescription02&facialHair=beardMajestic&hairColor=2c1b18", // Distinctly old male
-        story: "Been inspecting crabs since 1985. If it's not perfect, it's not leaving."
-    },
-    {
-        name: "Rootkit",
-        role: "The Developer",
-        image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Christopher&backgroundColor=e6e6e6&top=winterHat02&clothing=hoodie&accessories=sunglasses&facialHair=beardLight", // Male dev
-        story: "Turns coffee into code and fixing bugs while eating crab."
-    }
-];
+interface TeamProps {
+    data: Array<{ name: string; role: string; image: string; story: string }> | null;
+}
 
-export function TeamSection() {
+export function TeamSection({ data }: TeamProps) {
+    const DEFAULT_TEAM = [
+        {
+            name: "S. Rahman",
+            role: "Founder & Chief Crab Officer",
+            image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alexander&backgroundColor=b6e3f4&facialHair=beardLight&top=shortHairShortFlat",
+            story: "Started with a bucket and a dream. Now feeds Dhaka's crab cravings."
+        },
+        {
+            name: "Abir H.",
+            role: "Head of Operations",
+            image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Mason&backgroundColor=c0aede&facialHair=beardMedium&top=shortHairTheCaesar",
+            story: "Ensures your order gets there faster than you can say 'CrabKhai'."
+        },
+        {
+            name: "Uncle J.",
+            role: "Quality Control",
+            image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Robert&backgroundColor=ffdfbf&clothing=collarAndSweater&top=shortHairSides&accessories=prescription02&facialHair=beardMajestic&hairColor=2c1b18",
+            story: "Been inspecting crabs since 1985. If it's not perfect, it's not leaving."
+        },
+        {
+            name: "Rootkit",
+            role: "The Developer",
+            image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Christopher&backgroundColor=e6e6e6&top=winterHat02&clothing=hoodie&accessories=sunglasses&facialHair=beardLight",
+            story: "Turns coffee into code and fixing bugs while eating crab."
+        }
+    ];
+
+    const teamMembers = (data && data.length > 0) ? data : DEFAULT_TEAM;
+
     return (
         <section className="relative py-32 px-6 bg-slate-900 overflow-hidden">
             {/* Background Texture */}
@@ -54,7 +60,7 @@ export function TeamSection() {
 
                 {/* Spacious Grid - 4 columns for all team members */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12 justify-items-center">
-                    {TEAM_MEMBERS.map((member, i) => (
+                    {teamMembers.map((member, i) => (
                         <motion.div
                             key={i}
                             initial={{ opacity: 0, y: 40 }}

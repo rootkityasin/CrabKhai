@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { updateSiteConfig } from '@/app/actions/settings';
+import { ShopGeneralSettings } from '@/components/admin/ShopGeneralSettings';
 
 interface SiteConfig {
     storeName?: string;
@@ -19,60 +20,6 @@ interface SiteConfig {
     certificates: string[];
 }
 
-function GeneralSettings({ initialConfig }: { initialConfig: SiteConfig }) {
-    const [config, setConfig] = useState(initialConfig);
-    const [isSaving, setIsSaving] = useState(false);
-
-    const handleSave = async () => {
-        setIsSaving(true);
-        const result = await updateSiteConfig(config);
-        setIsSaving(false);
-        if (result.success) toast.success("General settings saved!");
-        else toast.error("Failed to save settings.");
-    };
-
-    return (
-        <div className="space-y-6">
-            <div className="space-y-4">
-                <div className="space-y-2">
-                    <label className="text-sm font-medium">Store Name (Local)</label>
-                    <Input value={config.storeName || "CrabKhai BD"} disabled className="bg-slate-50" />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium">Phone</label>
-                        <div className="relative">
-                            <Phone className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
-                            <Input className="pl-9" value={config.contactPhone} onChange={(e) => setConfig({ ...config, contactPhone: e.target.value })} />
-                        </div>
-                    </div>
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium">Email</label>
-                        <div className="relative">
-                            <Mail className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
-                            <Input className="pl-9" value={config.contactEmail} onChange={(e) => setConfig({ ...config, contactEmail: e.target.value })} />
-                        </div>
-                    </div>
-                </div>
-
-                <div className="space-y-2">
-                    <label className="text-sm font-medium">Store Address</label>
-                    <div className="relative">
-                        <MapPin className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
-                        <Textarea className="pl-9 min-h-[80px]" value={config.contactAddress} onChange={(e) => setConfig({ ...config, contactAddress: e.target.value })} />
-                    </div>
-                </div>
-            </div>
-
-            <div className="flex justify-end border-t pt-4">
-                <Button onClick={handleSave} className="bg-orange-600 hover:bg-orange-700 text-white" disabled={isSaving}>
-                    {isSaving ? "Saving..." : "Save Changes"}
-                </Button>
-            </div>
-        </div>
-    );
-}
 
 function FooterSettings({ initialConfig }: { initialConfig: SiteConfig }) {
     const [config, setConfig] = useState(initialConfig);
@@ -180,7 +127,7 @@ export function ShopClient({ initialConfig }: { initialConfig: any }) {
                         </h2>
                         <p className="text-sm text-slate-500">Update store details and contact info.</p>
                     </div>
-                    <GeneralSettings initialConfig={initialConfig} />
+                    <ShopGeneralSettings initialConfig={initialConfig} />
                 </Card>
             ) : activeModule === 'footer' ? (
                 <Card className="p-6 animate-in fade-in slide-in-from-bottom-4 duration-300">

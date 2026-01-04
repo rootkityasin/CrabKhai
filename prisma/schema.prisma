@@ -9,38 +9,60 @@ datasource db {
 }
 
 model Product {
-  id             String      @id @default(cuid())
-  name           String      // Default (English)
-  name_bn        String?
-  name_ctg       String?
-  name_noa       String?
-  name_bar       String?
-  
-  description    String?     // Default (English)
-  description_bn String?
+  id              String      @id @default(cuid())
+  name            String
+  price           Int
+  image           String?
+  isAvailable     Boolean     @default(true)
+  categoryId      String
+  cookingImage    String?
+  nutritionImage  String?
+  description     String?
+  description_bar String?
+  description_bn  String?
   description_ctg String?
   description_noa String?
-  description_bar String?
+  name_bar        String?
+  name_bn         String?
+  name_ctg        String?
+  name_noa        String?
+  pieces          Int         @default(0)
+  pointsReward    Int         @default(0)
+  weight          Int         @default(0)
+  sku             String?     @unique
+  stage           String      @default("Draft")
+  type            ProductType @default(SINGLE)
+  inventory       Inventory[]
+  modifiers       Modifier[]
+  orderItems      OrderItem[]
+  comboItems      ComboItem[] @relation("ComboParent")
+  partOfCombos    ComboItem[] @relation("ComboChild")
+  category        Category    @relation(fields: [categoryId], references: [id])
+  images          String[]
+  totalSold       Int         @default(0)
+  createdAt       DateTime    @default(now())
+}
 
-  price          Int
-  image          String? // Cloudinary Public ID
-  nutritionImage String?
-  cookingImage   String?
-  weight         Int         @default(0) // Weight in grams
-  pieces         Int         @default(0) // Number of pieces
-  isAvailable    Boolean     @default(true)
-  pointsReward   Int         @default(0) // Points user gets for buying this
-  categoryId     String
-  category       Category    @relation(fields: [categoryId], references: [id])
-  modifiers      Modifier[]
-  orderItems     OrderItem[]
-  inventory      Inventory[]
+model ComboItem {
+  id        String  @id @default(cuid())
+  parentId  String
+  childId   String
+  quantity  Int     // Units of child product required
+  parent    Product @relation("ComboParent", fields: [parentId], references: [id], onDelete: Cascade)
+  child     Product @relation("ComboChild", fields: [childId], references: [id])
+
+  @@unique([parentId, childId])
+}
+
+enum ProductType {
+  SINGLE
+  COMBO
 }
 
 model Modifier {
   id        String   @id @default(cuid())
-  name      String // e.g., "Spice Level"
-  options   String[] // e.g., ["Mild", "Medium", "Naga"]
+  name      String
+  options   String[]
   productId String
   product   Product  @relation(fields: [productId], references: [id])
 }
@@ -50,10 +72,10 @@ model OrderItem {
   quantity          Int
   price             Int
   productId         String
-  product           Product @relation(fields: [productId], references: [id])
   orderId           String
+  selectedModifiers String?
   order             Order   @relation(fields: [orderId], references: [id])
-  selectedModifiers String? // Stores "Spice: Naga"
+  product           Product @relation(fields: [productId], references: [id])
 }
 
 model Category {
@@ -72,51 +94,47 @@ model PromoCard {
 }
 
 model SiteConfig {
-  id             String   @id @default(cuid())
-  contactPhone   String   @default("+880 1804 221 161")
-  contactEmail   String   @default("crabkhaibangladesh@gmail.com")
-  contactAddress String   @default("195 Green Road, Dhaka")
-  allergensText  String   @default("Crustaceans")
-  certificates   String[]
-}
-
-enum Role {
-  SUPER_ADMIN
-  HUB_ADMIN
-  USER
+  id              String   @id @default(cuid())
+  contactPhone    String   @default("+880 1804 221 161")
+  contactEmail    String   @default("crabkhaibangladesh@gmail.com")
+  contactAddress  String   @default("195 Green Road, Dhaka")
+  shopName        String   @default("Crab & Khai")
+  logoUrl         String?
+  measurementUnit String   @default("PCS") // Options: PCS, WEIGHT, VOLUME
+  certificates    String[]
+  adminSetupToken String   @default("crab-secret-setup-123")
+  primaryColor    String   @default("#ea0000")
+  secondaryColor  String   @default("#0f172a")
 }
 
 model Hub {
   id        String      @id @default(cuid())
   name      String
   location  String
-  users     User[]
-  orders    Order[]
-  inventory Inventory[]
+  expenses  Expense[]
   freezers  Freezer[]
+  inventory Inventory[]
+  orders    Order[]
+  users     User[]
 }
 
 model User {
-  id       Int     @id @default(autoincrement())
-  name     String
-  email    String  @unique
-  phone    String? @unique
-  role     Role    @default(USER)
-  hubId    String?
-  hub      Hub?    @relation(fields: [hubId], references: [id])
-  image    String?
-  password String?
-
-  // Profile Fields
-  address String?
-  points  Int     @default(0)
-  status  String  @default("Bronze")
-
-  accounts Account[]
-  sessions Session[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id        Int       @id @default(autoincrement())
+  name      String
+  email     String    @unique
+  phone     String?   @unique
+  role      Role      @default(USER)
+  hubId     String?
+  image     String?
+  password  String?
+  address   String?
+  points    Int       @default(0)
+  status    String    @default("Bronze")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  accounts  Account[]
+  sessions  Session[]
+  hub       Hub?      @relation(fields: [hubId], references: [id])
 }
 
 model Account {
@@ -125,15 +143,14 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
@@ -157,28 +174,36 @@ model VerificationToken {
 model Inventory {
   id        String   @id @default(cuid())
   hubId     String
-  hub       Hub      @relation(fields: [hubId], references: [id])
   productId String
-  product   Product  @relation(fields: [productId], references: [id])
   quantity  Int      @default(0)
   updatedAt DateTime @updatedAt
-
-  // Can add Freezer details here if needed granularly
   freezerId String?
   freezer   Freezer? @relation(fields: [freezerId], references: [id])
+  hub       Hub      @relation(fields: [hubId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id])
 }
 
 model Freezer {
   id          String      @id @default(cuid())
-  name        String // e.g., "Freezer A - Fish"
-  temperature Float // e.g., -18.5
-  capacity    Int // in KG or Units
+  name        String
+  temperature Float
+  capacity    Int
   hubId       String
   hub         Hub         @relation(fields: [hubId], references: [id])
   inventory   Inventory[]
 }
 
-// ... existing models ...
+model Expense {
+  id          String   @id @default(cuid())
+  title       String
+  amount      Float
+  category    String
+  date        DateTime @default(now())
+  hubId       String?
+  description String?
+  createdAt   DateTime @default(now())
+  hub         Hub?     @relation(fields: [hubId], references: [id])
+}
 
 model Order {
   id              String      @id @default(cuid())
@@ -189,58 +214,90 @@ model Order {
   customerAddress String
   source          String      @default("WEB")
   totalAmount     Int
-  items           OrderItem[]
   createdAt       DateTime    @default(now())
-
-  hubId String?
-  hub   Hub?    @relation(fields: [hubId], references: [id])
+  hubId           String?
+  hub             Hub?        @relation(fields: [hubId], references: [id])
+  items           OrderItem[]
 }
 
 model PaymentConfig {
-  id       String  @id @default(cuid())
-  isActive Boolean @default(true)
-
-  // Payment Methods
-  codEnabled Boolean @default(true)
-
-  // bKash Merchant
-  bkashEnabled   Boolean @default(false)
-  bkashAppKey    String?
-  bkashSecretKey String?
-  bkashUsername  String?
-  bkashPassword  String?
-
-  // Manual / Self MFS
-  selfMfsEnabled     Boolean @default(false)
-  selfMfsType        String? // 'bkash' | 'nagad' | 'rocket'
-  selfMfsPhone       String?
-  selfMfsInstruction String?
-  selfMfsQrCode      String?
-
-  // Advance Payment
-  advancePaymentType  String? // 'FULL' | 'DELIVERY' | 'PERCENTAGE' | 'FIXED'
-  advancePaymentValue Int? // Percentage or Fixed Value
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                  String   @id @default(cuid())
+  isActive            Boolean  @default(true)
+  codEnabled          Boolean  @default(true)
+  bkashEnabled        Boolean  @default(false)
+  bkashAppKey         String?
+  bkashSecretKey      String?
+  bkashUsername       String?
+  bkashPassword       String?
+  selfMfsEnabled      Boolean  @default(false)
+  selfMfsType         String?
+  selfMfsPhone        String?
+  selfMfsInstruction  String?
+  selfMfsQrCode       String?
+  advancePaymentType  String?
+  advancePaymentValue Int?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 }
 
 model SecurityLog {
   id        String   @id @default(cuid())
   ipAddress String
-  action    String   // e.g. "LOGIN_FAILED", "UNAUTHORIZED_DEVICE", "RATE_LIMIT"
-  severity  String   // "LOW", "MEDIUM", "HIGH"
+  action    String
+  severity  String
   details   String?
   userAgent String?
   createdAt DateTime @default(now())
 }
 
 model TrustedDevice {
+  id         String   @id @default(cuid())
+  deviceId   String   @unique
+  name       String
+  userAgent  String?
+  lastUsed   DateTime @default(now())
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  browser    String?
+  deviceType String?
+  ipAddress  String?
+  location   String?
+  os         String?
+}
+
+model Notification {
   id        String   @id @default(cuid())
-  deviceId  String   @unique // The cookie value
-  name      String   // e.g. "Admin's iPhone"
-  userAgent String?
-  lastUsed  DateTime @default(now())
-  expiresAt DateTime
+  title     String
+  message   String
+  type      String   @default("INFO")
+  read      Boolean  @default(false)
   createdAt DateTime @default(now())
+}
+
+enum Role {
+  SUPER_ADMIN
+  HUB_ADMIN
+  USER
+}
+
+model HeroSlide {
+  id          String   @id @default(cuid())
+  imageUrl    String
+  title       String
+  title_bn    String?
+  subtitle    String?
+  subtitle_bn String?
+  buttonText  String?
+  buttonLink  String?
+  isActive    Boolean  @default(true)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model StorySection {
+  id        String   @id @default(cuid())
+  type      String   @unique
+  content   Json
+  updatedAt DateTime @updatedAt
 }
