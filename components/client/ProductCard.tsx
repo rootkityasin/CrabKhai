@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { useAnimationStore } from '@/lib/animationStore';
 import { useCartStore } from '@/lib/store';
@@ -13,47 +13,50 @@ interface ProductCardProps {
     id: string;
     name: string;
     name_bn?: string;
-    price: string;
+    price: string | number;
     price_bn?: string;
     image: string;
+    images?: string[]; // Gallery support
     categoryId?: string;
     nutritionImage?: string;
     cookingImage?: string;
     nutrition?: string;
     cookingInstructions?: string;
     pieces?: number;
+    totalSold?: number;
+    weightOptions?: string[];
 }
 
-export function ProductCard({ id, name, name_bn, price, price_bn, image, nutritionImage, cookingImage, nutrition, cookingInstructions, pieces }: ProductCardProps) {
+export function ProductCard({
+    id, name, name_bn, price, price_bn, image, images = [],
+    nutritionImage, cookingImage, nutrition, cookingInstructions, pieces,
+    totalSold, weightOptions
+}: ProductCardProps) {
     const addItem = useCartStore((state) => state.addItem);
     const { language } = useLanguageStore();
     const { triggerFly } = useAnimationStore();
     const imageRef = useRef<HTMLImageElement>(null);
 
-    // 3D Tilt Logic
-    const x = useMotionValue(0);
-    const y = useMotionValue(0);
+    // Active image state for gallery
+    const [activeImage, setActiveImage] = useState(image);
 
-    const mouseX = useSpring(x, { stiffness: 500, damping: 50 });
-    const mouseY = useSpring(y, { stiffness: 500, damping: 50 });
+    // Reset active image if prop changes
+    useEffect(() => {
+        setActiveImage(image);
+    }, [image]);
 
-    const rotateX = useTransform(mouseY, [-0.5, 0.5], ["10deg", "-10deg"]);
-    const rotateY = useTransform(mouseX, [-0.5, 0.5], ["-10deg", "10deg"]);
+    // Combine main image with gallery images for the list
+    const galleryItems = [image, ...(images || [])].filter((img, index, self) => img && self.indexOf(img) === index).slice(0, 4);
+
+    // Zoom Logic
+    const [isHovering, setIsHovering] = useState(false);
+    const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
     const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-        const rect = e.currentTarget.getBoundingClientRect();
-        const width = rect.width;
-        const height = rect.height;
-        const mouseXFromCenter = e.clientX - rect.left - width / 2;
-        const mouseYFromCenter = e.clientY - rect.top - height / 2;
-
-        x.set(mouseXFromCenter / width);
-        y.set(mouseYFromCenter / height);
-    };
-
-    const handleMouseLeave = () => {
-        x.set(0);
-        y.set(0);
+        const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
+        const x = ((e.clientX - left) / width) * 100;
+        const y = ((e.clientY - top) / height) * 100;
+        setMousePos({ x, y });
     };
 
     const displayPrice = language !== 'en' && price_bn ? price_bn : price;
@@ -63,7 +66,7 @@ export function ProductCard({ id, name, name_bn, price, price_bn, image, nutriti
         // Trigger Fly Animation
         if (imageRef.current) {
             const rect = imageRef.current.getBoundingClientRect();
-            triggerFly(image, {
+            triggerFly(activeImage, {
                 top: rect.top,
                 left: rect.left,
                 width: rect.width,
@@ -72,12 +75,13 @@ export function ProductCard({ id, name, name_bn, price, price_bn, image, nutriti
         }
 
         // Add to Store
-        addItem({ id, name, price: Number(price.replace(/[^0-9.]/g, '')), image, quantity: 1 });
+        const priceNum = typeof price === 'string' ? Number(price.replace(/[^0-9.]/g, '')) : price;
+        addItem({ id, name, price: priceNum, image: activeImage, quantity: 1 });
 
         toast.custom((t) => (
             <div className="flex items-center gap-4 w-full bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-xl border border-white/20">
                 <div className="h-12 w-12 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
-                    <img src={image} alt={name} className="h-full w-full object-cover" />
+                    <img src={activeImage} alt={name} className="h-full w-full object-cover" />
                 </div>
                 <div className="flex-1 min-w-0">
                     <h4 className="font-bold text-gray-900 text-sm truncate">{name}</h4>
@@ -95,28 +99,22 @@ export function ProductCard({ id, name, name_bn, price, price_bn, image, nutriti
     return (
         <>
             <motion.div
-                className="group relative bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 cursor-pointer"
+                className="group relative bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 cursor-pointer flex flex-col h-full"
                 onClick={() => setShowModal(true)}
-                style={{
-                    rotateX,
-                    rotateY,
-                    perspective: 1000,
-                    transformStyle: "preserve-3d"
-                }}
-                onMouseMove={handleMouseMove}
-                onMouseLeave={handleMouseLeave}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                whileHover={{ scale: 1.02 }}
+                whileHover={{ y: -5 }} // Simple lift instead of 3D tilt for better zoom usability
                 transition={{ duration: 0.2 }}
             >
-                <div className="aspect-square overflow-hidden bg-gray-100 relative">
-                    {/* Glossy Overlay for 3D effect */}
-                    <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none" />
-
+                <div
+                    className="aspect-square overflow-hidden bg-gray-100 relative"
+                    onMouseEnter={() => setIsHovering(true)}
+                    onMouseLeave={() => setIsHovering(false)}
+                    onMouseMove={handleMouseMove}
+                >
                     {/* Glass Pieces Tag */}
                     {pieces && pieces > 0 && (
-                        <div className="absolute top-3 right-3 z-20 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+                        <div className="absolute top-3 right-3 z-30 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 pointer-events-none">
                             <span className="px-2.5 py-1 rounded-lg bg-white/70 backdrop-blur-md border border-white/50 text-xs font-bold text-gray-900 shadow-sm flex items-center gap-1">
                                 <span className="w-1.5 h-1.5 rounded-full bg-crab-red inline-block" />
                                 {pieces} pcs
@@ -124,19 +122,68 @@ export function ProductCard({ id, name, name_bn, price, price_bn, image, nutriti
                         </div>
                     )}
 
-                    <img
-                        ref={imageRef}
-                        src={image}
-                        alt={name}
-                        className="w-full h-full object-cover transition-transform duration-500 will-change-transform"
-                        loading="lazy"
-                    />
+                    <div className="w-full h-full overflow-hidden">
+                        <img
+                            ref={imageRef}
+                            src={activeImage}
+                            alt={name}
+                            className="w-full h-full object-cover transition-transform duration-200"
+                            style={{
+                                transformOrigin: `${mousePos.x}% ${mousePos.y}%`,
+                                transform: isHovering ? "scale(2)" : "scale(1)"
+                            }}
+                            loading="lazy"
+                        />
+                    </div>
+
+                    {/* Gallery Thumbnails Overlay */}
+                    {galleryItems.length > 1 && (
+                        <div className="absolute bottom-2 left-0 right-0 z-20 flex justify-center gap-2 px-2 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-3000">
+                            {galleryItems.map((img, idx) => (
+                                <button
+                                    key={idx}
+                                    onClick={(e) => { e.stopPropagation(); setActiveImage(img); }}
+                                    onMouseEnter={() => setActiveImage(img)}
+                                    className={`w-10 h-10 rounded-md overflow-hidden border-2 shadow-sm transition-all ${activeImage === img ? 'border-crab-red scale-110' : 'border-white/80 hover:border-white'}`}
+                                >
+                                    <img src={img} alt={`View ${idx}`} className="w-full h-full object-cover" />
+                                </button>
+                            ))}
+                        </div>
+                    )}
                 </div>
-                <div className="p-3 bg-white relative z-20">
-                    <h3 className={`font-bold text-gray-800 line-clamp-1 mb-1 ${language !== 'en' ? 'font-bangla text-base' : 'font-heading text-sm'}`}>
+
+                <div className="p-3 bg-white relative z-20 flex flex-col flex-grow overflow-hidden">
+                    {/* Animated Crab Background */}
+                    <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+                        <motion.svg
+                            viewBox="0 0 100 100"
+                            className="w-full h-full absolute -right-8 -bottom-8 text-crab-red"
+                            initial="hidden"
+                            whileHover="visible"
+                        >
+                            <motion.path
+                                d="M20 80 Q 50 20 80 40 T 90 90 M10 90 Q 40 40 80 60"
+                                fill="transparent"
+                                stroke="currentColor"
+                                strokeWidth="3"
+                                strokeLinecap="round"
+                                variants={{
+                                    hidden: { pathLength: 0, opacity: 0 },
+                                    visible: { pathLength: 1, opacity: 0.4, transition: { duration: 1.5, ease: "easeInOut" } }
+                                }}
+                            />
+                        </motion.svg>
+                        {/* Static stylized claw watermark */}
+                        <svg viewBox="0 0 24 24" fill="none" className="w-32 h-32 absolute -right-8 -bottom-8 text-gray-100/50 rotate-[-15deg]">
+                            <path d="M12 2C8 2 6 5 6 5C6 5 4 2 2 4C2 6 5 6 5 6C5 6 2 8 2 12C2 17 6 20 12 20C18 20 22 17 22 12C22 8 19 6 19 6C19 6 22 6 22 4C20 2 18 5 18 5C18 5 16 2 12 2Z" fill="currentColor" />
+                        </svg>
+                    </div>
+
+                    <h3 className={`font-bold text-gray-800 line-clamp-1 mb-1 relative z-10 ${language !== 'en' ? 'font-bangla text-base' : 'font-heading text-sm'}`}>
                         {displayName}
                     </h3>
-                    <div className="flex items-center justify-between">
+                    <div className="mt-auto flex items-center justify-between relative z-10">
                         <span className={`text-crab-red font-bold ${language !== 'en' ? 'font-bangla' : 'font-body'}`}>
                             ৳{displayPrice}
                         </span>
@@ -157,7 +204,11 @@ export function ProductCard({ id, name, name_bn, price, price_bn, image, nutriti
             <ProductModal
                 isOpen={showModal}
                 onClose={() => setShowModal(false)}
-                product={{ id, name, price, image, nutritionImage, cookingImage, nutrition, cookingInstructions }}
+                product={{
+                    id, name, price, image: activeImage,
+                    nutritionImage, cookingImage, nutrition, cookingInstructions,
+                    totalSold, weightOptions, images
+                }}
             />
         </>
     );

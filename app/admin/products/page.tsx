@@ -1,6 +1,6 @@
 'use client';
 
-import { Search, Plus, MoreVertical, Copy, Store, X, Trash2, Edit, LayoutGrid, List, Filter } from 'lucide-react';
+import { Search, Plus, MoreVertical, Copy, Store, X, Trash2, Edit, LayoutGrid, List, Filter, Eye } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,6 +11,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { cn } from '@/lib/utils';
 import { ProductBoard } from '@/components/admin/ProductBoard';
 import { useAdmin } from '@/components/providers/AdminProvider';
@@ -25,7 +26,19 @@ export default function ProductsPage() {
 
     const [view, setView] = useState<'table' | 'kanban'>('table');
     const [isAdding, setIsAdding] = useState(false);
-    const [newProduct, setNewProduct] = useState({ name: '', price: 0, sku: '', image: '', nutrition: '', cookingInstructions: '', pointsReward: 0, weight: 0, pieces: 0 });
+    const [newProduct, setNewProduct] = useState({
+        name: '',
+        price: 0,
+        sku: '',
+        image: '',
+        images: [] as string[],
+        nutrition: '',
+        cookingInstructions: '',
+        pointsReward: 0,
+        weight: 0,
+        pieces: 0,
+        quantity: 0
+    });
 
     const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -59,17 +72,30 @@ export default function ProductsPage() {
         updateProduct(id, { stage: newStage });
     };
 
+    const handleClone = (product: any) => {
+        const clonedProduct = {
+            ...product,
+            id: Date.now().toString(),
+            name: `${product.name} (Copy)`,
+            sku: `${product.sku}-COPY`
+        };
+        addProduct(clonedProduct);
+        toast.success("Product cloned successfully");
+    };
+
     const handleEdit = (product: any) => {
         setNewProduct({
             name: product.name,
             price: product.price,
             sku: product.sku,
             image: product.image,
+            images: product.images || [], // Load existing gallery images
             nutrition: product.nutrition || '',
             cookingInstructions: product.cookingInstructions || '',
             pointsReward: product.pointsReward || 0,
             weight: product.weight || 0,
-            pieces: product.pieces || 0
+            pieces: product.pieces || 0,
+            quantity: product.quantity || 0
         });
         setEditingId(product.id);
         setIsAdding(true);
@@ -98,11 +124,13 @@ export default function ProductsPage() {
                 price: newProduct.price,
                 sku: newProduct.sku,
                 image: newProduct.image,
+                images: newProduct.images || [],
                 nutrition: nutritionCalc,
                 cookingInstructions: newProduct.cookingInstructions,
                 pointsReward: newProduct.pointsReward,
                 weight: newProduct.weight,
-                pieces: newProduct.pieces
+                pieces: newProduct.pieces,
+                quantity: newProduct.quantity
             });
             toast.success("Product updated successfully");
         } else {
@@ -114,6 +142,7 @@ export default function ProductsPage() {
                 variants: 1,
                 price: newProduct.price,
                 image: newProduct.image || 'https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=100&fit=crop',
+                images: newProduct.images || [],
                 stock: true,
                 source: 'Self',
                 stage: 'Draft',
@@ -121,7 +150,8 @@ export default function ProductsPage() {
                 cookingInstructions: newProduct.cookingInstructions,
                 pointsReward: newProduct.pointsReward,
                 weight: newProduct.weight,
-                pieces: newProduct.pieces
+                pieces: newProduct.pieces,
+                quantity: newProduct.quantity
             };
             addProduct(product);
             toast.success("Product created successfully");
@@ -129,7 +159,7 @@ export default function ProductsPage() {
 
         setIsAdding(false);
         setEditingId(null);
-        setNewProduct({ name: '', price: 0, sku: '', image: '', nutrition: '', cookingInstructions: '', pointsReward: 0, weight: 0, pieces: 0 });
+        setNewProduct({ name: '', price: 0, sku: '', image: '', images: [], nutrition: '', cookingInstructions: '', pointsReward: 0, weight: 0, pieces: 0, quantity: 0 });
     };
 
     return (
@@ -208,7 +238,7 @@ export default function ProductsPage() {
                         </Popover>
                         <Button className="bg-orange-600 hover:bg-orange-700 text-white" onClick={() => {
                             setEditingId(null);
-                            setNewProduct({ name: '', price: 0, sku: '', image: '', nutrition: '', cookingInstructions: '', pointsReward: 0, weight: 0, pieces: 0 });
+                            setNewProduct({ name: '', price: 0, sku: '', image: '', images: [], nutrition: '', cookingInstructions: '', pointsReward: 0, weight: 0, pieces: 0, quantity: 0 });
                             setIsAdding(true);
                         }}>
                             <Plus className="w-4 h-4 mr-2" /> Add Product
@@ -238,22 +268,46 @@ export default function ProductsPage() {
                                             <Input type="number" value={newProduct.price} onChange={e => setNewProduct({ ...newProduct, price: parseInt(e.target.value) })} required />
                                         </div>
                                         <div>
+                                            <label className="text-sm font-medium">Available Quantity</label>
+                                            <Input
+                                                type="number"
+                                                placeholder="0"
+                                                value={newProduct.quantity}
+                                                onChange={e => setNewProduct({ ...newProduct, quantity: parseInt(e.target.value) || 0 })}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
                                             <label className="text-sm font-medium">Loyalty Points</label>
                                             <Input type="number" placeholder="0" value={newProduct.pointsReward} onChange={e => setNewProduct({ ...newProduct, pointsReward: parseInt(e.target.value) })} />
                                         </div>
-                                    </div>
-                                    <div>
-                                        <label className="text-sm font-medium">SKU (Optional)</label>
-                                        <Input value={newProduct.sku} onChange={e => setNewProduct({ ...newProduct, sku: e.target.value })} />
+                                        <div>
+                                            <label className="text-sm font-medium">SKU (Optional)</label>
+                                            <Input value={newProduct.sku} onChange={e => setNewProduct({ ...newProduct, sku: e.target.value })} />
+                                        </div>
                                     </div>
 
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium">Product Media (Image or Video)</label>
-                                        <MediaUpload
-                                            value={newProduct.image}
-                                            onChange={(url: string) => setNewProduct({ ...newProduct, image: url })}
-                                            onRemove={() => setNewProduct({ ...newProduct, image: '' })}
-                                        />
+                                    <div className="space-y-4">
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium">Main Product Image</label>
+                                            <MediaUpload
+                                                value={newProduct.image}
+                                                onChange={(url: string) => setNewProduct({ ...newProduct, image: url })}
+                                                onRemove={() => setNewProduct({ ...newProduct, image: '' })}
+                                            />
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium">Gallery Images (3-4 Recommended)</label>
+                                            <MediaUpload
+                                                multiple
+                                                values={newProduct.images}
+                                                onValuesChange={(urls) => setNewProduct({ ...newProduct, images: urls })}
+                                                onRemove={(url) => setNewProduct({ ...newProduct, images: newProduct.images.filter(u => u !== url) })}
+                                                onChange={() => { }} // Dummy prop for type safety (optional)
+                                            />
+                                        </div>
                                     </div>
 
                                     <Button type="button" onClick={() => {
@@ -354,41 +408,32 @@ export default function ProductsPage() {
                                                     <td className="p-4 text-slate-500">{product.sku}</td>
                                                     <td className="p-4 font-bold text-slate-800">৳{product.price}</td>
                                                     <td className="p-4">
-                                                        <div className="flex items-center gap-2">
-                                                            <Switch
-                                                                checked={product.stock}
-                                                                onCheckedChange={() => toggleStock(product.id)}
-                                                            />
-                                                            <span className={cn("text-xs font-medium", product.stock ? "text-green-600" : "text-red-500")}>
-                                                                {product.stock ? "In Stock" : "Sold Out"}
-                                                            </span>
-                                                        </div>
+                                                        <span className="font-medium text-slate-700">{product.quantity || 0}</span>
                                                     </td>
                                                     <td className="p-4 text-right">
-                                                        <div className="flex items-center justify-end gap-2">
-                                                            <Button
-                                                                size="sm"
-                                                                variant="outline"
-                                                                className="h-8 text-blue-600 border-blue-200 hover:bg-blue-50"
-                                                                onClick={() => {
-                                                                    navigator.clipboard.writeText(`${window.location.origin}/buy/${product.id}`);
-                                                                    alert('Smart Link Copied!');
-                                                                }}
-                                                            >
-                                                                <Copy className="w-3 h-3 mr-1" /> Copy Link
-                                                            </Button>
-                                                            <Button
-                                                                size="icon"
-                                                                variant="ghost"
-                                                                className="h-8 w-8 text-slate-400 hover:text-orange-600 hover:bg-orange-50"
-                                                                onClick={() => handleEdit(product)}
-                                                            >
-                                                                <Edit className="w-4 h-4" />
-                                                            </Button>
-                                                            <Button size="icon" variant="ghost" className="h-8 w-8 text-slate-400 hover:text-red-600 hover:bg-red-50" onClick={() => handleDelete(product.id)}>
-                                                                <Trash2 className="w-4 h-4" />
-                                                            </Button>
-                                                        </div>
+                                                        <DropdownMenu>
+                                                            <DropdownMenuTrigger asChild>
+                                                                <Button size="icon" variant="ghost" className="h-8 w-8 text-slate-400 hover:text-slate-600">
+                                                                    <MoreVertical className="w-4 h-4" />
+                                                                </Button>
+                                                            </DropdownMenuTrigger>
+                                                            <DropdownMenuContent align="end">
+                                                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                                                <DropdownMenuSeparator />
+                                                                <DropdownMenuItem onClick={() => window.open(`/buy/${product.id}`, '_blank')}>
+                                                                    <Eye className="w-4 h-4 mr-2" /> View
+                                                                </DropdownMenuItem>
+                                                                <DropdownMenuItem onClick={() => handleEdit(product)}>
+                                                                    <Edit className="w-4 h-4 mr-2" /> Edit
+                                                                </DropdownMenuItem>
+                                                                <DropdownMenuItem onClick={() => handleClone(product)}>
+                                                                    <Copy className="w-4 h-4 mr-2" /> Clone product
+                                                                </DropdownMenuItem>
+                                                                <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(product.id)}>
+                                                                    <Trash2 className="w-4 h-4 mr-2" /> Delete
+                                                                </DropdownMenuItem>
+                                                            </DropdownMenuContent>
+                                                        </DropdownMenu>
                                                     </td>
                                                 </tr>
                                             ))}

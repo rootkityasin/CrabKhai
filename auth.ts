@@ -7,6 +7,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 import { authConfig } from "./auth.config"
+import { checkRateLimit } from "@/lib/rate-limit"
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
     ...authConfig,
@@ -27,6 +28,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             },
             authorize: async (credentials) => {
                 if (!credentials?.phone || !credentials?.password) return null
+
+                if (!credentials?.phone || !credentials?.password) return null
+
+                // Rate Limit Check (5 attempts per minute)
+                const phone = credentials.phone as string;
+                if (!checkRateLimit(phone)) {
+                    console.warn(`Rate limit exceeded for phone: ${phone}`);
+                    return null;
+                }
 
                 // Find user by phone (or email allow)
                 const user = await prisma.user.findFirst({

@@ -66,6 +66,9 @@ function MenuContent() {
                             name_bn={(item as any).name_bn || item.name}
                             price_bn={(item as any).price_bn || String(item.price)}
                             pieces={(item as any).pieces}
+                            totalSold={(item as any).totalSold}
+                            weightOptions={(item as any).weightOptions}
+                            images={(item as any).images}
                         />
                     ))
                 ) : (

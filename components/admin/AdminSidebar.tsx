@@ -22,7 +22,9 @@ import {
     ChevronRight,
     Search,
     LogOut,
-    Menu
+    Menu,
+    Store,
+    ShieldCheck
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useEffect } from 'react';
@@ -88,6 +90,8 @@ export function AdminSidebar() {
             items: [
                 { label: 'Manage Shop', href: '/admin/shop', icon: Settings },
                 { label: 'Customize Theme', href: '/admin/theme', icon: Palette },
+                { label: 'Shop Settings', icon: Store, href: '/admin/settings' },
+                { label: 'Security', icon: ShieldCheck, href: '/admin/security' },
                 { label: 'Landing Pages', href: '/admin/landing', icon: FileText },
                 { label: 'Automation', href: '/admin/automation', icon: Zap, badge: 'HOT', badgeColor: "bg-red-100 text-red-600" },
                 { label: 'Promo Codes', href: '/admin/promos', icon: Ticket },

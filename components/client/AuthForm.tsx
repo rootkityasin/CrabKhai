@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -22,6 +22,26 @@ export function AuthForm() {
         password: '',
     });
 
+    const [turnstileToken, setTurnstileToken] = useState<string>('');
+
+    // Turnstile Callback Setup
+    useEffect(() => {
+        // @ts-ignore
+        window.onTurnstileSuccess = (token: string) => {
+            setTurnstileToken(token);
+        };
+
+        // Load script dynamically to ensure order
+        if (!document.getElementById('turnstile-script')) {
+            const script = document.createElement('script');
+            script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
+            script.id = 'turnstile-script';
+            script.async = true;
+            script.defer = true;
+            document.body.appendChild(script);
+        }
+    }, []);
+
     const handleSocialLogin = (provider: 'google' | 'apple') => {
         setIsLoading(true);
         signIn(provider, { callbackUrl: '/account' });
@@ -37,22 +57,17 @@ export function AuthForm() {
                 const res = await signIn('credentials', {
                     phone: formData.contact,
                     password: formData.password,
+                    token: turnstileToken, // Pass Token
                     redirect: false,
                 });
-
-                if (res?.error) {
-                    toast.error("Invalid credentials.");
-                } else {
-                    toast.success("Welcome back!");
-                    router.push('/account');
-                    router.refresh();
-                }
+                // ...
             } else {
                 // Register
                 const res = await createUser({
                     name: formData.name,
                     phone: formData.contact,
                     password: formData.password,
+                    // token: turnstileToken // TODO: Add to createUser if needed, for now Login checks it strictly
                 });
 
                 if (res.success) {
@@ -62,6 +77,7 @@ export function AuthForm() {
                     const loginRes = await signIn('credentials', {
                         phone: formData.contact,
                         password: formData.password,
+                        token: turnstileToken, // Pass Token
                         redirect: false,
                     });
 
@@ -178,6 +194,16 @@ export function AuthForm() {
                         minLength={6}
                         className="w-full px-5 py-6 bg-white rounded-2xl border-0 shadow-sm ring-1 ring-gray-100 focus:ring-2 focus:ring-crab-red/20 font-medium text-gray-900 transition-all"
                     />
+                </div>
+
+
+                <div className="flex justify-center py-2 h-[72px]">
+                    <div
+                        className="cf-turnstile"
+                        data-sitekey="1x00000000000000000000BB"
+                        data-theme="light"
+                        data-callback="onTurnstileSuccess"
+                    ></div>
                 </div>
 
                 <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="pt-4">

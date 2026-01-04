@@ -40,21 +40,99 @@ const initialOrders = [
 
 const initialProducts = [
     // Best Sellers
-    { id: '1', sku: 'BS001', name: 'Signature Masala Crab wings', variants: 1, price: 350, image: 'https://www.easykoro.com/inventories/fit-in/400x400/651903648889884.png', stock: true, source: 'Self', stage: 'Selling', hubId: 'dhaka-central', pieces: 12 },
-    { id: '2', sku: 'BS002', name: 'Signature Masala Crab Bomb', variants: 2, price: 350, image: 'https://www.easykoro.com/inventories/fit-in/400x400/1684482693291279.png', stock: true, source: 'Self', stage: 'Selling', hubId: 'dhaka-central', pieces: 8 },
-    { id: '3', sku: 'BS003', name: 'Crispy Crab Wings', variants: 0, price: 330, image: 'https://www.easykoro.com/inventories/fit-in/400x400/604194297355933.png', stock: true, source: 'Self', stage: 'Selling', hubId: 'dhaka-central', pieces: 10 },
+    {
+        id: '1',
+        sku: 'BS001',
+        name: 'Signature Masala Crab wings',
+        variants: 1,
+        price: 350,
+        image: 'https://www.easykoro.com/inventories/fit-in/400x400/651903648889884.png',
+        images: [
+            'https://www.easykoro.com/inventories/fit-in/400x400/651903648889884.png',
+            'https://www.easykoro.com/inventories/fit-in/400x400/1684482693291279.png',
+            'https://www.easykoro.com/inventories/fit-in/400x400/604194297355933.png'
+        ],
+        stock: true,
+        source: 'Self',
+        stage: 'Selling',
+        hubId: 'dhaka-central',
+        pieces: 12,
+        totalSold: 443,
+        weightOptions: ['200g', '400g', '600g', '1kg'],
+        features: [
+            '100% real crab meat',
+            'Ready to cook & serve in minutes',
+            'Crispy texture, juicy inside',
+            'Perfect for snacks, tiffin, or gatherings'
+        ]
+    },
+    {
+        id: '2',
+        sku: 'BS002',
+        name: 'Signature Masala Crab Bomb',
+        variants: 2,
+        price: 350,
+        image: 'https://www.easykoro.com/inventories/fit-in/400x400/1684482693291279.png',
+        images: [
+            'https://www.easykoro.com/inventories/fit-in/400x400/1684482693291279.png',
+            'https://www.easykoro.com/inventories/fit-in/400x400/651903648889884.png'
+        ],
+        stock: true,
+        source: 'Self',
+        stage: 'Selling',
+        hubId: 'dhaka-central',
+        pieces: 8,
+        totalSold: 1250,
+        weightOptions: ['250g', '500g'],
+        features: [
+            'Spicy masala blend',
+            'No preservatives',
+            'Halal certified'
+        ]
+    },
+    {
+        id: '3',
+        sku: 'BS003',
+        name: 'Crispy Crab Wings',
+        variants: 0,
+        price: 330,
+        image: 'https://www.easykoro.com/inventories/fit-in/400x400/604194297355933.png',
+        stock: true,
+        source: 'Self',
+        stage: 'Selling',
+        hubId: 'dhaka-central',
+        pieces: 10,
+        totalSold: 89,
+        weightOptions: ['1 Box'],
+        features: ['Kid favorite', 'Mild spice']
+    },
 
     // Super Savings
-    { id: '4', sku: 'SS001', name: 'WINGS & BOMB COMBO', variants: 1, price: 1200, image: 'https://www.easykoro.com/inventories/fit-in/400x400/4838007732246716.jpg', stock: true, source: 'Self', stage: 'Selling', hubId: 'dhaka-central', pieces: 20 },
-    { id: '5', sku: 'SS002', name: 'Tempura Shrimp', variants: 3, price: 400, image: 'https://www.easykoro.com/inventories/fit-in/400x400/745402355963125.png', stock: true, source: 'Self', stage: 'Selling', hubId: 'khulna-hub', pieces: 15 },
+    {
+        id: '4',
+        sku: 'SS001',
+        name: 'WINGS & BOMB COMBO',
+        variants: 1,
+        price: 1200,
+        image: 'https://www.easykoro.com/inventories/fit-in/400x400/4838007732246716.jpg',
+        stock: true,
+        source: 'Self',
+        stage: 'Selling',
+        hubId: 'dhaka-central',
+        pieces: 20,
+        totalSold: 320,
+        weightOptions: ['Family Pack'],
+        features: ['Best Value', 'Includes Sauce']
+    },
+    { id: '5', sku: 'SS002', name: 'Tempura Shrimp', variants: 3, price: 400, image: 'https://www.easykoro.com/inventories/fit-in/400x400/745402355963125.png', stock: true, source: 'Self', stage: 'Selling', hubId: 'khulna-hub', pieces: 15, totalSold: 56, weightOptions: ['200g'], features: ['Authentic Japanese Style'] },
 
     // New Arrivals
-    { id: '6', sku: 'NA001', name: 'Raw Crab Clean', variants: 0, price: 450, image: 'https://www.easykoro.com/inventories/fit-in/400x400/587600975137614.png', stock: true, source: 'Self', stage: 'Selling', hubId: 'chattogram-hub', pieces: 6 },
-    { id: '7', sku: 'NA002', name: 'Crispy Crab Bomb', variants: 1, price: 330, image: 'https://www.easykoro.com/inventories/fit-in/400x400/606088101401451.png', stock: true, source: 'Self', stage: 'Selling', hubId: 'dhaka-central', pieces: 9 },
+    { id: '6', sku: 'NA001', name: 'Raw Crab Clean', variants: 0, price: 450, image: 'https://www.easykoro.com/inventories/fit-in/400x400/587600975137614.png', stock: true, source: 'Self', stage: 'Selling', hubId: 'chattogram-hub', pieces: 6, totalSold: 12, weightOptions: ['1kg'], features: ['Fresh Catch'] },
+    { id: '7', sku: 'NA002', name: 'Crispy Crab Bomb', variants: 1, price: 330, image: 'https://www.easykoro.com/inventories/fit-in/400x400/606088101401451.png', stock: true, source: 'Self', stage: 'Selling', hubId: 'dhaka-central', pieces: 9, totalSold: 200, weightOptions: ['500g'], features: ['Party Snack'] },
 
     // Others
-    { id: '8', sku: '799245', name: 'Shell-less Crab Meat', variants: 3, price: 1850, image: 'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?q=80&w=300&fit=crop', stock: true, source: 'Self', stage: 'Process', hubId: 'dhaka-central', pieces: 18 },
-    { id: '9', sku: '799246', name: 'Crab Masala Mix', variants: 1, price: 450, image: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=300&fit=crop', stock: false, source: 'Self', stage: 'Draft', hubId: 'khulna-hub', pieces: 12 },
+    { id: '8', sku: '799245', name: 'Shell-less Crab Meat', variants: 3, price: 1850, image: 'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?q=80&w=300&fit=crop', stock: true, source: 'Self', stage: 'Process', hubId: 'dhaka-central', pieces: 18, totalSold: 5, weightOptions: ['1kg'], features: ['Premium Quality'] },
+    { id: '9', sku: '799246', name: 'Crab Masala Mix', variants: 1, price: 450, image: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=300&fit=crop', stock: false, source: 'Self', stage: 'Draft', hubId: 'khulna-hub', pieces: 12, totalSold: 0, weightOptions: ['100g'], features: ['Spice Mix'] },
 ];
 
 interface AdminContextType {
@@ -153,17 +231,20 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
     // Load from LocalStorage on Mount
     React.useEffect(() => {
         if (typeof window !== 'undefined') {
-            const savedData = localStorage.getItem('crab-khai-admin-data-v5');
+            const savedData = localStorage.getItem('crab-khai-admin-data-v7');
             if (savedData) {
                 try {
                     const parsed = JSON.parse(savedData);
                     if (parsed.orders) setOrdersState(parsed.orders);
 
-                    // Migration: Add random pieces if missing
+                    // Migration: Add missing fields for v6
                     if (parsed.products) {
                         const migratedProducts = parsed.products.map((p: any) => ({
                             ...p,
-                            pieces: p.pieces ? p.pieces : Math.floor(Math.random() * (20 - 5 + 1)) + 5
+                            pieces: p.pieces ? p.pieces : Math.floor(Math.random() * (20 - 5 + 1)) + 5,
+                            totalSold: p.totalSold !== undefined ? p.totalSold : Math.floor(Math.random() * 500) + 50,
+                            weightOptions: p.weightOptions ? p.weightOptions : ['500g', '1kg'],
+                            images: p.images ? p.images : [p.image]
                         }));
                         setProductsState(migratedProducts);
                     }
@@ -184,7 +265,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
                 products: products,
                 settings: settings
             };
-            localStorage.setItem('crab-khai-admin-data-v5', JSON.stringify(dataToSave));
+            localStorage.setItem('crab-khai-admin-data-v7', JSON.stringify(dataToSave));
         }
     }, [orders, products, settings]);
 

@@ -29,9 +29,19 @@ export const authConfig = {
             const isOnAdmin = nextUrl.nextUrl.pathname.startsWith('/admin');
 
             if (isOnAdmin) {
-                return true; // TEMPORARY: Allow all access to admin
-                // if (isLoggedIn) return true;
-                // return false; 
+                // 1. Role Check
+                if (!isLoggedIn) return false;
+                if ((auth?.user as any)?.role !== 'SUPER_ADMIN' && (auth?.user as any)?.role !== 'HUB_ADMIN') return false;
+
+                // 2. Device Check
+                const isDeviceSetup = nextUrl.nextUrl.pathname.startsWith('/admin/security/device-setup');
+                const deviceCookie = nextUrl.cookies.get('trusted_device');
+
+                if (!deviceCookie && !isDeviceSetup) {
+                    return Response.redirect(new URL('/admin/security/device-setup', nextUrl.url).toString());
+                }
+
+                return true;
             }
             return true;
         },

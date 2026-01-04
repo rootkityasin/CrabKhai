@@ -1,6 +1,7 @@
 'use client';
 
-import { Menu, Search, MapPin, ShoppingCart, User } from 'lucide-react';
+import { Menu, Search, MapPin, ShoppingCart, User, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useLanguageStore } from '@/lib/languageStore';
@@ -90,8 +91,21 @@ export function MobileHeader() {
                 <div className="flex items-center justify-between px-4 h-16 text-white">
                     {/* Left: Logo Area & Hamburger */}
                     <div className="flex items-center gap-3">
-                        <button className="p-1 -ml-1 text-white" onClick={() => setIsSidebarOpen(true)}>
-                            <Menu className="w-6 h-6" />
+                        <button
+                            className="p-1 -ml-1 text-white relative z-50 focus:outline-none"
+                            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                        >
+                            <motion.svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <motion.line x1="4" x2="20" y1="6" y2="6"
+                                    animate={isSidebarOpen ? { rotate: 45, y: 6 } : { rotate: 0, y: 0 }}
+                                />
+                                <motion.line x1="4" x2="20" y1="12" y2="12"
+                                    animate={isSidebarOpen ? { opacity: 0 } : { opacity: 1 }}
+                                />
+                                <motion.line x1="4" x2="20" y1="18" y2="18"
+                                    animate={isSidebarOpen ? { rotate: -45, y: -6 } : { rotate: 0, y: 0 }}
+                                />
+                            </motion.svg>
                         </button>
                         <Link href="/" className="flex items-center gap-2">
                             <img src="/logo.svg" alt="CrabKhai" className="h-14 w-auto" />
@@ -234,32 +248,60 @@ export function MobileHeader() {
             </header>
 
             {/* Sidebar / Hamburger Menu */}
-            {isSidebarOpen && (
-                <>
-                    <div
-                        className="fixed inset-0 bg-black/50 z-[60] backdrop-blur-sm"
-                        onClick={() => setIsSidebarOpen(false)}
-                    />
-                    <div className="fixed top-0 left-0 bottom-0 w-[280px] bg-slate-950 z-[70] shadow-2xl p-6 flex flex-col animate-in slide-in-from-left duration-300">
-                        <div className="flex items-center justify-between mb-8">
-                            <span className="text-white font-bold text-xl uppercase tracking-widest">Menu</span>
-                            <button onClick={() => setIsSidebarOpen(false)} className="text-white/70 hover:text-white">
-                                <Menu className="w-6 h-6 rotate-90" /> {/* Using rotate for close effect or replace with X */}
-                            </button>
-                        </div>
-                        <nav className="space-y-6">
-                            <Link href="/" className="block text-2xl font-black text-white hover:text-crab-red transition-colors" onClick={() => setIsSidebarOpen(false)}>HOME</Link>
-                            <Link href="/menu" className="block text-2xl font-black text-white hover:text-crab-red transition-colors" onClick={() => setIsSidebarOpen(false)}>MENU</Link>
-                            <Link href="/story" className="block text-2xl font-black text-crab-red transition-colors" onClick={() => setIsSidebarOpen(false)}>OUR STORY</Link>
-                            <Link href="/account" className="block text-2xl font-black text-white hover:text-crab-red transition-colors" onClick={() => setIsSidebarOpen(false)}>ACCOUNT</Link>
-                        </nav>
+            <AnimatePresence>
+                {isSidebarOpen && (
+                    <>
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 bg-black/50 z-[60] backdrop-blur-sm"
+                            onClick={() => setIsSidebarOpen(false)}
+                        />
+                        <motion.div
+                            initial={{ x: "-100%" }}
+                            animate={{ x: 0 }}
+                            exit={{ x: "-100%" }}
+                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                            className="fixed top-0 left-0 bottom-0 w-[280px] bg-slate-950 z-[70] shadow-2xl p-6 flex flex-col"
+                        >
+                            <div className="flex items-center justify-between mb-8">
+                                <span className="text-white font-bold text-xl uppercase tracking-widest">Menu</span>
+                                <button onClick={() => setIsSidebarOpen(false)} className="text-white/70 hover:text-white">
+                                    <X className="w-6 h-6" />
+                                </button>
+                            </div>
+                            <nav className="space-y-6">
+                                {[
+                                    { href: "/", label: "HOME", color: "text-white" },
+                                    { href: "/menu", label: "MENU", color: "text-white" },
+                                    { href: "/story", label: "OUR STORY", color: "text-crab-red" },
+                                    { href: "/account", label: "ACCOUNT", color: "text-white" }
+                                ].map((item, i) => (
+                                    <motion.div
+                                        key={item.href}
+                                        initial={{ opacity: 0, x: -20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{ delay: 0.1 + (i * 0.1) }}
+                                    >
+                                        <Link
+                                            href={item.href}
+                                            className={`block text-2xl font-black hover:text-crab-red transition-colors ${item.color}`}
+                                            onClick={() => setIsSidebarOpen(false)}
+                                        >
+                                            {item.label}
+                                        </Link>
+                                    </motion.div>
+                                ))}
+                            </nav>
 
-                        <div className="mt-auto pt-8 border-t border-white/10">
-                            <p className="text-white/40 text-sm">© 2026 CrabKhai</p>
-                        </div>
-                    </div>
-                </>
-            )}
+                            <div className="mt-auto pt-8 border-t border-white/10">
+                                <p className="text-white/40 text-sm">© 2026 CrabKhai</p>
+                            </div>
+                        </motion.div>
+                    </>
+                )}
+            </AnimatePresence>
 
             {mascotState !== 'idle' && <Mascot state={mascotState} className="fixed top-14 left-4 z-[60]" />}
         </>

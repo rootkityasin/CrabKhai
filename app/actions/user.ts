@@ -51,7 +51,16 @@ export async function createUser(data: { name: string; phone: string; email?: st
 
 // ... (existing code)
 
+import { auth } from '@/auth';
+
 export async function getAllUsers() {
+    const session = await auth();
+    // Strict Admin Check
+    if ((session?.user as any)?.role !== 'SUPER_ADMIN' && (session?.user as any)?.role !== 'HUB_ADMIN') {
+        console.error("Unauthorized access to getAllUsers", session?.user?.id);
+        throw new Error("Unauthorized");
+    }
+
     try {
         const users = await prisma.user.findMany({
             orderBy: {

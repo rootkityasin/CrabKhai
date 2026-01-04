@@ -19,7 +19,7 @@ export function ImageUpload({
     value,
     onChange,
     onRemove,
-    recommendedSize = "800x600",
+    recommendedSize = "1000x1000 (1:1 Aspect Ratio)",
     className
 }: ImageUploadProps) {
     const [isUploading, setIsUploading] = useState(false);
