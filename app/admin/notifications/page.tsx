@@ -18,7 +18,10 @@ export default async function NotificationsPage() {
                     </h1>
                     <p className="text-slate-500 mt-1">View past alerts and activity logs.</p>
                 </div>
-                <form action={clearNotifications}>
+                <form action={async () => {
+                    'use server';
+                    await clearNotifications();
+                }}>
                     <Button variant="outline" className="text-red-600 hover:bg-red-50 border-red-200">
                         <Trash2 className="w-4 h-4 mr-2" />
                         Clear All History
