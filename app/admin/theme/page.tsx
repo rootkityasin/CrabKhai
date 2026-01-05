@@ -12,6 +12,7 @@ import { ProductCard } from '@/components/client/ProductCard';
 
 // Color Presets
 const PRESETS = [
+    { name: 'Crab Red (Current)', primary: '#E60000', secondary: '#0f172a' },
     { name: 'Crab Orange', primary: '#ea580c', secondary: '#0f172a' },
     { name: 'Ocean Blue', primary: '#0284c7', secondary: '#0f172a' },
     { name: 'Emerald Green', primary: '#059669', secondary: '#064e3b' },
@@ -50,7 +51,7 @@ function hexToHsl(hex: string) {
 export default function ThemePage() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
-    const [primaryColor, setPrimaryColor] = useState('#ea0000');
+    const [primaryColor, setPrimaryColor] = useState('#E60000');
     const [secondaryColor, setSecondaryColor] = useState('#0f172a');
 
     useEffect(() => {
@@ -229,69 +230,117 @@ export default function ThemePage() {
                         </div>
                     </div>
 
-                    {/* App Header Mock */}
-                    <div className="bg-white/80 backdrop-blur-md sticky top-0 z-30 px-6 py-3 border-b border-gray-100 flex items-center justify-between">
-                        <div className="flex flex-col">
-                            <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Welcome</span>
-                            <div className="flex items-center gap-1 font-bold text-lg leading-none text-slate-900 font-heading">
-                                <span style={{ color: primaryColor }}>Crab</span> & Khai
+                    {/* App Header Mock - Matching Real Frontend */}
+                    <div className="sticky top-0 z-30 h-16 flex items-center justify-between px-4 text-white border-b border-white/10" style={{ backgroundColor: primaryColor }}>
+                        <div className="flex items-center gap-2">
+                            {/* Hamburger Menu */}
+                            <div className="w-6 h-6 flex flex-col justify-center gap-1">
+                                <div className="w-5 h-0.5 bg-white rounded"></div>
+                                <div className="w-5 h-0.5 bg-white rounded"></div>
+                                <div className="w-5 h-0.5 bg-white rounded"></div>
+                            </div>
+                            {/* Logo Mock */}
+                            <div className="flex items-center gap-1 font-bold text-sm leading-none">
+                                <span className="text-white">Crab</span>
+                                <span className="text-white">&</span>
+                                <span className="text-white">Khai</span>
                             </div>
                         </div>
-                        <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
-                            <div className="w-4 h-4 border-2 border-slate-300 rounded-full" />
+                        <div className="flex items-center gap-2.5">
+                            {/* Search Icon */}
+                            <div className="w-4 h-4 rounded-full border border-white flex items-center justify-center">
+                                <div className="w-1.5 h-1.5 border border-white rounded-full"></div>
+                            </div>
+                            {/* Location Pin */}
+                            <div className="w-4 h-5 relative">
+                                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3 h-3 border-2 border-white rounded-full"></div>
+                                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[3px] border-l-transparent border-r-[3px] border-r-transparent border-t-[4px] border-t-white"></div>
+                            </div>
+                            {/* Shopping Cart with Badge */}
+                            <div className="relative">
+                                <div className="w-4 h-4">
+                                    <div className="w-3 h-2.5 border-2 border-white rounded-sm"></div>
+                                    <div className="absolute top-0 left-0 w-2.5 h-1 border-t-2 border-white"></div>
+                                </div>
+                                <div className="absolute -top-1 -right-1 bg-yellow-400 text-black text-[6px] font-bold rounded-full w-2.5 h-2.5 flex items-center justify-center">2</div>
+                            </div>
+                            {/* User Icon */}
+                            <div className="w-4 h-4 flex flex-col items-center justify-center">
+                                <div className="w-2 h-2 border-2 border-white rounded-full"></div>
+                                <div className="w-3.5 h-2 border-2 border-white border-t-0 rounded-b-full mt-[-2px]"></div>
+                            </div>
                         </div>
                     </div>
 
                     {/* Content Scroll View */}
                     <div className="h-full overflow-y-auto pb-32 no-scrollbar bg-slate-50">
 
-                        {/* Hero Mock */}
-                        <div className="h-48 relative bg-gray-200 m-4 rounded-2xl overflow-hidden shadow-sm">
-                            <div className="absolute inset-0 bg-slate-900/10" />
+                        {/* Hero Banner - Matching Real Frontend */}
+                        <div className="h-48 relative m-4 rounded-2xl overflow-hidden shadow-sm">
+                            <img
+                                src="https://images.unsplash.com/photo-1633504581786-316c8002b1b2?w=800&q=80"
+                                alt="Crab Curry"
+                                className="w-full h-full object-cover"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                            <div className="absolute top-4 left-4">
+                                <span className="px-2 py-1 text-[8px] font-bold text-white rounded" style={{ backgroundColor: primaryColor }}>
+                                    FRESH FROM SUNDARBANS
+                                </span>
+                            </div>
                             <div className="absolute bottom-4 left-4 right-4">
-                                <div className="bg-white/90 backdrop-blur rounded-xl p-3 flex justify-between items-center shadow-lg">
-                                    <div>
-                                        <p className="text-xs font-bold text-slate-900">Fresh Catch</p>
-                                        <p className="text-[10px] text-slate-500">Just Arrived</p>
-                                    </div>
-                                    <button
-                                        className="px-3 py-1.5 text-xs font-bold text-white rounded-lg shadow-lg transform active:scale-95 transition-transform"
-                                        style={{ backgroundColor: primaryColor }}
-                                    >
-                                        Order Now
-                                    </button>
-                                </div>
+                                <h2 className="text-white text-2xl font-serif font-bold mb-2">Live Mud Crab</h2>
+                                <button
+                                    className="px-4 py-1.5 text-xs font-bold text-white rounded-lg shadow-lg"
+                                    style={{ backgroundColor: primaryColor }}
+                                >
+                                    Order Now
+                                </button>
                             </div>
                         </div>
 
-                        {/* Product Grid Mock */}
+                        {/* Category Navigation - Matching Real Frontend */}
+                        <div className="px-4 py-2 mb-2">
+                            <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2">
+                                {['Live Crab', 'Platters', 'Best Sellers', 'Spicy', 'Sides'].map((cat, idx) => (
+                                    <div key={idx} className="flex flex-col items-center gap-1 min-w-[50px]">
+                                        <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+                                            <div className="w-6 h-6 border-2 border-gray-400 rounded-full" />
+                                        </div>
+                                        <span className="text-[8px] text-gray-600 text-center font-medium">{cat}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Best Sellers Section - Matching Real Frontend */}
                         <div className="px-4 py-2">
                             <div className="flex items-center justify-between mb-3">
-                                <h3 className="font-bold text-slate-900 text-lg">Popular Items</h3>
-                                <span className="text-xs font-bold" style={{ color: primaryColor }}>View All</span>
+                                <h3 className="font-bold text-slate-900 text-base">Best Sellers</h3>
+                                <span className="text-xs font-bold" style={{ color: primaryColor }}>View All →</span>
                             </div>
 
                             <div className="grid grid-cols-2 gap-3">
-                                {/* Real Product Card Instance 1 */}
+                                {/* Product 1 - Signature Masala Crab Wings */}
                                 <div className="transform scale-[0.85] origin-top-left w-[115%] -mb-[15%]">
                                     <ProductCard
                                         id="preview-1"
-                                        name="Jumbo Mud Crab"
-                                        price={1250}
-                                        image="https://images.unsplash.com/photo-1559742811-664426563e41?w=800"
-                                        pieces={2}
+                                        name="Signature Masala Crab Wings"
+                                        price={350}
+                                        image="https://images.unsplash.com/photo-1608039829572-78524f79c4c7?w=800&q=80"
+                                        pieces={6}
                                     />
                                 </div>
 
-                                {/* Real Product Card Instance 2 */}
+                                {/* Product 2 - Crispy Crab Wings */}
                                 <div className="transform scale-[0.85] origin-top-left w-[115%] -mb-[15%]">
                                     <ProductCard
                                         id="preview-2"
-                                        name="Soft Shell Crab"
-                                        price={2200}
-                                        image="https://images.unsplash.com/photo-1542385150-c0d162125f48?w=800"
-                                        pieces={12}
-                                        totalSold={150}
+                                        name="Crispy Crab Wings"
+                                        price={330}
+                                        image="https://images.unsplash.com/photo-1559742811-664426563e41?w=800&q=80"
+                                        pieces={8}
+                                        totalSold={245}
                                     />
                                 </div>
                             </div>
@@ -307,6 +356,56 @@ export default function ThemePage() {
                                 </button>
                             </div>
                             <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10" />
+                        </div>
+                    </div>
+
+                    {/* Bottom Navigation - Matching Real Frontend */}
+                    <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-100 shadow-[0_-1px_3px_rgba(0,0,0,0.05)] z-30">
+                        <div className="flex items-center justify-around h-14 relative">
+                            {/* Home - Active */}
+                            <div className="flex flex-col items-center justify-center w-full h-full space-y-0.5 relative z-10" style={{ color: primaryColor }}>
+                                <div className="absolute inset-0 w-10 h-10 m-auto bg-orange-50 rounded-2xl -z-10"></div>
+                                <div className="relative">
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                                    </svg>
+                                </div>
+                                <span className="text-[9px] font-medium">Home</span>
+                            </div>
+                            {/* Menu */}
+                            <div className="flex flex-col items-center justify-center w-full h-full space-y-0.5 text-gray-400">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                                    <rect x="3" y="3" width="7" height="7" rx="1" />
+                                    <rect x="14" y="3" width="7" height="7" rx="1" />
+                                    <rect x="14" y="14" width="7" height="7" rx="1" />
+                                    <rect x="3" y="14" width="7" height="7" rx="1" />
+                                </svg>
+                                <span className="text-[9px] font-medium">Menu</span>
+                            </div>
+                            {/* Story */}
+                            <div className="flex flex-col items-center justify-center w-full h-full space-y-0.5 text-gray-400">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                </svg>
+                                <span className="text-[9px] font-medium">Story</span>
+                            </div>
+                            {/* Cart */}
+                            <div className="flex flex-col items-center justify-center w-full h-full space-y-0.5 text-gray-400">
+                                <div className="relative">
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                                    </svg>
+                                    <span className="absolute -top-0.5 -right-1 flex h-3 min-w-[12px] items-center justify-center rounded-full px-0.5 text-[7px] font-bold text-white ring-1 ring-white" style={{ backgroundColor: primaryColor }}>2</span>
+                                </div>
+                                <span className="text-[9px] font-medium">Cart</span>
+                            </div>
+                            {/* Account */}
+                            <div className="flex flex-col items-center justify-center w-full h-full space-y-0.5 text-gray-400">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                                <span className="text-[9px] font-medium">Account</span>
+                            </div>
                         </div>
                     </div>
                 </div>

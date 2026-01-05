@@ -101,9 +101,10 @@ model SiteConfig {
   shopName        String   @default("Crab & Khai")
   logoUrl         String?
   measurementUnit String   @default("PCS") // Options: PCS, WEIGHT, VOLUME
+  allergensText   String   @default("Crustaceans, Shellfish")
   certificates    String[]
   adminSetupToken String   @default("crab-secret-setup-123")
-  primaryColor    String   @default("#ea0000")
+  primaryColor    String   @default("#E60000")
   secondaryColor  String   @default("#0f172a")
 }
 
