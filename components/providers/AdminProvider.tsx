@@ -254,7 +254,11 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
             import('@/app/actions/settings').then(mod => {
                 mod.getSiteConfig().then(dbConfig => {
                     if (dbConfig) {
-                        setSettings(prev => ({ ...prev, ...dbConfig }));
+                        setSettings(prev => ({
+                            ...prev,
+                            ...dbConfig,
+                            logoUrl: dbConfig.logoUrl ?? prev.logoUrl
+                        }));
                     }
                 });
             });

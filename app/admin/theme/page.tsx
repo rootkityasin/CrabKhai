@@ -8,6 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Palette, Layout, Check, Monitor, Smartphone, RotateCcw, Save, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { getSiteConfig, updateSiteConfig } from '@/app/actions/settings';
+import { getHeroSlides } from '@/app/actions/hero';
+import { getProducts } from '@/app/actions/product';
 import { ProductCard } from '@/components/client/ProductCard';
 
 // Color Presets
@@ -53,6 +55,8 @@ export default function ThemePage() {
     const [saving, setSaving] = useState(false);
     const [primaryColor, setPrimaryColor] = useState('#E60000');
     const [secondaryColor, setSecondaryColor] = useState('#0f172a');
+    const [heroSlides, setHeroSlides] = useState<any[]>([]);
+    const [products, setProducts] = useState<any[]>([]);
 
     useEffect(() => {
         loadConfig();
@@ -61,12 +65,17 @@ export default function ThemePage() {
     const loadConfig = async () => {
         try {
             const config = await getSiteConfig();
+            const slides = await getHeroSlides();
+            const allProducts = await getProducts();
+
             if (config) {
                 // @ts-ignore
                 if (config.primaryColor) setPrimaryColor(config.primaryColor);
                 // @ts-ignore
                 if (config.secondaryColor) setSecondaryColor(config.secondaryColor);
             }
+            if (slides) setHeroSlides(slides.filter((s: any) => s.isActive));
+            if (allProducts) setProducts(allProducts.slice(0, 4));
         } finally {
             setLoading(false);
         }
@@ -277,26 +286,53 @@ export default function ThemePage() {
 
                         {/* Hero Banner - Matching Real Frontend */}
                         <div className="h-48 relative m-4 rounded-2xl overflow-hidden shadow-sm">
-                            <img
-                                src="https://images.unsplash.com/photo-1633504581786-316c8002b1b2?w=800&q=80"
-                                alt="Crab Curry"
-                                className="w-full h-full object-cover"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-                            <div className="absolute top-4 left-4">
-                                <span className="px-2 py-1 text-[8px] font-bold text-white rounded" style={{ backgroundColor: primaryColor }}>
-                                    FRESH FROM SUNDARBANS
-                                </span>
-                            </div>
-                            <div className="absolute bottom-4 left-4 right-4">
-                                <h2 className="text-white text-2xl font-serif font-bold mb-2">Live Mud Crab</h2>
-                                <button
-                                    className="px-4 py-1.5 text-xs font-bold text-white rounded-lg shadow-lg"
-                                    style={{ backgroundColor: primaryColor }}
-                                >
-                                    Order Now
-                                </button>
-                            </div>
+                            {heroSlides.length > 0 ? (
+                                <>
+                                    <img
+                                        src={heroSlides[0].imageUrl}
+                                        alt={heroSlides[0].title}
+                                        className="w-full h-full object-cover"
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                                    <div className="absolute top-4 left-4">
+                                        <span className="px-2 py-1 text-[8px] font-bold text-white rounded" style={{ backgroundColor: primaryColor }}>
+                                            {heroSlides[0].title}
+                                        </span>
+                                    </div>
+                                    <div className="absolute bottom-4 left-4 right-4">
+                                        <h2 className="text-white text-2xl font-serif font-bold mb-2">{heroSlides[0].subtitle}</h2>
+                                        <button
+                                            className="px-4 py-1.5 text-xs font-bold text-white rounded-lg shadow-lg"
+                                            style={{ backgroundColor: primaryColor }}
+                                        >
+                                            {heroSlides[0].buttonText || "Order Now"}
+                                        </button>
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    <img
+                                        src="https://images.unsplash.com/photo-1633504581786-316c8002b1b2?w=800&q=80"
+                                        alt="Crab Curry"
+                                        className="w-full h-full object-cover"
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                                    <div className="absolute top-4 left-4">
+                                        <span className="px-2 py-1 text-[8px] font-bold text-white rounded" style={{ backgroundColor: primaryColor }}>
+                                            FRESH FROM SUNDARBANS
+                                        </span>
+                                    </div>
+                                    <div className="absolute bottom-4 left-4 right-4">
+                                        <h2 className="text-white text-2xl font-serif font-bold mb-2">Live Mud Crab</h2>
+                                        <button
+                                            className="px-4 py-1.5 text-xs font-bold text-white rounded-lg shadow-lg"
+                                            style={{ backgroundColor: primaryColor }}
+                                        >
+                                            Order Now
+                                        </button>
+                                    </div>
+                                </>
+                            )}
                         </div>
 
                         {/* Category Navigation - Matching Real Frontend */}
@@ -321,28 +357,44 @@ export default function ThemePage() {
                             </div>
 
                             <div className="grid grid-cols-2 gap-3">
-                                {/* Product 1 - Signature Masala Crab Wings */}
-                                <div className="transform scale-[0.85] origin-top-left w-[115%] -mb-[15%]">
-                                    <ProductCard
-                                        id="preview-1"
-                                        name="Signature Masala Crab Wings"
-                                        price={350}
-                                        image="https://images.unsplash.com/photo-1608039829572-78524f79c4c7?w=800&q=80"
-                                        pieces={6}
-                                    />
-                                </div>
+                                {products.length > 0 ? (
+                                    products.slice(0, 2).map((product, idx) => (
+                                        <div key={product.id} className="transform scale-[0.85] origin-top-left w-[115%] -mb-[15%]">
+                                            <ProductCard
+                                                id={`preview-${product.id}`}
+                                                name={product.name}
+                                                price={product.price}
+                                                image={product.image || product.images?.[0] || "https://images.unsplash.com/photo-1559742811-664426563e41?w=800&q=80"}
+                                                pieces={product.pieces}
+                                            />
+                                        </div>
+                                    ))
+                                ) : (
+                                    <>
+                                        {/* Fallback Product 1 */}
+                                        <div className="transform scale-[0.85] origin-top-left w-[115%] -mb-[15%]">
+                                            <ProductCard
+                                                id="preview-1"
+                                                name="Signature Masala Crab Wings"
+                                                price={350}
+                                                image="https://images.unsplash.com/photo-1608039829572-78524f79c4c7?w=800&q=80"
+                                                pieces={6}
+                                            />
+                                        </div>
 
-                                {/* Product 2 - Crispy Crab Wings */}
-                                <div className="transform scale-[0.85] origin-top-left w-[115%] -mb-[15%]">
-                                    <ProductCard
-                                        id="preview-2"
-                                        name="Crispy Crab Wings"
-                                        price={330}
-                                        image="https://images.unsplash.com/photo-1559742811-664426563e41?w=800&q=80"
-                                        pieces={8}
-                                        totalSold={245}
-                                    />
-                                </div>
+                                        {/* Fallback Product 2 */}
+                                        <div className="transform scale-[0.85] origin-top-left w-[115%] -mb-[15%]">
+                                            <ProductCard
+                                                id="preview-2"
+                                                name="Crispy Crab Wings"
+                                                price={330}
+                                                image="https://images.unsplash.com/photo-1559742811-664426563e41?w=800&q=80"
+                                                pieces={8}
+                                                totalSold={245}
+                                            />
+                                        </div>
+                                    </>
+                                )}
                             </div>
                         </div>
 
