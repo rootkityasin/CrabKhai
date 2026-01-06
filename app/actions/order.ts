@@ -17,6 +17,8 @@ export async function getPendingOrderCount() {
 }
 // ... (existing imports)
 
+import { checkBotId } from 'botid/server';
+
 export async function createOrder(data: {
     customerName: string;
     customerPhone: string;
@@ -24,6 +26,11 @@ export async function createOrder(data: {
     items: { productId: string; quantity: number; price: number }[];
     totalAmount: number;
 }) {
+    const verification = await checkBotId();
+    if (verification.isBot) {
+        throw new Error("Bot detected");
+    }
+
     try {
         // 1. Create Order
         const order = await prisma.order.create({

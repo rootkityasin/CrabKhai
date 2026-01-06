@@ -1,466 +1,790 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Palette, Layout, Check, Monitor, Smartphone, RotateCcw, Save, Loader2 } from 'lucide-react';
+import {
+    Palette, Layout, Check, Monitor, Smartphone, RotateCcw, Save, Loader2,
+    Menu as MenuIcon, Search, MapPin, ShoppingCart, User, Home, Grid, BookOpen,
+    Fish, Utensils, Award, Flame, Star, Package, CreditCard,
+    HelpCircle, LogOut, ChevronRight, Phone, Mail, ShieldCheck,
+    AlertTriangle, Camera, ArrowRight, Minus, Trash2, Plus, Info, X,
+    Laptop, Tablet
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { getSiteConfig, updateSiteConfig } from '@/app/actions/settings';
 import { getHeroSlides } from '@/app/actions/hero';
 import { getProducts } from '@/app/actions/product';
-import { ProductCard } from '@/components/client/ProductCard';
+import { motion, AnimatePresence } from 'framer-motion';
 
-// Color Presets
-const PRESETS = [
-    { name: 'Crab Red (Current)', primary: '#E60000', secondary: '#0f172a' },
-    { name: 'Crab Orange', primary: '#ea580c', secondary: '#0f172a' },
-    { name: 'Ocean Blue', primary: '#0284c7', secondary: '#0f172a' },
-    { name: 'Emerald Green', primary: '#059669', secondary: '#064e3b' },
-    { name: 'Royal Purple', primary: '#7c3aed', secondary: '#1e1b4b' },
-    { name: 'Hot Pink', primary: '#db2777', secondary: '#831843' },
-    { name: 'Midnight', primary: '#0f172a', secondary: '#000000' },
-];
-
-function hexToHsl(hex: string) {
-    let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    if (!result) return null;
-    let r = parseInt(result[1], 16);
-    let g = parseInt(result[2], 16);
-    let b = parseInt(result[3], 16);
-    r /= 255; g /= 255; b /= 255;
-    let max = Math.max(r, g, b), min = Math.min(r, g, b);
-    let h, s, l = (max + min) / 2;
-    if (max == min) { h = s = 0; }
-    else {
-        let d = max - min;
-        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-        switch (max) {
-            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-            case g: h = (b - r) / d + 2; break;
-            case b: h = (r - g) / d + 4; break;
-        }
-        if (h) h /= 6;
-    }
-    if (h) h = Math.round(h * 360);
-    s = Math.round(s * 100);
-    l = Math.round(l * 100);
-    return `${h} ${s}% ${l}%`;
-}
-
-
-export default function ThemePage() {
+export default function ThemeSettingsPage() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
-    const [primaryColor, setPrimaryColor] = useState('#E60000');
-    const [secondaryColor, setSecondaryColor] = useState('#0f172a');
+    const [primaryColor, setPrimaryColor] = useState('#e60000'); // Default Crab Red
+    const [secondaryColor, setSecondaryColor] = useState('#0f172a'); // Default Slate 900
     const [heroSlides, setHeroSlides] = useState<any[]>([]);
     const [products, setProducts] = useState<any[]>([]);
+    const [activeTab, setActiveTab] = useState('home');
+    const [device, setDevice] = useState<'desktop' | 'mobile'>('desktop');
+    const [config, setConfig] = useState<any>(null);
 
     useEffect(() => {
         loadConfig();
     }, []);
 
-    const loadConfig = async () => {
+    async function loadConfig() {
         try {
-            const config = await getSiteConfig();
-            const slides = await getHeroSlides();
-            const allProducts = await getProducts();
+            const [config, slides, allProducts] = await Promise.all([
+                getSiteConfig(),
+                getHeroSlides(),
+                getProducts()
+            ]);
 
             if (config) {
+                setConfig(config);
                 // @ts-ignore
                 if (config.primaryColor) setPrimaryColor(config.primaryColor);
                 // @ts-ignore
                 if (config.secondaryColor) setSecondaryColor(config.secondaryColor);
             }
             if (slides) setHeroSlides(slides.filter((s: any) => s.isActive));
-            if (allProducts) setProducts(allProducts.slice(0, 4));
+            if (allProducts) setProducts(allProducts);
         } finally {
             setLoading(false);
         }
-    };
+    }
 
-    const handleSave = async () => {
+    async function handleSave() {
         setSaving(true);
         try {
-            const res = await updateSiteConfig({
+            await updateSiteConfig({
                 primaryColor,
                 secondaryColor
             });
-            if (res.success) {
-                toast.success("Theme Published Successfully!");
-                // Force reload to apply changes globally
-                window.location.reload();
-            } else {
-                toast.error("Failed to save theme");
-            }
-        } catch (e) {
-            toast.error("An error occurred");
+            toast.success('Theme settings updated successfully');
+        } catch (error) {
+            toast.error('Failed to update theme settings');
         } finally {
             setSaving(false);
         }
-    };
+    }
 
-    const applyPreset = (preset: typeof PRESETS[0]) => {
-        setPrimaryColor(preset.primary);
-        setSecondaryColor(preset.secondary);
-    };
+    // --- Mock Data Helpers ---
+    const mockCartItems = [
+        { id: 1, name: "Live Mud Crab (XL)", price: 1200, quantity: 1, image: products[0]?.image },
+        { id: 2, name: "Special Masala Sauce", price: 150, quantity: 2, image: products[1]?.image }
+    ];
 
-    // Dynamic styles for preview container
-    const previewStyles = {
-        '--crab-red': primaryColor,
-        '--primary': hexToHsl(primaryColor),
-        // We can override other variables if needed
-    } as React.CSSProperties;
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-[60vh]">
+                <Loader2 className="w-8 h-8 animate-spin text-crab-red" />
+            </div>
+        );
+    }
 
     return (
-        <div className="flex flex-col lg:flex-row gap-8 h-[calc(100vh-100px)]">
-            {/* Sidebar Controls */}
-            <div className="w-full lg:w-96 space-y-8 overflow-y-auto pr-4 pb-20">
-                <div>
-                    <h1 className="text-3xl font-black text-slate-900 tracking-tight">Theme & Brand</h1>
-                    <p className="text-slate-500 mt-2">Customize your storefront's look and feel.</p>
-                </div>
+        <div className="min-h-screen bg-slate-50/50 p-4 md:p-6 animate-in fade-in duration-700">
+            <div className="max-w-[1600px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 h-[calc(100vh-80px)]">
 
-                <div className="space-y-6">
-                    {/* Brand Colors */}
-                    <Card className="p-6 border-slate-200 shadow-sm space-y-6">
-                        <div className="flex items-center gap-2 font-bold text-slate-800 text-lg">
-                            <Palette className="w-5 h-5 text-purple-600" />
-                            Brand Colors
-                        </div>
+                {/* Left Panel: Design Controls */}
+                <motion.div
+                    initial={{ x: -50, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    transition={{ duration: 0.5 }}
+                    className="lg:col-span-3 flex flex-col gap-4 h-full"
+                >
+                    <div className="space-y-1">
+                        <h1 className="text-2xl font-black text-slate-900 tracking-tight">Theme Studio</h1>
+                        <p className="text-xs text-slate-500 font-medium">Customize your brand identity.</p>
+                    </div>
 
-                        {/* Primary Color */}
-                        <div className="space-y-3">
-                            <Label>Primary Color (Buttons, Highlights)</Label>
-                            <div className="flex gap-3">
-                                <div className="h-12 w-12 rounded-xl border border-gray-200 overflow-hidden shadow-sm shrink-0 relative">
-                                    <input
-                                        type="color"
-                                        value={primaryColor}
-                                        onChange={(e) => setPrimaryColor(e.target.value)}
-                                        className="absolute inset-0 w-[150%] h-[150%] -top-[25%] -left-[25%] cursor-pointer p-0 border-0"
-                                    />
-                                </div>
-                                <div className="flex-1 relative">
-                                    <div className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border border-gray-200" style={{ backgroundColor: primaryColor }} />
-                                    <Input
-                                        value={primaryColor}
-                                        onChange={(e) => setPrimaryColor(e.target.value)}
-                                        className="font-mono pl-10 uppercase"
-                                        maxLength={7}
-                                    />
-                                </div>
-                            </div>
-                        </div>
+                    <Card className="flex-1 p-5 border-0 shadow-xl bg-white/80 backdrop-blur-xl ring-1 ring-slate-900/5 flex flex-col gap-6 overflow-y-auto">
 
-                        {/* Secondary Color */}
-                        <div className="space-y-3">
-                            <Label>Secondary Color (Dark Mode/Accents)</Label>
-                            <div className="flex gap-3">
-                                <div className="h-12 w-12 rounded-xl border border-gray-200 overflow-hidden shadow-sm shrink-0 relative">
-                                    <input
-                                        type="color"
-                                        value={secondaryColor}
-                                        onChange={(e) => setSecondaryColor(e.target.value)}
-                                        className="absolute inset-0 w-[150%] h-[150%] -top-[25%] -left-[25%] cursor-pointer p-0 border-0"
-                                    />
-                                </div>
-                                <div className="flex-1 relative">
-                                    <div className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border border-gray-200" style={{ backgroundColor: secondaryColor }} />
-                                    <Input
-                                        value={secondaryColor}
-                                        onChange={(e) => setSecondaryColor(e.target.value)}
-                                        className="font-mono pl-10 uppercase"
-                                        maxLength={7}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </Card>
-
-                    {/* Presets */}
-                    <Card className="p-6 border-slate-200 shadow-sm">
-                        <Label className="mb-4 block">Quick Presets</Label>
-                        <div className="grid grid-cols-2 gap-3">
-                            {PRESETS.map((preset) => (
+                        {/* Device Toggle */}
+                        <div className="bg-slate-100/80 p-1 rounded-xl flex gap-1 justify-center shrink-0">
+                            {[
+                                { id: 'desktop', icon: Monitor, label: 'Desktop' },
+                                { id: 'mobile', icon: Smartphone, label: 'Mobile' }
+                            ].map(d => (
                                 <button
-                                    key={preset.name}
-                                    onClick={() => applyPreset(preset)}
-                                    className="p-3 rounded-xl border border-slate-100 hover:border-slate-300 hover:bg-slate-50 transition-all text-left flex items-center gap-3 group"
+                                    key={d.id}
+                                    onClick={() => setDevice(d.id as any)}
+                                    className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-bold transition-all ${device === d.id ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}
                                 >
-                                    <div className="w-8 h-8 rounded-full shadow-sm flex items-center justify-center shrink-0" style={{ background: `linear-gradient(135deg, ${preset.primary} 50%, ${preset.secondary} 50%)` }}>
-                                        {primaryColor === preset.primary && <Check className="w-4 h-4 text-white drop-shadow-md" />}
-                                    </div>
-                                    <span className="text-sm font-medium text-slate-700 group-hover:text-slate-900">{preset.name}</span>
+                                    <d.icon className="w-4 h-4" />
+                                    {d.label}
                                 </button>
                             ))}
                         </div>
-                    </Card>
-                </div>
 
-                {/* Actions */}
-                <div className="flex gap-3 pt-4 sticky bottom-0 bg-gray-50 p-4 border-t border-gray-200 -mx-4 -mb-20 z-10">
-                    <Button variant="outline" className="flex-1" onClick={loadConfig}>
-                        <RotateCcw className="w-4 h-4 mr-2" /> Reset
-                    </Button>
-                    <Button
-                        className="flex-1 bg-slate-900 hover:bg-slate-800 text-white shadow-lg shadow-slate-900/20"
-                        onClick={handleSave}
-                        disabled={saving}
-                    >
-                        {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
-                        Publish Theme
-                    </Button>
-                </div>
-            </div>
-
-            {/* Live Preview Area */}
-            <div className="flex-1 bg-gradient-to-br from-slate-100 to-slate-200 rounded-3xl border border-slate-200/50 p-8 flex flex-col items-center justify-center relative overflow-hidden shadow-inner">
-                <div className="absolute top-6 flex bg-white/50 backdrop-blur-md rounded-full shadow-sm p-1 border border-white/20 z-10">
-                    <div className="px-4 py-1.5 rounded-full bg-white shadow-sm text-xs font-bold text-slate-800 flex items-center gap-2">
-                        <Monitor className="w-3 h-3" /> Live Preview
-                    </div>
-                </div>
-
-                {/* Mock Browser/Phone Container */}
-                <div
-                    className="w-[375px] h-[700px] bg-slate-50 rounded-[3rem] border-[12px] border-slate-900 shadow-2xl overflow-hidden relative select-none ring-4 ring-slate-900/10"
-                    style={previewStyles}
-                >
-                    {/* StatusBar */}
-                    <div className="h-12 bg-white flex justify-between px-8 items-center text-xs font-bold text-slate-900 z-20 relative">
-                        <span>9:41</span>
-                        <div className="flex gap-1.5">
-                            <div className="w-4 h-2.5 bg-slate-900 rounded-[1px]" />
-                            <div className="w-4 h-2.5 bg-slate-900 rounded-[1px]" />
-                            <div className="w-6 h-2.5 bg-slate-900 rounded-[2px] opacity-30" />
-                        </div>
-                    </div>
-
-                    {/* App Header Mock - Matching Real Frontend */}
-                    <div className="sticky top-0 z-30 h-16 flex items-center justify-between px-4 text-white border-b border-white/10" style={{ backgroundColor: primaryColor }}>
-                        <div className="flex items-center gap-2">
-                            {/* Hamburger Menu */}
-                            <div className="w-6 h-6 flex flex-col justify-center gap-1">
-                                <div className="w-5 h-0.5 bg-white rounded"></div>
-                                <div className="w-5 h-0.5 bg-white rounded"></div>
-                                <div className="w-5 h-0.5 bg-white rounded"></div>
+                        {/* Color Controls */}
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-2 mb-2 text-slate-800">
+                                <Palette className="w-4 h-4" />
+                                <h2 className="text-sm font-bold">Brand Colors</h2>
                             </div>
-                            {/* Logo Mock */}
-                            <div className="flex items-center gap-1 font-bold text-sm leading-none">
-                                <span className="text-white">Crab</span>
-                                <span className="text-white">&</span>
-                                <span className="text-white">Khai</span>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-2.5">
-                            {/* Search Icon */}
-                            <div className="w-4 h-4 rounded-full border border-white flex items-center justify-center">
-                                <div className="w-1.5 h-1.5 border border-white rounded-full"></div>
-                            </div>
-                            {/* Location Pin */}
-                            <div className="w-4 h-5 relative">
-                                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3 h-3 border-2 border-white rounded-full"></div>
-                                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[3px] border-l-transparent border-r-[3px] border-r-transparent border-t-[4px] border-t-white"></div>
-                            </div>
-                            {/* Shopping Cart with Badge */}
-                            <div className="relative">
-                                <div className="w-4 h-4">
-                                    <div className="w-3 h-2.5 border-2 border-white rounded-sm"></div>
-                                    <div className="absolute top-0 left-0 w-2.5 h-1 border-t-2 border-white"></div>
-                                </div>
-                                <div className="absolute -top-1 -right-1 bg-yellow-400 text-black text-[6px] font-bold rounded-full w-2.5 h-2.5 flex items-center justify-center">2</div>
-                            </div>
-                            {/* User Icon */}
-                            <div className="w-4 h-4 flex flex-col items-center justify-center">
-                                <div className="w-2 h-2 border-2 border-white rounded-full"></div>
-                                <div className="w-3.5 h-2 border-2 border-white border-t-0 rounded-b-full mt-[-2px]"></div>
-                            </div>
-                        </div>
-                    </div>
 
-                    {/* Content Scroll View */}
-                    <div className="h-full overflow-y-auto pb-32 no-scrollbar bg-slate-50">
-
-                        {/* Hero Banner - Matching Real Frontend */}
-                        <div className="h-48 relative m-4 rounded-2xl overflow-hidden shadow-sm">
-                            {heroSlides.length > 0 ? (
-                                <>
-                                    <img
-                                        src={heroSlides[0].imageUrl}
-                                        alt={heroSlides[0].title}
-                                        className="w-full h-full object-cover"
-                                    />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-                                    <div className="absolute top-4 left-4">
-                                        <span className="px-2 py-1 text-[8px] font-bold text-white rounded" style={{ backgroundColor: primaryColor }}>
-                                            {heroSlides[0].title}
-                                        </span>
-                                    </div>
-                                    <div className="absolute bottom-4 left-4 right-4">
-                                        <h2 className="text-white text-2xl font-serif font-bold mb-2">{heroSlides[0].subtitle}</h2>
-                                        <button
-                                            className="px-4 py-1.5 text-xs font-bold text-white rounded-lg shadow-lg"
-                                            style={{ backgroundColor: primaryColor }}
-                                        >
-                                            {heroSlides[0].buttonText || "Order Now"}
-                                        </button>
-                                    </div>
-                                </>
-                            ) : (
-                                <>
-                                    <img
-                                        src="https://images.unsplash.com/photo-1633504581786-316c8002b1b2?w=800&q=80"
-                                        alt="Crab Curry"
-                                        className="w-full h-full object-cover"
-                                    />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-                                    <div className="absolute top-4 left-4">
-                                        <span className="px-2 py-1 text-[8px] font-bold text-white rounded" style={{ backgroundColor: primaryColor }}>
-                                            FRESH FROM SUNDARBANS
-                                        </span>
-                                    </div>
-                                    <div className="absolute bottom-4 left-4 right-4">
-                                        <h2 className="text-white text-2xl font-serif font-bold mb-2">Live Mud Crab</h2>
-                                        <button
-                                            className="px-4 py-1.5 text-xs font-bold text-white rounded-lg shadow-lg"
-                                            style={{ backgroundColor: primaryColor }}
-                                        >
-                                            Order Now
-                                        </button>
-                                    </div>
-                                </>
-                            )}
-                        </div>
-
-                        {/* Category Navigation - Matching Real Frontend */}
-                        <div className="px-4 py-2 mb-2">
-                            <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2">
-                                {['Live Crab', 'Platters', 'Best Sellers', 'Spicy', 'Sides'].map((cat, idx) => (
-                                    <div key={idx} className="flex flex-col items-center gap-1 min-w-[50px]">
-                                        <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
-                                            <div className="w-6 h-6 border-2 border-gray-400 rounded-full" />
+                            <div className="space-y-3">
+                                <div className="group">
+                                    <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">Primary Color</Label>
+                                    <div className="flex items-center gap-3 bg-white p-1.5 rounded-xl shadow-sm border border-slate-100 group-hover:border-slate-200 transition-colors">
+                                        <div className="relative overflow-hidden w-8 h-8 rounded-lg ring-1 ring-slate-200 shadow-inner shrink-0 cursor-pointer">
+                                            <input type="color" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className="absolute inset-0 w-[150%] h-[150%] -top-1/4 -left-1/4 cursor-pointer p-0 border-0 opacity-0" />
+                                            <div className="w-full h-full" style={{ backgroundColor: primaryColor }} />
                                         </div>
-                                        <span className="text-[8px] text-gray-600 text-center font-medium">{cat}</span>
+                                        <Input value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className="font-mono uppercase text-xs h-8 border-0 bg-transparent px-0" />
                                     </div>
+                                </div>
+
+                                <div className="group">
+                                    <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">Secondary Color</Label>
+                                    <div className="flex items-center gap-3 bg-white p-1.5 rounded-xl shadow-sm border border-slate-100 group-hover:border-slate-200 transition-colors">
+                                        <div className="relative overflow-hidden w-8 h-8 rounded-lg ring-1 ring-slate-200 shadow-inner shrink-0 cursor-pointer">
+                                            <input type="color" value={secondaryColor} onChange={(e) => setSecondaryColor(e.target.value)} className="absolute inset-0 w-[150%] h-[150%] -top-1/4 -left-1/4 cursor-pointer p-0 border-0 opacity-0" />
+                                            <div className="w-full h-full" style={{ backgroundColor: secondaryColor }} />
+                                        </div>
+                                        <Input value={secondaryColor} onChange={(e) => setSecondaryColor(e.target.value)} className="font-mono uppercase text-xs h-8 border-0 bg-transparent px-0" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Navigation Preview (for Tab Switching) */}
+                        <div className="space-y-4 pt-4 border-t border-slate-100">
+                            <div className="flex items-center gap-2 mb-2 text-slate-800">
+                                <Layout className="w-4 h-4" />
+                                <h2 className="text-sm font-bold">Quick Navigate</h2>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                                {[{ id: 'home', l: 'Home', i: Home }, { id: 'menu', l: 'Menu', i: Grid }, { id: 'story', l: 'Story', i: BookOpen }, { id: 'cart', l: 'Cart', i: ShoppingCart }, { id: 'account', l: 'Account', i: User }].map((t) => (
+                                    <button
+                                        key={t.id}
+                                        onClick={() => setActiveTab(t.id)}
+                                        className={`flex items-center gap-2 p-2 rounded-lg text-xs font-bold border transition-all ${activeTab === t.id ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'}`}
+                                    >
+                                        <t.i className="w-3.5 h-3.5" />
+                                        {t.l}
+                                    </button>
                                 ))}
                             </div>
                         </div>
 
-                        {/* Best Sellers Section - Matching Real Frontend */}
-                        <div className="px-4 py-2">
-                            <div className="flex items-center justify-between mb-3">
-                                <h3 className="font-bold text-slate-900 text-base">Best Sellers</h3>
-                                <span className="text-xs font-bold" style={{ color: primaryColor }}>View All →</span>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-3">
-                                {products.length > 0 ? (
-                                    products.slice(0, 2).map((product, idx) => (
-                                        <div key={product.id} className="transform scale-[0.85] origin-top-left w-[115%] -mb-[15%]">
-                                            <ProductCard
-                                                id={`preview-${product.id}`}
-                                                name={product.name}
-                                                price={product.price}
-                                                image={product.image || product.images?.[0] || "https://images.unsplash.com/photo-1559742811-664426563e41?w=800&q=80"}
-                                                pieces={product.pieces}
-                                            />
-                                        </div>
-                                    ))
-                                ) : (
-                                    <>
-                                        {/* Fallback Product 1 */}
-                                        <div className="transform scale-[0.85] origin-top-left w-[115%] -mb-[15%]">
-                                            <ProductCard
-                                                id="preview-1"
-                                                name="Signature Masala Crab Wings"
-                                                price={350}
-                                                image="https://images.unsplash.com/photo-1608039829572-78524f79c4c7?w=800&q=80"
-                                                pieces={6}
-                                            />
-                                        </div>
-
-                                        {/* Fallback Product 2 */}
-                                        <div className="transform scale-[0.85] origin-top-left w-[115%] -mb-[15%]">
-                                            <ProductCard
-                                                id="preview-2"
-                                                name="Crispy Crab Wings"
-                                                price={330}
-                                                image="https://images.unsplash.com/photo-1559742811-664426563e41?w=800&q=80"
-                                                pieces={8}
-                                                totalSold={245}
-                                            />
-                                        </div>
-                                    </>
-                                )}
-                            </div>
+                        <div className="mt-auto pt-4 border-t border-slate-100 flex flex-col gap-2">
+                            <button
+                                onClick={handleSave}
+                                disabled={saving}
+                                className="w-full bg-slate-900 hover:bg-slate-800 text-white py-3 rounded-xl font-bold transition-all disabled:opacity-50 shadow-lg shadow-slate-900/10 active:scale-95 flex items-center justify-center gap-2 text-sm"
+                            >
+                                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                                {saving ? "Saving..." : "Publish Changes"}
+                            </button>
+                            <button onClick={() => { setPrimaryColor('#e60000'); setSecondaryColor('#0f172a'); }} className="w-full py-3 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors text-xs font-bold flex items-center justify-center gap-2">
+                                <RotateCcw className="w-3.5 h-3.5" /> Reset Defaults
+                            </button>
                         </div>
+                    </Card>
+                </motion.div>
 
-                        {/* Promo Banner Mock */}
-                        <div className="m-4 px-4 py-6 rounded-2xl text-center relative overflow-hidden text-white shadow-lg" style={{ backgroundColor: secondaryColor }}>
-                            <div className="relative z-10">
-                                <p className="text-sm font-medium opacity-80">Special Offer</p>
-                                <h4 className="text-xl font-black mb-3">Free Delivery</h4>
-                                <button className="bg-white text-xs font-bold py-2 px-4 rounded-full text-slate-900">
-                                    Use Code: CRAB20
-                                </button>
-                            </div>
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10" />
-                        </div>
-                    </div>
+                {/* Right Panel: Scalable Preview Area */}
+                <motion.div
+                    initial={{ x: 50, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    transition={{ duration: 0.5, delay: 0.2 }}
+                    className="lg:col-span-9 bg-slate-200/50 rounded-3xl border border-slate-200/50 p-6 flex flex-col shadow-inner relative overflow-hidden"
+                >
+                    {/* Background Pattern */}
+                    <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none" />
 
-                    {/* Bottom Navigation - Matching Real Frontend */}
-                    <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-100 shadow-[0_-1px_3px_rgba(0,0,0,0.05)] z-30">
-                        <div className="flex items-center justify-around h-14 relative">
-                            {/* Home - Active */}
-                            <div className="flex flex-col items-center justify-center w-full h-full space-y-0.5 relative z-10" style={{ color: primaryColor }}>
-                                <div className="absolute inset-0 w-10 h-10 m-auto bg-orange-50 rounded-2xl -z-10"></div>
-                                <div className="relative">
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                                    </svg>
+                    {/* Preview Centering Container */}
+                    <div className="flex-1 flex items-center justify-center overflow-auto z-10">
+
+                        {/* DESKTOP FRAME */}
+                        {device === 'desktop' && (
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+                                className="w-full h-full max-w-[1200px] aspect-video bg-white rounded-xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden ring-1 ring-slate-900/5"
+                            >
+                                {/* Browser Toolbar Mock */}
+                                <div className="h-9 bg-slate-100 border-b border-slate-200 flex items-center px-4 gap-4 shrink-0">
+                                    <div className="flex gap-1.5">
+                                        <div className="w-3 h-3 rounded-full bg-red-400 border border-red-500/20" />
+                                        <div className="w-3 h-3 rounded-full bg-yellow-400 border border-yellow-500/20" />
+                                        <div className="w-3 h-3 rounded-full bg-green-400 border border-green-500/20" />
+                                    </div>
+                                    <div className="flex-1 bg-white h-6 rounded-md border border-slate-200 flex items-center px-3 text-[10px] text-slate-400 font-mono shadow-sm">
+                                        crabkhai.com/{activeTab === 'home' ? '' : activeTab}
+                                    </div>
                                 </div>
-                                <span className="text-[9px] font-medium">Home</span>
-                            </div>
-                            {/* Menu */}
-                            <div className="flex flex-col items-center justify-center w-full h-full space-y-0.5 text-gray-400">
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
-                                    <rect x="3" y="3" width="7" height="7" rx="1" />
-                                    <rect x="14" y="3" width="7" height="7" rx="1" />
-                                    <rect x="14" y="14" width="7" height="7" rx="1" />
-                                    <rect x="3" y="14" width="7" height="7" rx="1" />
-                                </svg>
-                                <span className="text-[9px] font-medium">Menu</span>
-                            </div>
-                            {/* Story */}
-                            <div className="flex flex-col items-center justify-center w-full h-full space-y-0.5 text-gray-400">
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                                </svg>
-                                <span className="text-[9px] font-medium">Story</span>
-                            </div>
-                            {/* Cart */}
-                            <div className="flex flex-col items-center justify-center w-full h-full space-y-0.5 text-gray-400">
-                                <div className="relative">
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                                    </svg>
-                                    <span className="absolute -top-0.5 -right-1 flex h-3 min-w-[12px] items-center justify-center rounded-full px-0.5 text-[7px] font-bold text-white ring-1 ring-white" style={{ backgroundColor: primaryColor }}>2</span>
+
+                                {/* Desktop Content Scroll Area */}
+                                <div className="flex-1 overflow-y-auto bg-white custom-scrollbar">
+                                    {/* Desktop Navbar */}
+                                    <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-100 px-8 py-4 flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-red-500 to-orange-500" style={{ '--tw-gradient-from': primaryColor } as any} />
+                                            <span className="text-xl font-black text-slate-900 tracking-tighter">CrabKhai</span>
+                                        </div>
+                                        <div className="flex items-center gap-8">
+                                            {['Home', 'Menu', 'Story'].map(Link => (
+                                                <div
+                                                    key={Link}
+                                                    onClick={() => setActiveTab(Link.toLowerCase())}
+                                                    className={`text-sm font-bold cursor-pointer transition-colors ${activeTab === Link.toLowerCase() ? 'text-slate-900' : 'text-slate-500 hover:text-slate-800'}`}
+                                                    style={activeTab === Link.toLowerCase() ? { color: primaryColor } : {}}
+                                                >
+                                                    {Link}
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <div className="flex items-center gap-4">
+                                            <div className="p-2 hover:bg-slate-50 rounded-full cursor-pointer"><Search className="w-5 h-5 text-slate-600" /></div>
+                                            <div onClick={() => setActiveTab('cart')} className="p-2 hover:bg-slate-50 rounded-full cursor-pointer relative">
+                                                <ShoppingCart className="w-5 h-5 text-slate-600" />
+                                                <span className="absolute top-0 right-0 w-4 h-4 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center font-bold" style={{ backgroundColor: primaryColor }}>2</span>
+                                            </div>
+                                            <button onClick={() => setActiveTab('account')} className="px-5 py-2 rounded-full text-white text-sm font-bold hover:opacity-90 transition-opacity" style={{ backgroundColor: primaryColor }}>Login</button>
+                                        </div>
+                                    </div>
+
+                                    {/* CONTENT SWITHCER */}
+                                    <div className="min-h-[800px]">
+                                        {activeTab === 'home' && (
+                                            <>
+                                                {/* Hero Desktop */}
+                                                <div className="h-[500px] relative bg-slate-900 flex items-center justify-center overflow-hidden">
+                                                    {heroSlides.length > 0 && <img src={heroSlides[0].imageUrl} className="absolute inset-0 w-full h-full object-cover opacity-60" />}
+                                                    <div className="relative z-10 text-center space-y-6 max-w-2xl px-4">
+                                                        <span className="inline-block px-4 py-1.5 rounded-full bg-white/10 backdrop-blur border border-white/10 text-white text-xs font-bold uppercase tracking-widest">{heroSlides[0]?.title || "Welcome"}</span>
+                                                        <h1 className="text-6xl font-black text-white leading-tight font-serif">{heroSlides[0]?.subtitle || "Best Crabs in Town"}</h1>
+                                                        <button className="px-8 py-4 rounded-full text-white font-bold text-lg shadow-2xl hover:scale-105 transition-transform" style={{ backgroundColor: primaryColor }}>{heroSlides[0]?.buttonText || "Order Now"}</button>
+                                                    </div>
+                                                </div>
+
+                                                {/* Desktop Categories */}
+                                                <div className="max-w-[1200px] mx-auto -mt-16 relative z-20 px-8 mb-16">
+                                                    <div className="bg-white rounded-2xl shadow-xl p-6 grid grid-cols-6 gap-4">
+                                                        {[{ name: 'Live Crabs', icon: Fish }, { name: 'Platters', icon: Utensils }, { name: 'Best Sellers', icon: Award }, { name: 'Spicy', icon: Flame }, { name: 'Sides', icon: Star }, { name: 'More', icon: Grid }].map((c, i) => (
+                                                            <div key={i} className="flex flex-col items-center gap-3 p-4 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer group">
+                                                                <div className="w-14 h-14 rounded-full bg-slate-50 group-hover:bg-white group-hover:shadow-md flex items-center justify-center transition-all border border-slate-100"><c.icon className="w-6 h-6 text-slate-600" /></div>
+                                                                <span className="text-sm font-bold text-slate-700">{c.name}</span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+
+                                                {/* Desktop Rails */}
+                                                <div className="max-w-[1200px] mx-auto px-8 space-y-16 pb-20">
+                                                    {['Best Sellers', 'Super Savings'].map((title, i) => (
+                                                        <div key={title} className="space-y-6">
+                                                            <div className="flex justify-between items-end">
+                                                                <h2 className="text-3xl font-bold text-slate-900">{title}</h2>
+                                                                <button className="text-sm font-bold hover:underline" style={{ color: primaryColor }}>View All Collection</button>
+                                                            </div>
+                                                            <div className="grid grid-cols-4 gap-6">
+                                                                {products.slice(0, 4).map(p => (
+                                                                    <div key={p.id} className="group bg-white rounded-2xl border border-slate-100 overflow-hidden hover:shadow-xl transition-all hover:-translate-y-1">
+                                                                        <div className="aspect-[4/3] bg-slate-100 relative overflow-hidden">
+                                                                            {p.image && <img src={p.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />}
+                                                                        </div>
+                                                                        <div className="p-4">
+                                                                            <h3 className="font-bold text-slate-800 mb-1">{p.name}</h3>
+                                                                            <div className="flex justify-between items-center">
+                                                                                <span className="font-black text-slate-900">৳{p.price}</span>
+                                                                                <button className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center hover:bg-slate-900 hover:text-white transition-colors"><Plus className="w-4 h-4" /></button>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
+                                                                {/* Pad with mocks if empty */}
+                                                                {products.length < 4 && [1, 2, 3, 4].slice(products.length).map(k => (
+                                                                    <div key={k} className="bg-slate-50 rounded-2xl border border-dashed border-slate-200 h-[280px] flex items-center justify-center text-slate-300">Product Placeholder</div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </>
+                                        )}
+
+                                        {activeTab === 'menu' && (
+                                            <div className="max-w-[1200px] mx-auto px-8 py-12 flex gap-12">
+                                                {/* Sidebar Filters */}
+                                                <div className="w-64 shrink-0 space-y-8 sticky top-32 h-fit">
+                                                    <div>
+                                                        <h3 className="font-bold text-lg mb-4">Search</h3>
+                                                        <div className="relative">
+                                                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                                            <input className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" placeholder="Search menu..." />
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <h3 className="font-bold text-lg mb-4">Categories</h3>
+                                                        <div className="space-y-2">
+                                                            {['All Items', 'Live Crabs', 'Platters', 'Sides', 'Beverages'].map((c, i) => (
+                                                                <div key={c} className={`flex items-center justify-between p-2 rounded-lg cursor-pointer ${i === 0 ? 'bg-slate-50 font-bold text-slate-900' : 'text-slate-500 hover:bg-slate-50'}`}>
+                                                                    <span>{c}</span>
+                                                                    <span className="text-xs bg-white px-2 py-0.5 rounded border">12</span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Product Grid */}
+                                                <div className="flex-1">
+                                                    <div className="grid grid-cols-3 gap-6">
+                                                        {products.map(p => (
+                                                            <div key={p.id} className="bg-white rounded-2xl border border-slate-100 overflow-hidden hover:shadow-lg transition-all">
+                                                                <div className="aspect-[4/3] bg-slate-100 relative">
+                                                                    {p.image && <img src={p.image} className="w-full h-full object-cover" />}
+                                                                </div>
+                                                                <div className="p-4">
+                                                                    <h3 className="font-bold text-slate-800 text-sm mb-1">{p.name}</h3>
+                                                                    <span className="font-black text-slate-900">৳{p.price}</span>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                        {products.length < 9 && Array.from({ length: 9 - products.length }).map((_, i) => (
+                                                            <div key={i} className="bg-slate-50 rounded-2xl border border-dashed border-slate-200 aspect-[3/4]" />
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {activeTab === 'story' && (
+                                            <div className="bg-slate-950 text-white min-h-screen">
+                                                <div className="h-[600px] relative flex items-center justify-center">
+                                                    <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1534080564583-6be75777b70a?w=1600&q=80')] bg-cover bg-center opactiy-50" />
+                                                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/50 to-transparent" />
+                                                    <div className="relative z-10 text-center max-w-4xl mx-auto px-6">
+                                                        <h1 className="text-7xl font-serif font-bold mb-6">Our Legacy from the Deep</h1>
+                                                        <p className="text-xl text-slate-300 leading-relaxed">From the pristine waters of the Sundarbans to the bustling tables of Dhaka. <br />We bring you the freshest, most authentic crab experience.</p>
+                                                    </div>
+                                                </div>
+                                                <div className="grid grid-cols-2 max-w-6xl mx-auto py-32 gap-32">
+                                                    <div className="space-y-8 flex flex-col justify-center">
+                                                        <h2 className="text-4xl font-serif font-bold">Sustainable Sourcing</h2>
+                                                        <p className="text-slate-400 text-lg leading-relaxed">We work directly with local fishermen, ensuring fair trade and sustainable practices. Every crab is hand-picked for quality and liveliness.</p>
+                                                    </div>
+                                                    <div className="aspect-square bg-slate-800 rounded-3xl overflow-hidden relative rotate-3 hover:rotate-0 transition-transform duration-700">
+                                                        <img src="https://images.unsplash.com/photo-1559742811-822873691df8?w=800&q=80" className="w-full h-full object-cover" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {activeTab === 'cart' && (
+                                            <div className="max-w-6xl mx-auto px-8 py-12">
+                                                <h1 className="text-3xl font-bold text-slate-900 mb-8">Shopping Cart</h1>
+                                                <div className="grid grid-cols-3 gap-12">
+                                                    {/* Cart Items Table */}
+                                                    <div className="col-span-2">
+                                                        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                                                            <div className="grid grid-cols-12 gap-4 p-4 bg-slate-50 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">
+                                                                <div className="col-span-6">Product</div>
+                                                                <div className="col-span-2 text-center">Price</div>
+                                                                <div className="col-span-2 text-center">Quantity</div>
+                                                                <div className="col-span-2 text-right">Total</div>
+                                                            </div>
+                                                            {mockCartItems.map(item => (
+                                                                <div key={item.id} className="grid grid-cols-12 gap-4 p-6 items-center border-b border-slate-100 last:border-0 hover:bg-slate-50/50 transition-colors">
+                                                                    <div className="col-span-6 flex items-center gap-4">
+                                                                        <div className="w-20 h-20 bg-slate-100 rounded-lg overflow-hidden shrink-0">
+                                                                            {item.image && <img src={item.image} className="w-full h-full object-cover" />}
+                                                                        </div>
+                                                                        <div>
+                                                                            <h3 className="font-bold text-slate-900">{item.name}</h3>
+                                                                            <p className="text-xs text-slate-500">XL Size</p>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="col-span-2 text-center font-bold text-slate-600">৳{item.price}</div>
+                                                                    <div className="col-span-2 flex justify-center">
+                                                                        <div className="flex items-center gap-3 bg-white border border-slate-200 rounded-lg px-2 py-1">
+                                                                            <button className="p-1 hover:text-red-500"><Minus className="w-3 h-3" /></button>
+                                                                            <span className="text-sm font-bold w-4 text-center">{item.quantity}</span>
+                                                                            <button className="p-1 hover:text-green-500"><Plus className="w-3 h-3" /></button>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="col-span-2 text-right font-black text-slate-900">৳{item.price * item.quantity}</div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Summary & Checkout */}
+                                                    <div className="space-y-6">
+                                                        <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-100">
+                                                            <h3 className="font-bold text-lg mb-4">Order Summary</h3>
+                                                            <div className="space-y-3 pb-6 border-b border-slate-100">
+                                                                <div className="flex justify-between text-sm text-slate-600"><span>Subtotal</span><span>৳1500</span></div>
+                                                                <div className="flex justify-between text-sm text-slate-600"><span>Delivery</span><span>৳60</span></div>
+                                                                <div className="flex justify-between text-sm text-slate-600"><span>Discount</span><span className="text-green-500">-৳0</span></div>
+                                                            </div>
+                                                            <div className="py-4 flex justify-between text-xl font-black text-slate-900">
+                                                                <span>Total</span><span>৳1560</span>
+                                                            </div>
+                                                            <button className="w-full py-4 rounded-xl text-white font-bold text-sm uppercase tracking-wider shadow-xl hover:opacity-90 transition-opacity" style={{ backgroundColor: primaryColor }}>
+                                                                Proceed to Checkout
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {activeTab === 'account' && (
+                                            <div className="max-w-4xl mx-auto px-8 py-12">
+                                                <div className="flex items-center gap-6 mb-12">
+                                                    <div className="w-32 h-32 rounded-full ring-4 ring-white shadow-2xl overflow-hidden relative">
+                                                        <img src="/mascot-avatar.png" className="w-full h-full object-cover bg-slate-100" onError={(e) => e.currentTarget.src = "https://github.com/shadcn.png"} />
+                                                    </div>
+                                                    <div>
+                                                        <h1 className="text-3xl font-bold text-slate-900">Welcome back, Foodie!</h1>
+                                                        <div className="flex gap-4 mt-2">
+                                                            <span className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-bold border border-yellow-200">Gold Member</span>
+                                                            <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-bold">1500 Points</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="grid grid-cols-2 gap-6">
+                                                    <div className="bg-white p-6 rounded-2xl border border-slate-100 hover:shadow-lg transition-all cursor-pointer group">
+                                                        <Package className="w-8 h-8 text-blue-500 mb-4 group-hover:scale-110 transition-transform" />
+                                                        <h3 className="font-bold text-lg">My Orders</h3>
+                                                        <p className="text-sm text-slate-500 mt-1">Track active orders and view history</p>
+                                                    </div>
+                                                    <div className="bg-white p-6 rounded-2xl border border-slate-100 hover:shadow-lg transition-all cursor-pointer group">
+                                                        <MapPin className="w-8 h-8 text-green-500 mb-4 group-hover:scale-110 transition-transform" />
+                                                        <h3 className="font-bold text-lg">Addresses</h3>
+                                                        <p className="text-sm text-slate-500 mt-1">Manage delivery locations</p>
+                                                    </div>
+                                                    <div className="bg-white p-6 rounded-2xl border border-slate-100 hover:shadow-lg transition-all cursor-pointer group">
+                                                        <CreditCard className="w-8 h-8 text-purple-500 mb-4 group-hover:scale-110 transition-transform" />
+                                                        <h3 className="font-bold text-lg">Saved Cards</h3>
+                                                        <p className="text-sm text-slate-500 mt-1">Manage payment methods</p>
+                                                    </div>
+                                                    <div className="bg-white p-6 rounded-2xl border border-slate-100 hover:shadow-lg transition-all cursor-pointer group">
+                                                        <User className="w-8 h-8 text-orange-500 mb-4 group-hover:scale-110 transition-transform" />
+                                                        <h3 className="font-bold text-lg">Profile</h3>
+                                                        <p className="text-sm text-slate-500 mt-1">Personal details and security</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Desktop Footer Mock */}
+                                    <div className="bg-slate-900 text-slate-400 py-12 text-center text-sm border-t border-slate-800">
+                                        &copy; 2026 CrabKhai. Designed with intent.
+                                    </div>
                                 </div>
-                                <span className="text-[9px] font-medium">Cart</span>
-                            </div>
-                            {/* Account */}
-                            <div className="flex flex-col items-center justify-center w-full h-full space-y-0.5 text-gray-400">
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                </svg>
-                                <span className="text-[9px] font-medium">Account</span>
-                            </div>
-                        </div>
+                            </motion.div>
+                        )}
+
+                        {/* MOBILE FRAME (Existing Implementation) */}
+                        {device === 'mobile' && (
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+                                className="relative w-[340px] h-[700px] bg-slate-900 rounded-[3rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] border-[8px] border-slate-900 overflow-hidden ring-4 ring-slate-900/10 shrink-0"
+                            >
+                                {/* Status Bar Mock */}
+                                <div className="absolute top-0 left-0 right-0 h-8 bg-slate-900 z-50 flex items-center justify-between px-6">
+                                    <span className="text-[10px] font-medium text-white">9:41</span>
+                                    <div className="flex gap-1.5">
+                                        <div className="w-3 h-3 text-white"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21a9 9 0 0 1-9-9c0-4.97 4.03-9 9-9 9 9 0 0 1 9 9c0 4.97-4.03 9-9 9zM12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S16.627 0 12 0z" /></svg></div>
+                                        <div className="w-3 h-3 text-white"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.6 5.6C12.5 2.5 7.5 2.5 4.4 5.6c-3.1 3.1-3.1 8.1 0 11.2l9.9 9.9 9.9-9.9c3.1-3.1 3.1-8.1 0-11.2-3.1-3.1-8.1-3.1-11.2 0z" /></svg></div>
+                                    </div>
+                                </div>
+                                {/* Dynamic Island Notch */}
+                                <div className="absolute top-2 left-1/2 -translate-x-1/2 w-24 h-6 bg-black rounded-full z-50 pointer-events-none" />
+
+                                {/* Content Scroll View - Animate on Tab Switch */}
+                                <div className="h-full bg-slate-50 pt-8 pb-16 overflow-y-auto no-scrollbar relative">
+                                    <AnimatePresence mode="wait">
+                                        <motion.div
+                                            key={activeTab}
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: -20 }}
+                                            transition={{ duration: 0.3 }}
+                                            className="min-h-full"
+                                        >
+                                            {activeTab === 'home' && (
+                                                <>
+                                                    {/* Hero Banner */}
+                                                    <div className="h-48 relative m-4 rounded-2xl overflow-hidden shadow-sm group">
+                                                        {heroSlides.length > 0 ? (
+                                                            <>
+                                                                <img src={heroSlides[0].imageUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                                                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+                                                                <div className="absolute top-4 left-4">
+                                                                    <span className="px-2 py-1 text-[8px] font-bold text-white rounded" style={{ backgroundColor: primaryColor }}>{heroSlides[0].title}</span>
+                                                                </div>
+                                                                <div className="absolute bottom-4 left-4 right-4">
+                                                                    <h2 className="text-white text-2xl font-serif font-bold mb-2">{heroSlides[0].subtitle}</h2>
+                                                                    <button className="px-4 py-1.5 text-xs font-bold text-white rounded-lg shadow-lg" style={{ backgroundColor: primaryColor }}>{heroSlides[0].buttonText || "Order Now"}</button>
+                                                                </div>
+                                                            </>
+                                                        ) : (
+                                                            <div className="w-full h-full bg-slate-200 flex items-center justify-center text-slate-400">Hero Slide</div>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Category Nav Mock */}
+                                                    <div className="px-4 py-2 mb-2">
+                                                        <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2">
+                                                            {[{ name: 'Live', icon: Fish }, { name: 'Platters', icon: Utensils }, { name: 'Best', icon: Award }, { name: 'Spicy', icon: Flame }, { name: 'Sides', icon: Star }].map((c, i) => (
+                                                                <div key={i} className="flex flex-col items-center gap-1 min-w-[50px]">
+                                                                    <div className="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center border border-slate-100"><c.icon className="w-5 h-5 text-slate-600" /></div>
+                                                                    <span className="text-[9px] font-medium text-slate-600">{c.name}</span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Simplified Rails Mock */}
+                                                    {['Best Sellers', 'Super Savings', 'New Arrivals'].map((title, i) => (
+                                                        <div key={title} className="px-4 py-3">
+                                                            <div className="flex justify-between items-center mb-2">
+                                                                <h3 className="font-bold text-slate-800 text-sm">{title}</h3>
+                                                                <span className="text-[10px] font-bold" style={{ color: primaryColor }}>View All</span>
+                                                            </div>
+                                                            <div className="grid grid-cols-2 gap-3">
+                                                                {products.slice(i, i + 2).map(p => (
+                                                                    <div className="bg-white p-2 rounded-xl shadow-sm border border-slate-100" key={p.id}>
+                                                                        <div className="aspect-square bg-slate-100 rounded-lg mb-2 relative overflow-hidden">
+                                                                            {p.image && <img src={p.image} className="w-full h-full object-cover" />}
+                                                                        </div>
+                                                                        <div className="h-3 w-3/4 bg-slate-200 rounded mb-1" />
+                                                                        <div className="h-3 w-1/2 bg-slate-200 rounded" />
+                                                                    </div>
+                                                                ))}
+                                                                {products.length === 0 && <div className="col-span-2 text-center text-xs text-slate-400 py-4">No products</div>}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+
+                                                    {/* Trust Footer Mock */}
+                                                    <div className="mt-6 bg-gradient-to-br from-red-600 to-red-700 text-white py-6 px-4 relative overflow-hidden">
+                                                        <div className="absolute -top-4 -left-4 w-20 h-20 bg-white/10 rounded-full blur-xl" />
+                                                        <div className="space-y-3 relative z-10 text-center">
+                                                            <div className="flex justify-center gap-4 text-xs opacity-90"><Phone className="w-3 h-3" /> <MapPin className="w-3 h-3" /></div>
+                                                            <p className="text-[10px] opacity-70">© 2026 CrabKhai</p>
+                                                        </div>
+                                                    </div>
+                                                </>
+                                            )}
+
+                                            {activeTab === 'menu' && (
+                                                <div className="min-h-full bg-slate-50">
+                                                    {/* Header Mock */}
+                                                    <div className="sticky top-0 bg-white z-10 px-4 py-3 shadow-sm">
+                                                        <h1 className="text-xl font-bold text-slate-900 mb-2">Full Menu</h1>
+                                                        <div className="relative">
+                                                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                                            <div className="w-full bg-slate-100 h-9 rounded-lg pl-9 flex items-center text-xs text-slate-500">Search for crabs...</div>
+                                                        </div>
+                                                    </div>
+                                                    {/* Filters */}
+                                                    <div className="px-4 py-3 flex gap-2 overflow-x-auto no-scrollbar">
+                                                        {['All', 'Live Crabs', 'Platters', 'Sides'].map((f, i) => (
+                                                            <div key={i} className={`px-3 py-1.5 rounded-full text-[10px] font-bold whitespace-nowrap ${i === 0 ? 'text-white' : 'bg-white text-slate-600 border border-slate-200'}`} style={{ backgroundColor: i === 0 ? primaryColor : 'white' }}>{f}</div>
+                                                        ))}
+                                                    </div>
+                                                    {/* Grid */}
+                                                    <div className="px-4 pb-20 grid grid-cols-2 gap-3">
+                                                        {products.slice(0, 6).map((product: any) => (
+                                                            <div key={product.id} className="bg-white p-2 rounded-xl shadow-sm border border-slate-100">
+                                                                <div className="aspect-[4/3] bg-slate-100 rounded-lg mb-2 relative overflow-hidden">
+                                                                    {product.image && <img src={product.image} className="w-full h-full object-cover" />}
+                                                                </div>
+                                                                <h4 className="font-bold text-xs text-slate-800 line-clamp-1 mb-1">{product.name}</h4>
+                                                                <div className="flex justify-between items-center">
+                                                                    <span className="text-xs font-black text-crab-red">৳{product.price}</span>
+                                                                    <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-slate-600"><Plus className="w-3 h-3" /></div>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {activeTab === 'story' && (
+                                                <div className="min-h-full bg-slate-950 text-white pb-20">
+                                                    {/* Hero */}
+                                                    <div className="h-64 relative overflow-hidden flex items-center justify-center text-center px-6">
+                                                        <div className="absolute inset-0 opacity-30 bg-[url('https://images.unsplash.com/photo-1534080564583-6be75777b70a?w=800&q=80')] bg-cover bg-center" />
+                                                        <div className="absolute inset-0 bg-gradient-to-b from-slate-950/20 via-slate-950/60 to-slate-950" />
+                                                        <div className="relative z-10">
+                                                            <h1 className="text-3xl font-serif font-bold mb-2">Our Legacy</h1>
+                                                            <p className="text-xs text-slate-300">From the Sundarbans to your plate.</p>
+                                                        </div>
+                                                    </div>
+                                                    {/* Values */}
+                                                    <div className="px-4 py-8 space-y-8">
+                                                        <div className="grid grid-cols-2 gap-4">
+                                                            {[1, 2, 3, 4].map(i => (
+                                                                <div key={i} className="aspect-square bg-slate-900/50 rounded-2xl border border-white/5 p-4 flex flex-col items-center justify-center text-center">
+                                                                    <div className="w-10 h-10 rounded-full bg-white/10 mb-2" />
+                                                                    <div className="h-2 w-12 bg-white/20 rounded" />
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                    {/* Footer Mock */}
+                                                    <div className="p-4 bg-slate-900 text-center">
+                                                        <p className="text-[10px] text-slate-500">Est. 2025</p>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {activeTab === 'cart' && (
+                                                <div className="min-h-full bg-slate-50 p-4 pb-20">
+                                                    <h1 className="text-xl font-bold text-slate-900 mb-4">Your Cart</h1>
+                                                    <div className="space-y-3 mb-6">
+                                                        {mockCartItems.map((item) => (
+                                                            <div key={item.id} className="bg-white p-3 rounded-xl shadow-sm border border-slate-100 flex gap-3">
+                                                                <div className="w-16 h-16 bg-slate-100 rounded-lg overflow-hidden shrink-0">
+                                                                    {item.image && <img src={item.image} className="w-full h-full object-cover" />}
+                                                                </div>
+                                                                <div className="flex-1">
+                                                                    <h4 className="font-bold text-xs text-slate-800 line-clamp-1">{item.name}</h4>
+                                                                    <p className="text-xs font-bold text-crab-red mt-1">৳{item.price * item.quantity}</p>
+                                                                </div>
+                                                                <div className="flex flex-col justify-end items-end gap-2">
+                                                                    <Trash2 className="w-3.5 h-3.5 text-slate-300" />
+                                                                    <div className="flex items-center gap-2 bg-slate-50 rounded-full px-2 py-0.5">
+                                                                        <span className="text-[10px]"><Minus className="w-2.5 h-2.5" /></span>
+                                                                        <span className="text-xs font-bold">{item.quantity}</span>
+                                                                        <span className="text-[10px]"><Plus className="w-2.5 h-2.5" /></span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                    {/* Summary */}
+                                                    <div className="bg-orange-50/50 p-4 rounded-xl border border-orange-100 mb-6 space-y-2">
+                                                        <div className="flex justify-between text-xs text-slate-600"><span>Subtotal</span><span>৳1500</span></div>
+                                                        <div className="flex justify-between text-xs text-slate-600"><span>Delivery</span><span>৳60</span></div>
+                                                        <div className="border-t border-orange-200/50 my-1" />
+                                                        <div className="flex justify-between text-sm font-black text-slate-800"><span>Total</span><span>৳1560</span></div>
+                                                    </div>
+                                                    {/* Checkout Mock */}
+                                                    <div className="bg-white p-4 rounded-xl shadow-lg border border-slate-100 space-y-3">
+                                                        <div className="flex items-center gap-2 mb-2"><div className="w-5 h-5 rounded-full bg-slate-900 text-white flex items-center justify-center text-[10px]">1</div><h3 className="text-sm font-bold">Details</h3></div>
+                                                        <div className="h-9 bg-slate-50 rounded border border-slate-200 w-full" />
+                                                        <div className="h-9 bg-slate-50 rounded border border-slate-200 w-full" />
+                                                        <div className="h-20 bg-slate-50 rounded border border-slate-200 w-full" />
+                                                        <div className="flex gap-2 pt-2">
+                                                            <div className="flex-1 p-3 border border-crab-red bg-red-50 rounded-lg flex flex-col items-center justify-center gap-1">
+                                                                <div className="w-3 h-3 rounded-full bg-crab-red" />
+                                                                <span className="text-[9px] font-bold">COD</span>
+                                                            </div>
+                                                            <div className="flex-1 p-3 border border-slate-200 rounded-lg flex flex-col items-center justify-center gap-1 opacity-60">
+                                                                <div className="w-3 h-3 rounded-full border border-slate-400" />
+                                                                <span className="text-[9px] font-bold">bKash</span>
+                                                            </div>
+                                                        </div>
+                                                        <button className="w-full py-3 bg-crab-red text-white text-xs font-black uppercase tracking-widest rounded-lg shadow-lg" style={{ backgroundColor: primaryColor }}>
+                                                            Confirm Order
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {activeTab === 'account' && (
+                                                <div className="min-h-full bg-slate-50">
+                                                    {/* Header Profile Card */}
+                                                    <div style={{ backgroundColor: primaryColor }} className="text-white p-6 pt-10 rounded-b-[2rem] shadow-xl relative overflow-hidden">
+                                                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-10 -mt-10 blur-3xl"></div>
+                                                        <div className="relative z-10 flex flex-col items-center">
+                                                            <div className="w-20 h-20 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center border-4 border-white/20 mb-3 overflow-hidden">
+                                                                <img src="/mascot-avatar.png" className="w-full h-full object-cover" onError={(e) => e.currentTarget.src = "https://github.com/shadcn.png"} />
+                                                            </div>
+                                                            <h1 className="text-lg font-bold">Foodie Member</h1>
+                                                            <p className="text-white/60 text-xs">+880 1700 000 000</p>
+                                                            <div className="mt-4 flex gap-4 w-full">
+                                                                <div className="flex-1 bg-white/10 rounded-xl p-2 text-center backdrop-blur-sm">
+                                                                    <div className="text-[10px] uppercase opacity-70">Points</div>
+                                                                    <div className="text-lg font-black">150</div>
+                                                                </div>
+                                                                <div className="flex-1 bg-white/10 rounded-xl p-2 text-center backdrop-blur-sm">
+                                                                    <div className="text-[10px] uppercase opacity-70">Status</div>
+                                                                    <div className="text-lg font-black">Bronze</div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    {/* Menu Items */}
+                                                    <div className="p-4 space-y-3 -mt-2">
+                                                        <div className="bg-white rounded-xl p-1 shadow-sm border border-slate-100">
+                                                            {[
+                                                                { l: 'My Orders', i: Package, c: 'text-blue-500', b: 'bg-blue-50' },
+                                                                { l: 'Addresses', i: MapPin, c: 'text-green-500', b: 'bg-green-50' },
+                                                                { l: 'Payments', i: CreditCard, c: 'text-purple-500', b: 'bg-purple-50' }
+                                                            ].map((m, i) => (
+                                                                <div key={i} className="flex items-center justify-between p-3 hover:bg-slate-50 rounded-lg cursor-pointer">
+                                                                    <div className="flex items-center gap-3">
+                                                                        <div className={`w-8 h-8 rounded-full ${m.b} ${m.c} flex items-center justify-center`}><m.i className="w-4 h-4" /></div>
+                                                                        <span className="text-sm font-bold text-slate-700">{m.l}</span>
+                                                                    </div>
+                                                                    <ChevronRight className="w-4 h-4 text-slate-300" />
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                        <div className="bg-white rounded-xl p-1 shadow-sm border border-slate-100">
+                                                            <div className="flex items-center justify-between p-3 hover:bg-slate-50 rounded-lg cursor-pointer">
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className="w-8 h-8 rounded-full bg-red-50 text-red-500 flex items-center justify-center"><LogOut className="w-4 h-4" /></div>
+                                                                    <span className="text-sm font-bold text-slate-700">Logout</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </motion.div>
+                                    </AnimatePresence>
+                                </div>
+
+
+                                {/* Bottom Dock Navigation - Matching Real Frontend */}
+                                <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-100 h-16 px-6 pb-2 grid grid-cols-5 items-center z-50">
+                                    {[
+                                        { id: 'home', icon: Home, label: 'Home' },
+                                        { id: 'menu', icon: Grid, label: 'Menu' },
+                                        { id: 'story', icon: BookOpen, label: 'Story' },
+                                        { id: 'cart', icon: ShoppingCart, label: 'Cart', badge: 2 },
+                                        { id: 'account', icon: User, label: 'Account' }
+                                    ].map((tab) => (
+                                        <div
+                                            key={tab.id}
+                                            onClick={() => setActiveTab(tab.id)}
+                                            className="flex flex-col items-center justify-center gap-1 cursor-pointer group"
+                                            style={{ color: activeTab === tab.id ? primaryColor : '#cbd5e1' }}
+                                        >
+                                            <div className="relative transition-transform duration-200 group-active:scale-90">
+                                                <tab.icon className={`w-6 h-6 ${activeTab === tab.id ? 'fill-current' : ''}`} strokeWidth={activeTab === tab.id ? 2.5 : 2} />
+                                                {tab.badge && (
+                                                    <div className="absolute -top-1.5 -right-1.5 bg-crab-red text-white text-[9px] font-bold w-4 h-4 flex items-center justify-center rounded-full ring-2 ring-white" style={{ backgroundColor: primaryColor }}>
+                                                        {tab.badge}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Home Indicator */}
+                                <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-32 h-1 bg-slate-900/20 rounded-full z-50 pointer-events-none" />
+                            </motion.div>
+                        )}
+
                     </div>
-                </div>
+                </motion.div>
             </div>
         </div>
     );
