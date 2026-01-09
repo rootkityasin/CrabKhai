@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getSiteConfig, updateSiteConfig } from '@/app/actions/settings';
+import { getSiteConfig, updateSiteConfig, getPaymentConfig, updatePaymentConfig } from '@/app/actions/settings';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -25,13 +25,21 @@ export function ShopGeneralSettings({ initialConfig }: { initialConfig?: any }) 
         allergensText: '',
         certificates: [] // Future use
     });
+    const [paymentConfig, setPaymentConfig] = useState<any>({});
 
     useEffect(() => {
         if (!initialConfig) {
             async function load() {
-                const data = await getSiteConfig();
+                const [data, payConfig] = await Promise.all([
+                    getSiteConfig(),
+                    getPaymentConfig()
+                ]);
+
                 if (data) {
                     setConfig(data);
+                }
+                if (payConfig) {
+                    setPaymentConfig(payConfig);
                 }
                 setLoading(false);
             }
@@ -41,8 +49,12 @@ export function ShopGeneralSettings({ initialConfig }: { initialConfig?: any }) 
 
     const handleSave = async () => {
         setSaving(true);
-        const res = await updateSiteConfig(config);
-        if (res.success) {
+        const [res, payRes] = await Promise.all([
+            updateSiteConfig(config),
+            updatePaymentConfig(paymentConfig)
+        ]);
+
+        if (res.success && payRes.success) {
             toast.success("Shop settings saved successfully");
         } else {
             toast.error("Failed to save settings");

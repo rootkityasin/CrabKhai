@@ -1,11 +1,9 @@
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model Product {
@@ -106,6 +104,7 @@ model SiteConfig {
   adminSetupToken String   @default("crab-secret-setup-123")
   primaryColor    String   @default("#E60000")
   secondaryColor  String   @default("#0f172a")
+  taxPercentage   Float    @default(0.0)
 }
 
 model Hub {
@@ -230,6 +229,10 @@ model PaymentConfig {
   bkashSecretKey      String?
   bkashUsername       String?
   bkashPassword       String?
+  nagadEnabled        Boolean  @default(false)
+  nagadMerchantNumber String?
+  nagadPublicKey      String?
+  nagadPrivateKey     String?
   selfMfsEnabled      Boolean  @default(false)
   selfMfsType         String?
   selfMfsPhone        String?

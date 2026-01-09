@@ -351,7 +351,7 @@ export default function ProductsPage() {
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="text-sm font-medium">Price (৳)</label>
-                                        <Input type="number" value={newProduct.price} onChange={e => setNewProduct({ ...newProduct, price: parseInt(e.target.value) })} required />
+                                        <Input type="number" value={newProduct.price} onChange={e => setNewProduct({ ...newProduct, price: parseInt(e.target.value) || 0 })} required />
                                     </div>
                                     {config.measurementUnit !== 'PCS' && (
                                         <div>
@@ -384,7 +384,7 @@ export default function ProductsPage() {
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="text-sm font-medium">Loyalty Points</label>
-                                        <Input type="number" placeholder="0" value={newProduct.pointsReward} onChange={e => setNewProduct({ ...newProduct, pointsReward: parseInt(e.target.value) })} />
+                                        <Input type="number" placeholder="0" value={newProduct.pointsReward} onChange={e => setNewProduct({ ...newProduct, pointsReward: parseInt(e.target.value) || 0 })} />
                                     </div>
                                     <div>
                                         <label className="text-sm font-medium">SKU (Optional)</label>

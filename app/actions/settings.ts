@@ -18,7 +18,8 @@ export async function getSiteConfig() {
                 allergensText: "Crustaceans",
                 certificates: [],
                 primaryColor: "#ea0000", // Default Crab Red
-                secondaryColor: "#0f172a" // Default Slate-900
+                secondaryColor: "#0f172a", // Default Slate-900
+                taxPercentage: 0.0
             };
         }
         return config;
@@ -47,7 +48,8 @@ export async function updateSiteConfig(data: any) {
                     allergensText: data.allergensText,
                     certificates: data.certificates,
                     primaryColor: data.primaryColor,
-                    secondaryColor: data.secondaryColor
+                    secondaryColor: data.secondaryColor,
+                    taxPercentage: parseFloat(data.taxPercentage || 0)
                 }
             });
         } else {
@@ -62,7 +64,8 @@ export async function updateSiteConfig(data: any) {
                     allergensText: data.allergensText,
                     certificates: data.certificates,
                     primaryColor: data.primaryColor || "#ea0000",
-                    secondaryColor: data.secondaryColor || "#0f172a"
+                    secondaryColor: data.secondaryColor || "#0f172a",
+                    taxPercentage: parseFloat(data.taxPercentage || 0)
                 }
             });
         }

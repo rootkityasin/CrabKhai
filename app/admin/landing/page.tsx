@@ -12,6 +12,7 @@ import { Plus, Pencil, Trash2, GripVertical, Save, X, Loader2, LayoutTemplate, M
 import { toast } from 'sonner';
 import { ImageUpload } from '@/components/admin/ImageUpload';
 import { StoryEditor } from '@/components/admin/StoryEditor';
+import { CartEditor } from '@/components/admin/CartEditor';
 import { getHeroSlides, createHeroSlide, updateHeroSlide, deleteHeroSlide, updateHeroSlideOrder } from '@/app/actions/hero';
 import {
     DndContext,
@@ -196,10 +197,11 @@ export default function LandingPage() {
             </div>
 
             <Tabs defaultValue="hero" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 max-w-[400px]">
+                <TabsList className="grid w-full grid-cols-3 max-w-[400px]">
                     <TabsTrigger value="hero">Hero Carousel</TabsTrigger>
                     {/* Placeholder for future sections */}
                     <TabsTrigger value="story">Our Story</TabsTrigger>
+                    <TabsTrigger value="cart">Cart</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="hero" className="mt-6 space-y-6">
@@ -245,6 +247,10 @@ export default function LandingPage() {
 
                 <TabsContent value="story" className="mt-6">
                     <StoryEditor />
+                </TabsContent>
+
+                <TabsContent value="cart" className="mt-6">
+                    <CartEditor />
                 </TabsContent>
             </Tabs>
 

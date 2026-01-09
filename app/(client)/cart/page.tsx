@@ -8,11 +8,12 @@ import { motion } from 'framer-motion';
 import { useLanguageStore } from '@/lib/languageStore';
 import { translations } from '@/lib/translations';
 
-import { getPaymentConfig } from '@/app/actions/settings';
+import { getPaymentConfig, getSiteConfig } from '@/app/actions/settings';
 import { createOrder } from '@/app/actions/order';
 import { toast } from 'sonner';
 import { useEffect } from 'react';
 import { useAdmin } from '@/components/providers/AdminProvider';
+import { getStorySections } from '@/app/actions/story';
 
 export default function CartPage() {
     const { items, removeItem, addItem, clearCart, total } = useCartStore();
@@ -22,27 +23,55 @@ export default function CartPage() {
 
     // Payment State
     const [paymentConfig, setPaymentConfig] = useState<any>(null);
+    const [siteConfig, setSiteConfig] = useState<any>(null);
     const [paymentMethod, setPaymentMethod] = useState('COD');
     const [trxId, setTrxId] = useState('');
 
     useEffect(() => {
-        getPaymentConfig().then(config => {
-            if (config) {
-                setPaymentConfig(config);
+        const loadConfig = async () => {
+            const [payConfig, siteConf, sections] = await Promise.all([
+                getPaymentConfig(),
+                getSiteConfig(),
+                getStorySections()
+            ]);
+
+            if (siteConf) setSiteConfig(siteConf);
+
+            if (payConfig) {
+                setPaymentConfig(payConfig);
                 // Auto-select first available
-                if (config.codEnabled) setPaymentMethod('COD');
-                else if (config.bkashEnabled) setPaymentMethod('BKASH');
-                else if (config.selfMfsEnabled) setPaymentMethod('MANUAL');
+                if (payConfig.codEnabled) setPaymentMethod('COD');
+                else if (payConfig.bkashEnabled) setPaymentMethod('BKASH');
+                else if (payConfig.nagadEnabled) setPaymentMethod('NAGAD');
+                else if (payConfig.selfMfsEnabled) setPaymentMethod('MANUAL');
             }
-        });
+
+            const cartSection = sections.find((s: any) => s.type === 'CART_TEXTS');
+            if (cartSection?.content) {
+                // Merge with translations or just state
+                // @ts-ignore
+                setCartTexts(cartSection.content);
+            }
+        };
+        loadConfig();
     }, []);
 
+    // Tax Calculation
+    const subTotalAmount = total();
+    const deliveryFee = 60;
+    const taxRate = siteConfig?.taxPercentage || 0;
+    const taxAmount = Math.ceil((subTotalAmount * taxRate) / 100);
+    const totalAmount = subTotalAmount + deliveryFee + taxAmount;
+
+    const [cartTexts, setCartTexts] = useState<any>(null);
+
     // Form State
-    const [formData, setFormData] = useState({
+    // Form State (Default structure + dynamic)
+    const [formData, setFormData] = useState<any>({
         name: '',
         phone: '',
         area: '',
-        address: '',
+        address: ''
     });
 
     const handleQuantityChange = (item: any, change: number) => {
@@ -67,8 +96,21 @@ export default function CartPage() {
                 quantity: item.quantity,
                 price: item.price
             })),
-            totalAmount: total() + 60 // Including delivery fee
+            totalAmount: totalAmount, // Including delivery fee & tax
+            // Append custom fields to address or ignore for now if schema not ready
+            // For now, let's append custom fields to the address string for visibility
+            orderNotes: Object.keys(formData)
+                .filter(k => !['name', 'phone', 'area', 'address'].includes(k))
+                .map(k => {
+                    const field = cartTexts?.fields?.find((f: any) => f.id === k);
+                    return field ? `${field.label}: ${formData[k]}` : `${k}: ${formData[k]}`;
+                })
+                .join('\n')
         };
+
+        if (orderData.orderNotes) {
+            orderData.customerAddress += `\n\n[Additional Info]\n${orderData.orderNotes}`;
+        }
 
         const res = await createOrder(orderData);
 
@@ -115,20 +157,20 @@ export default function CartPage() {
             <div className="flex flex-col items-center justify-center min-h-[60vh] p-8 text-center">
                 <div className="w-64 h-64 mb-6 flex items-center justify-center overflow-hidden">
                     <img
-                        src="/congrates_animation.gif"
+                        src={cartTexts?.successImage || "/congrates_animation.gif"}
                         alt="Order Confirmed"
                         className="w-full h-full object-contain scale-105"
                     />
                 </div>
-                <h2 className={`text-2xl font-bold text-gray-900 mb-2 ${headingClass}`}>{t.cartPage.successTitle}</h2>
+                <h2 className={`text-2xl font-bold text-gray-900 mb-2 ${headingClass}`}>{cartTexts?.successTitle || t.cartPage.successTitle}</h2>
                 <p className={`text-gray-500 mb-8 max-w-xs mx-auto ${fontClass}`}>
-                    We'll call you shortly at {formData.phone}.
+                    {cartTexts?.successMessage || `We'll call you shortly at ${formData.phone}.`}
                 </p>
                 <Link
                     href="/"
                     className={`px-8 py-3 bg-crab-red text-white font-bold rounded-xl shadow-lg hover:bg-crab-red/90 transition-all ${fontClass}`}
                 >
-                    {t.cartPage.backHome}
+                    {cartTexts?.backHome || t.cartPage.backHome}
                 </Link>
             </div>
         );
@@ -139,15 +181,15 @@ export default function CartPage() {
             <div className="flex flex-col items-center justify-center h-[calc(100dvh-80px)] w-full p-4 text-center animate-in fade-in zoom-in duration-700 relative bg-white overflow-hidden">
 
                 <h2 className={`text-3xl md:text-4xl font-black text-gray-900 mb-2 md:mb-3 tracking-tight ${headingClass}`}>
-                    {t.cartPage.emptyTitle}
+                    {cartTexts?.emptyTitle || t.cartPage.emptyTitle}
                 </h2>
                 <p className={`text-base md:text-lg text-gray-500 mb-2 md:mb-10 max-w-sm mx-auto leading-relaxed font-medium ${fontClass}`}>
-                    {t.cartPage.emptyMessage}
+                    {cartTexts?.emptyMessage || t.cartPage.emptyMessage}
                 </p>
 
                 <div className="w-full max-w-[450px] h-auto max-h-[40vh] aspect-square mb-2 flex items-center justify-center relative">
                     <img
-                        src="/empty_cart_animation.gif"
+                        src={cartTexts?.emptyImage || "/empty_cart_animation.gif"}
                         alt="Empty Cart"
                         className="w-full h-full object-contain"
                     />
@@ -158,7 +200,7 @@ export default function CartPage() {
                     className={`relative group px-10 md:px-12 py-4 md:py-5 mt-4 md:mt-8 bg-gradient-to-r from-crab-red to-orange-600 text-white text-lg md:text-xl font-bold uppercase tracking-wider rounded-2xl shadow-lg shadow-crab-red/30 hover:shadow-crab-red/40 active:scale-95 transition-all overflow-hidden ${fontClass}`}
                 >
                     <span className="relative z-10 flex items-center gap-2">
-                        {t.cartPage.browseMenu}
+                        {cartTexts?.browseMenu || t.cartPage.browseMenu}
                         <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                     </span>
                     <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
@@ -169,7 +211,7 @@ export default function CartPage() {
 
     return (
         <div className="p-4 pb-32 max-w-lg mx-auto">
-            <h1 className={`text-2xl font-bold mb-6 ${headingClass}`}>{t.cartPage.title}</h1>
+            <h1 className={`text-2xl font-bold mb-6 ${headingClass}`}>{cartTexts?.title || t.cartPage.title}</h1>
 
             {/* Cart Items List */}
             <div className="space-y-4 mb-8">
@@ -231,20 +273,25 @@ export default function CartPage() {
                 ))}
             </div>
 
-            {/* Total Summary */}
             <div className="bg-sand/20 p-4 rounded-xl mb-8 border border-sand/30">
                 <div className="flex justify-between items-center mb-2">
-                    <span className="text-gray-600">{t.cartPage.subtotal}</span>
-                    <span className="font-bold text-gray-900">৳{total()}</span>
+                    <span className="text-gray-600">{cartTexts?.subtotal || t.cartPage.subtotal}</span>
+                    <span className="font-bold text-gray-900">৳{subTotalAmount}</span>
                 </div>
                 <div className="flex justify-between items-center mb-2">
-                    <span className="text-gray-600">{t.cartPage.deliveryFee}</span>
-                    <span className="font-bold text-gray-900">৳60</span>
+                    <span className="text-gray-600">{cartTexts?.deliveryFee || t.cartPage.deliveryFee}</span>
+                    <span className="font-bold text-gray-900">৳{deliveryFee}</span>
                 </div>
+                {taxRate > 0 && (
+                    <div className="flex justify-between items-center mb-2">
+                        <span className="text-gray-600">Tax ({taxRate}%)</span>
+                        <span className="font-bold text-gray-900">৳{taxAmount}</span>
+                    </div>
+                )}
                 <div className="my-2 border-t border-gray-300/50"></div>
                 <div className="flex justify-between items-center text-lg">
-                    <span className="font-bold text-ocean-blue">{t.cartPage.total}</span>
-                    <span className="font-black text-crab-red">৳{total() + 60}</span>
+                    <span className="font-bold text-ocean-blue">{cartTexts?.total || t.cartPage.total}</span>
+                    <span className="font-black text-crab-red">৳{totalAmount}</span>
                 </div>
             </div>
 
@@ -252,57 +299,55 @@ export default function CartPage() {
             <div className="bg-white p-5 rounded-2xl shadow-lg border border-gray-100">
                 <h2 className={`text-lg font-bold text-ocean-blue mb-4 flex items-center gap-2 ${headingClass}`}>
                     <span className="w-6 h-6 rounded-full bg-ocean-blue text-white text-xs flex items-center justify-center">1</span>
-                    {t.cartPage.deliveryDetails}
+                    {cartTexts?.deliveryDetails || t.cartPage.deliveryDetails}
                 </h2>
 
                 <form onSubmit={handlePlaceOrder} className="space-y-4">
-                    <div>
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">{t.cartPage.name}</label>
-                        <input
-                            required
-                            type="text"
-                            placeholder={t.cartPage.name}
-                            className={`w-full p-3 bg-gray-50 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all ${fontClass}`}
-                            value={formData.name}
-                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">{t.cartPage.phone}</label>
-                        <input
-                            required
-                            type="tel"
-                            placeholder="017..."
-                            className={`w-full p-3 bg-gray-50 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all ${fontClass}`}
-                            value={formData.phone}
-                            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">{t.cartPage.area}</label>
-                        <select
-                            required
-                            className={`w-full p-3 bg-gray-50 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all appearance-none ${fontClass}`}
-                            value={formData.area}
-                            onChange={(e) => setFormData({ ...formData, area: e.target.value })}
-                        >
-                            <option value="">{t.cartPage.selectArea}</option>
-                            {['Dhaka', 'Khulna', 'Chattogram'].map((area) => (
-                                <option key={area} value={area}>{area}</option>
-                            ))}
-                        </select>
-                    </div>
-                    <div>
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">{t.cartPage.address}</label>
-                        <textarea
-                            required
-                            placeholder={t.cartPage.address}
-                            rows={2}
-                            className={`w-full p-3 bg-gray-50 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all resize-none ${fontClass}`}
-                            value={formData.address}
-                            onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                        />
-                    </div>
+                    {/* Dynamic Field Rendering */}
+                    {(cartTexts?.fields || [
+                        { id: 'name', label: t.cartPage.name, type: 'text', required: true, enabled: true },
+                        { id: 'phone', label: t.cartPage.phone, type: 'tel', required: true, enabled: true },
+                        { id: 'area', label: t.cartPage.area, type: 'select', required: true, enabled: true },
+                        { id: 'address', label: t.cartPage.address, type: 'textarea', required: true, enabled: true },
+                    ]).filter((f: any) => f.enabled).map((field: any) => (
+                        <div key={field.id}>
+                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
+                                {field.label} {field.required && <span className="text-red-500">*</span>}
+                            </label>
+
+                            {field.type === 'select' && field.id === 'area' ? (
+                                <select
+                                    required={field.required}
+                                    className={`w-full p-3 bg-gray-50 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all appearance-none ${fontClass}`}
+                                    value={formData[field.id] || ''}
+                                    onChange={(e) => setFormData({ ...formData, [field.id]: e.target.value })}
+                                >
+                                    <option value="">{t.cartPage.selectArea}</option>
+                                    {['Dhaka', 'Khulna', 'Chattogram'].map((area) => (
+                                        <option key={area} value={area}>{area}</option>
+                                    ))}
+                                </select>
+                            ) : field.type === 'textarea' ? (
+                                <textarea
+                                    required={field.required}
+                                    placeholder={field.placeholder || field.label}
+                                    rows={2}
+                                    className={`w-full p-3 bg-gray-50 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all resize-none ${fontClass}`}
+                                    value={formData[field.id] || ''}
+                                    onChange={(e) => setFormData({ ...formData, [field.id]: e.target.value })}
+                                />
+                            ) : (
+                                <input
+                                    required={field.required}
+                                    type={field.type}
+                                    placeholder={field.placeholder || field.label}
+                                    className={`w-full p-3 bg-gray-50 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all ${fontClass}`}
+                                    value={formData[field.id] || ''}
+                                    onChange={(e) => setFormData({ ...formData, [field.id]: e.target.value })}
+                                />
+                            )}
+                        </div>
+                    ))}
 
                     {/* Payment Method Selection */}
                     <div className="pt-4 border-t border-gray-100">
@@ -339,6 +384,21 @@ export default function CartPage() {
                                         </div>
                                         <img src="/images/bkash-logo.png" alt="bKash" className="h-6 object-contain" />
                                         <span className="font-bold text-gray-800">Pay with bKash</span>
+                                    </div>
+                                </div>
+                            )}
+
+                            {paymentConfig?.nagadEnabled && (
+                                <div
+                                    onClick={() => setPaymentMethod('NAGAD')}
+                                    className={`relative p-4 border rounded-xl cursor-pointer transition-all ${paymentMethod === 'NAGAD' ? 'border-orange-500 bg-orange-50/30' : 'border-gray-200 hover:border-gray-300'}`}
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'NAGAD' ? 'border-orange-500' : 'border-gray-300'}`}>
+                                            {paymentMethod === 'NAGAD' && <div className="w-2.5 h-2.5 bg-orange-500 rounded-full" />}
+                                        </div>
+                                        <img src="/images/nagad-logo.png" alt="Nagad" className="h-6 object-contain" />
+                                        <span className="font-bold text-gray-800">Pay with Nagad</span>
                                     </div>
                                 </div>
                             )}
@@ -405,7 +465,7 @@ export default function CartPage() {
                             />
                         ) : (
                             <>
-                                <span>{t.cartPage.confirmOrder}</span>
+                                <span>{cartTexts?.confirmOrder || t.cartPage.confirmOrder}</span>
                                 <ArrowRight className="w-5 h-5" />
                             </>
                         )}

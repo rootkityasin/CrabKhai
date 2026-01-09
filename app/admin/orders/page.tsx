@@ -241,11 +241,11 @@ export default function OrdersPage() {
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="text-sm font-medium">Price (৳)</label>
-                                        <Input type="number" value={newOrder.price} onChange={e => setNewOrder({ ...newOrder, price: parseInt(e.target.value) })} required />
+                                        <Input type="number" value={newOrder.price} onChange={e => setNewOrder({ ...newOrder, price: parseInt(e.target.value) || 0 })} required />
                                     </div>
                                     <div>
                                         <label className="text-sm font-medium">Items Qty</label>
-                                        <Input type="number" value={newOrder.items} onChange={e => setNewOrder({ ...newOrder, items: parseInt(e.target.value) })} required />
+                                        <Input type="number" value={newOrder.items} onChange={e => setNewOrder({ ...newOrder, items: parseInt(e.target.value) || 0 })} required />
                                     </div>
                                 </div>
                                 <Button type="submit" className="w-full bg-orange-600 hover:bg-orange-700 text-white">Place Order</Button>
@@ -276,11 +276,11 @@ export default function OrdersPage() {
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="text-sm font-medium">Price (৳)</label>
-                                        <Input type="number" value={editForm.price} onChange={e => setEditForm({ ...editForm, price: parseInt(e.target.value) })} required />
+                                        <Input type="number" value={editForm.price} onChange={e => setEditForm({ ...editForm, price: parseInt(e.target.value) || 0 })} required />
                                     </div>
                                     <div>
                                         <label className="text-sm font-medium">Items Qty</label>
-                                        <Input type="number" value={editForm.items} onChange={e => setEditForm({ ...editForm, items: parseInt(e.target.value) })} required />
+                                        <Input type="number" value={editForm.items} onChange={e => setEditForm({ ...editForm, items: parseInt(e.target.value) || 0 })} required />
                                     </div>
                                 </div>
                                 <div className="flex gap-2 justify-end pt-2">

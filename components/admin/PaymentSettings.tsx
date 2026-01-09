@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getPaymentConfig, updatePaymentConfig } from '@/app/actions/settings';
+import { getPaymentConfig, updatePaymentConfig, getSiteConfig, updateSiteConfig } from '@/app/actions/settings';
+import { Percent } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
@@ -24,6 +25,11 @@ export function PaymentSettings() {
         bkashSecretKey: '',
         bkashUsername: '',
         bkashPassword: '',
+        bkashImage: '',
+        nagadEnabled: false,
+        nagadMerchantNumber: '',
+        nagadPublicKey: '',
+        nagadPrivateKey: '',
         selfMfsEnabled: false,
         selfMfsType: 'bkash',
         selfMfsPhone: '',
@@ -32,13 +38,16 @@ export function PaymentSettings() {
         advancePaymentType: 'FULL',
         advancePaymentValue: 0
     });
+    const [taxPercentage, setTaxPercentage] = useState(0);
 
     useEffect(() => {
         async function load() {
-            const data = await getPaymentConfig();
-            if (data) {
-                setConfig(data);
-            }
+            const configData = await getPaymentConfig();
+            const siteData = await getSiteConfig();
+
+            if (configData) setConfig(configData);
+            if (siteData) setTaxPercentage(siteData.taxPercentage || 0);
+
             setLoading(false);
         }
         load();
@@ -47,6 +56,13 @@ export function PaymentSettings() {
     const handleSave = async () => {
         setSaving(true);
         const res = await updatePaymentConfig(config);
+
+        // Update Tax separately (it lives in SiteConfig)
+        const currentSiteConfig = await getSiteConfig();
+        if (currentSiteConfig) {
+            await updateSiteConfig({ ...currentSiteConfig, taxPercentage });
+        }
+
         if (res.success) {
             toast.success("Payment settings saved successfully");
         } else {
@@ -69,6 +85,37 @@ export function PaymentSettings() {
                     Save Changes
                 </Button>
             </div>
+
+            {/* Tax Configuration */}
+            <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600">
+                            <Percent className="w-6 h-6" />
+                        </div>
+                        <div>
+                            <CardTitle className="text-base">Tax Configuration</CardTitle>
+                            <CardDescription>Set a tax percentage to be added to the order total</CardDescription>
+                        </div>
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex items-center gap-3">
+                        <div className="relative">
+                            <Input
+                                type="number"
+                                value={taxPercentage}
+                                onChange={(e) => setTaxPercentage(parseFloat(e.target.value) || 0)}
+                                className="w-32 pr-8"
+                                min="0"
+                                step="any"
+                            />
+                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">%</span>
+                        </div>
+                        <Label className="text-gray-500">Tax added to total</Label>
+                    </div>
+                </CardContent>
+            </Card>
 
             {/* Cash On Delivery */}
             <Card>
@@ -123,6 +170,45 @@ export function PaymentSettings() {
                                 <div className="space-y-2">
                                     <Label>Merchant Password</Label>
                                     <Input type="password" value={config.bkashPassword || ''} onChange={(e) => setConfig({ ...config, bkashPassword: e.target.value })} placeholder="Password" />
+                                </div>
+                            </div>
+                        </div>
+                    </CardContent>
+                )}
+            </Card>
+
+            {/* Nagad Merchant */}
+            <Card className={config.nagadEnabled ? "border-orange-200 bg-orange-50/10" : ""}>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+                    <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center p-1">
+                            <img src="/images/nagad-logo.png" alt="Nagad" className="w-full h-full object-contain" />
+                        </div>
+                        <div>
+                            <CardTitle className="text-base">Nagad Merchant</CardTitle>
+                            <CardDescription>Configure Nagad merchant credentials for automated payments</CardDescription>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        {config.nagadEnabled && <span className="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full font-medium">Active</span>}
+                        <Switch checked={config.nagadEnabled} onCheckedChange={(c) => setConfig({ ...config, nagadEnabled: c })} />
+                    </div>
+                </CardHeader>
+                {config.nagadEnabled && (
+                    <CardContent className="space-y-4 pt-0">
+                        <div className="p-4 bg-white rounded-lg border border-gray-100 space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label>Merchant Number</Label>
+                                    <Input value={config.nagadMerchantNumber || ''} onChange={(e) => setConfig({ ...config, nagadMerchantNumber: e.target.value })} placeholder="01..." />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Public Key</Label>
+                                    <Input value={config.nagadPublicKey || ''} onChange={(e) => setConfig({ ...config, nagadPublicKey: e.target.value })} placeholder="Public Key" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Private Key</Label>
+                                    <Input type="password" value={config.nagadPrivateKey || ''} onChange={(e) => setConfig({ ...config, nagadPrivateKey: e.target.value })} placeholder="Private Key" />
                                 </div>
                             </div>
                         </div>
