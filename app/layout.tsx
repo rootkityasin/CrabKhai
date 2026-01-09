@@ -10,6 +10,7 @@ import { Inter, Hind_Siliguri, Playfair_Display } from "next/font/google";
 import { Toaster } from '@/components/ui/sonner';
 import PromoPopup from '@/components/client/PromoPopup';
 import SessionProvider from '@/components/providers/SessionProvider';
+import { SpeedInsights } from "@vercel/speed-insights/next"
 import "./globals.css";
 
 const inter = Inter({
@@ -53,6 +54,7 @@ export default function RootLayout({
             {children}
             <PromoPopup />
             <Toaster richColors position="top-center" />
+            <SpeedInsights />
           </SessionProvider>
         </main>
       </body>
