@@ -96,14 +96,14 @@ export function ReviewMoodModal({ productId, isOpen, onClose }: ReviewMoodModalP
     return (
         <AnimatePresence>
             {isOpen && (
-                <>
+                <div className="fixed inset-0 z-[50000] flex items-end md:items-center justify-center pointer-events-none">
                     {/* Backdrop */}
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={onClose}
-                        className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[9999]"
+                        className="absolute inset-0 bg-black/80 backdrop-blur-sm pointer-events-auto"
                     />
 
                     {/* Modal/Drawer */}
@@ -117,48 +117,24 @@ export function ReviewMoodModal({ productId, isOpen, onClose }: ReviewMoodModalP
                             stiffness: 300,
                             backgroundColor: { duration: 0.15 } // Fast color change
                         }}
-                        // Mobile: Full screen (inset-0). Desktop: Centered Popup.
-                        // Z-Index: 50000 to overlay bottom navbar.
-                        className="fixed inset-0 md:inset-0 md:m-auto w-full h-[100dvh] md:w-[400px] md:h-fit md:max-h-[90vh] rounded-none md:rounded-[2.5rem] shadow-none md:shadow-2xl z-[50000] overflow-hidden flex flex-col"
+                        // Mobile: Full screen vertical. Desktop: Split Row view wide.
+                        className="pointer-events-auto relative w-full h-[100dvh] md:w-[800px] md:h-auto md:max-h-[85vh] rounded-none md:rounded-[2.5rem] shadow-none md:shadow-2xl overflow-hidden flex flex-col md:flex-row"
                     >
-                        {/* Close Button */}
-                        <div className="flex justify-between items-center px-6 pt-6 pb-2 md:pb-6">
-                            <button onClick={onClose} className="p-2 bg-black/5 hover:bg-black/10 rounded-full transition-colors">
-                                <X className="w-5 h-5 text-black/60" />
-                            </button>
-                            <button className="p-2 rounded-full">
-                                <span className="text-xs font-bold ring-1 ring-black/20 rounded-full w-5 h-5 flex items-center justify-center text-black/40">i</span>
-                            </button>
-                        </div>
 
-                        {/* Content Scroll Area */}
-                        {/* pb-24 for mobile navbar clearance */}
-                        <div className="flex-1 flex flex-col items-center px-8 pb-24 md:pb-8 overflow-y-auto no-scrollbar">
-                            <h2 className="text-center text-lg font-medium text-black/80 mb-6 md:mb-12 max-w-[200px] leading-tight transition-colors">
-                                How was your shopping experience?
-                            </h2>
-
+                        {/* DESKTOP LEFT: Visuals (Hidden on Mobile) */}
+                        <div className="hidden md:flex w-[320px] shrink-0 border-r border-[#1a2e05]/5 flex-col items-center justify-center p-8 bg-black/5">
                             {/* FACE ANIMATION */}
-                            <div className="relative w-48 h-48 mb-4 md:mb-8 flex items-center justify-center scale-75 md:scale-100 origin-center">
+                            <div className="relative w-48 h-48 mb-8 flex items-center justify-center">
                                 {/* Left Eye */}
                                 <motion.div
                                     className="absolute left-4 top-12 w-16 h-16 bg-[#1a2e05] rounded-full"
-                                    animate={{
-                                        scale: mood.eyeScale,
-                                        rotate: mood.eyeRotate,
-                                        y: sliderValue > 80 ? -5 : 0
-                                    }}
+                                    animate={{ scale: mood.eyeScale, rotate: mood.eyeRotate, y: sliderValue > 80 ? -5 : 0 }}
                                 />
                                 {/* Right Eye */}
                                 <motion.div
                                     className="absolute right-4 top-12 w-16 h-16 bg-[#1a2e05] rounded-full"
-                                    animate={{
-                                        scale: mood.eyeScale,
-                                        rotate: -mood.eyeRotate, // Mirror rotation
-                                        y: sliderValue > 80 ? -5 : 0
-                                    }}
+                                    animate={{ scale: mood.eyeScale, rotate: -mood.eyeRotate, y: sliderValue > 80 ? -5 : 0 }}
                                 />
-
                                 {/* Mouth SVG */}
                                 <svg width="100" height="120" viewBox="0 0 100 120" className="absolute top-12">
                                     <motion.path
@@ -175,117 +151,154 @@ export function ReviewMoodModal({ productId, isOpen, onClose }: ReviewMoodModalP
 
                             {/* MOOD LABEL */}
                             <motion.h3
-                                key={mood.label}
-                                initial={{ y: 20, opacity: 0 }}
+                                key={mood.label + '-desktop'}
+                                initial={{ y: 10, opacity: 0 }}
                                 animate={{ y: 0, opacity: 1 }}
-                                className="text-4xl md:text-5xl font-black uppercase tracking-tight text-[#1a2e05]/90 mb-8 md:mb-16"
+                                className="text-5xl font-black uppercase tracking-tight text-[#1a2e05]/90"
                             >
                                 {mood.label}
                             </motion.h3>
+                        </div>
 
-                            {/* SLIDER CONTROL */}
-                            <div className="w-full relative py-4 mb-2">
+                        {/* CONTENT AREA (Right Col on Desktop, Full Stack on Mobile) */}
+                        <div className="flex-1 flex flex-col h-full overflow-hidden relative">
+                            {/* Close Button Row (Top Right) */}
+                            <div className="flex justify-between md:justify-end items-center px-6 pt-6 pb-2">
+                                {/* Helper button only on Mobile if needed, or remove. Keeping generic close. */}
+                                {/* On mobile we might want left aligned info button? Keeping consistent. */}
+                                <button className="md:hidden p-2 rounded-full">
+                                    <span className="text-xs font-bold ring-1 ring-black/20 rounded-full w-5 h-5 flex items-center justify-center text-black/40">i</span>
+                                </button>
+
+                                <button onClick={onClose} className="p-2 bg-black/5 hover:bg-black/10 rounded-full transition-colors z-20">
+                                    <X className="w-5 h-5 text-black/60" />
+                                </button>
+                            </div>
+
+                            {/* Scrollable Form */}
+                            <div className="flex-1 overflow-y-auto no-scrollbar px-8 pb-24 md:pb-8 flex flex-col items-center md:items-stretch">
+                                <h2 className="text-center md:text-left text-lg font-medium text-black/80 mb-6 md:mb-8 leading-tight max-w-[200px] md:max-w-none mx-auto md:mx-0 transition-colors">
+                                    How was your shopping experience?
+                                </h2>
+
+                                {/* MOBILE VISUALS (Face + Label) - Hidden on desktop */}
+                                <div className="md:hidden flex flex-col items-center mb-8">
+                                    <div className="relative w-48 h-48 mb-4 flex items-center justify-center scale-75 origin-center">
+                                        <motion.div className="absolute left-4 top-12 w-16 h-16 bg-[#1a2e05] rounded-full" animate={{ scale: mood.eyeScale, rotate: mood.eyeRotate, y: sliderValue > 80 ? -5 : 0 }} />
+                                        <motion.div className="absolute right-4 top-12 w-16 h-16 bg-[#1a2e05] rounded-full" animate={{ scale: mood.eyeScale, rotate: -mood.eyeRotate, y: sliderValue > 80 ? -5 : 0 }} />
+                                        <svg width="100" height="120" viewBox="0 0 100 120" className="absolute top-12">
+                                            <motion.path d={mood.mouthPath} fill="transparent" stroke="#1a2e05" strokeWidth="8" strokeLinecap="round" animate={{ d: mood.mouthPath }} transition={{ type: "spring", bounce: 0.4 }} />
+                                        </svg>
+                                    </div>
+                                    <motion.h3 key={mood.label + '-mobile'} initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="text-4xl font-black uppercase tracking-tight text-[#1a2e05]/90">
+                                        {mood.label}
+                                    </motion.h3>
+                                </div>
+
+                                {/* SLIDER */}
+                                <div className="w-full relative py-4 mb-4 md:mb-6">
+                                    <input
+                                        type="range"
+                                        min="0"
+                                        max="100"
+                                        value={sliderValue}
+                                        onChange={(e) => setSliderValue(Number(e.target.value))}
+                                        className="w-full h-1 bg-black/10 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-8 [&::-webkit-slider-thumb]:h-8 [&::-webkit-slider-thumb]:bg-[#1a2e05] [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-4 [&::-webkit-slider-thumb]:border-white/50"
+                                    />
+                                    <div className="flex justify-between text-[10px] font-bold uppercase mt-4 text-black/40 px-1 tracking-widest">
+                                        <span>Bad</span>
+                                        <span>Okay</span>
+                                        <span>Good</span>
+                                    </div>
+                                </div>
+
+                                {/* IMAGE PREVIEWS */}
+                                <AnimatePresence>
+                                    {images.length > 0 && (
+                                        <motion.div
+                                            initial={{ opacity: 0, height: 0 }}
+                                            animate={{ opacity: 1, height: 'auto' }}
+                                            exit={{ opacity: 0, height: 0 }}
+                                            className="w-full flex gap-2 mb-4 overflow-x-auto pb-2"
+                                        >
+                                            {images.map((img, i) => (
+                                                <div key={i} className="relative w-16 h-16 shrink-0 rounded-lg overflow-hidden border border-black/10">
+                                                    <img src={img} alt="review" className="w-full h-full object-cover" />
+                                                    <button
+                                                        onClick={() => removeImage(i)}
+                                                        className="absolute top-0.5 right-0.5 bg-black/50 text-white rounded-full p-0.5"
+                                                    >
+                                                        <X className="w-3 h-3" />
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+
+                                {/* Add Photos Prominent Button */}
+                                <button
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className="w-full py-3 mb-3 border-2 border-dashed border-[#1a2e05]/20 hover:border-[#1a2e05]/40 rounded-2xl flex items-center justify-center gap-2 text-[#1a2e05]/70 hover:text-[#1a2e05] hover:bg-[#1a2e05]/5 transition-all group"
+                                >
+                                    <div className="p-2 bg-[#1a2e05]/10 rounded-full group-hover:bg-[#1a2e05]/20 transition-colors">
+                                        <Camera className="w-5 h-5" />
+                                    </div>
+                                    <span className="font-bold text-sm">Add Photos</span>
+                                </button>
                                 <input
-                                    type="range"
-                                    min="0"
-                                    max="100"
-                                    value={sliderValue}
-                                    onChange={(e) => setSliderValue(Number(e.target.value))}
-                                    className="w-full h-1 bg-black/10 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-8 [&::-webkit-slider-thumb]:h-8 [&::-webkit-slider-thumb]:bg-[#1a2e05] [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-4 [&::-webkit-slider-thumb]:border-white/50"
+                                    type="file"
+                                    ref={fileInputRef}
+                                    className="hidden"
+                                    accept="image/*"
+                                    multiple
+                                    onChange={handleFileSelect}
                                 />
-                                <div className="flex justify-between text-[10px] font-bold uppercase mt-4 text-black/40 px-1 tracking-widest">
-                                    <span>Bad</span>
-                                    <span>Okay</span>
-                                    <span>Good</span>
-                                </div>
-                            </div>
 
-                            {/* IMAGE PREVIEWS */}
-                            <AnimatePresence>
-                                {images.length > 0 && (
-                                    <motion.div
-                                        initial={{ opacity: 0, height: 0 }}
-                                        animate={{ opacity: 1, height: 'auto' }}
-                                        exit={{ opacity: 0, height: 0 }}
-                                        className="w-full flex gap-2 mb-4 overflow-x-auto pb-2"
+                                {/* ACTION BUTTONS */}
+                                <div className="w-full flex gap-3 mt-auto shrink-0 z-10">
+                                    {/* Note Button */}
+                                    <button
+                                        onClick={() => setNoteOpen(!noteOpen)}
+                                        className={`flex-1 py-4 rounded-[1.2rem] font-bold text-sm transition-all flex items-center justify-center gap-2 ${noteOpen ? 'bg-[#1a2e05] text-white' : 'bg-white/40 ring-1 ring-inset ring-[#1a2e05]/10 hover:bg-white/60 text-[#1a2e05]'}`}
                                     >
-                                        {images.map((img, i) => (
-                                            <div key={i} className="relative w-16 h-16 shrink-0 rounded-lg overflow-hidden border border-black/10">
-                                                <img src={img} alt="review" className="w-full h-full object-cover" />
-                                                <button
-                                                    onClick={() => removeImage(i)}
-                                                    className="absolute top-0.5 right-0.5 bg-black/50 text-white rounded-full p-0.5"
-                                                >
-                                                    <X className="w-3 h-3" />
-                                                </button>
-                                            </div>
-                                        ))}
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
+                                        {noteOpen ? 'Close' : 'Add Note'}
+                                    </button>
 
-                            {/* Add Photos Prominent Button */}
-                            <button
-                                onClick={() => fileInputRef.current?.click()}
-                                className="w-full py-3 mb-3 border-2 border-dashed border-[#1a2e05]/20 hover:border-[#1a2e05]/40 rounded-2xl flex items-center justify-center gap-2 text-[#1a2e05]/70 hover:text-[#1a2e05] hover:bg-[#1a2e05]/5 transition-all group"
-                            >
-                                <div className="p-2 bg-[#1a2e05]/10 rounded-full group-hover:bg-[#1a2e05]/20 transition-colors">
-                                    <Camera className="w-5 h-5" />
-                                </div>
-                                <span className="font-bold text-sm">Add Photos</span>
-                            </button>
-                            <input
-                                type="file"
-                                ref={fileInputRef}
-                                className="hidden"
-                                accept="image/*"
-                                multiple
-                                onChange={handleFileSelect}
-                            />
-
-                            {/* ACTION BUTTONS */}
-                            <div className="w-full flex gap-3 mt-auto shrink-0 z-10">
-                                {/* Note Button */}
-                                <button
-                                    onClick={() => setNoteOpen(!noteOpen)}
-                                    className={`flex-1 py-4 rounded-[1.2rem] font-bold text-sm transition-all flex items-center justify-center gap-2 ${noteOpen ? 'bg-[#1a2e05] text-white' : 'bg-white/40 ring-1 ring-inset ring-[#1a2e05]/10 hover:bg-white/60 text-[#1a2e05]'}`}
-                                >
-                                    {noteOpen ? 'Close' : 'Add Note'}
-                                </button>
-
-                                {/* Submit Button */}
-                                <button
-                                    onClick={handleSubmit}
-                                    disabled={loading}
-                                    className="flex-[1.5] py-4 bg-[#1a2e05] text-white rounded-[1.2rem] font-bold text-sm hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 shadow-xl shadow-[#1a2e05]/10"
-                                >
-                                    {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Submit Review'}
-                                </button>
-                            </div>
-
-                            {/* NOTE TEXTAREA */}
-                            <AnimatePresence>
-                                {noteOpen && (
-                                    <motion.div
-                                        initial={{ height: 0, opacity: 0 }}
-                                        animate={{ height: 'auto', opacity: 1 }}
-                                        exit={{ height: 0, opacity: 0 }}
-                                        className="w-full overflow-hidden shrink-0"
+                                    {/* Submit Button */}
+                                    <button
+                                        onClick={handleSubmit}
+                                        disabled={loading}
+                                        className="flex-[1.5] py-4 bg-[#1a2e05] text-white rounded-[1.2rem] font-bold text-sm hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 shadow-xl shadow-[#1a2e05]/10"
                                     >
-                                        <textarea
-                                            value={comment}
-                                            onChange={(e) => setComment(e.target.value)}
-                                            placeholder="What did you like or dislike?"
-                                            // Fixed outline with border-2 and stronger opacity
-                                            className="w-full mt-4 bg-white/60 border-2 border-[#1a2e05]/10 placeholder:text-black/40 text-[#1a2e05] p-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#1a2e05]/50 focus:border-[#1a2e05]/30 text-sm min-h-[100px] resize-none transition-all"
-                                            autoFocus
-                                        />
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
+                                        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Submit Review'}
+                                    </button>
+                                </div>
+
+                                {/* NOTE TEXTAREA */}
+                                <AnimatePresence>
+                                    {noteOpen && (
+                                        <motion.div
+                                            initial={{ height: 0, opacity: 0 }}
+                                            animate={{ height: 'auto', opacity: 1 }}
+                                            exit={{ height: 0, opacity: 0 }}
+                                            className="w-full overflow-hidden shrink-0"
+                                        >
+                                            <textarea
+                                                value={comment}
+                                                onChange={(e) => setComment(e.target.value)}
+                                                placeholder="What did you like or dislike?"
+                                                // Fixed outline with border-2 and stronger opacity
+                                                className="w-full mt-4 bg-white/60 border-2 border-[#1a2e05]/10 placeholder:text-black/40 text-[#1a2e05] p-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#1a2e05]/50 focus:border-[#1a2e05]/30 text-sm min-h-[100px] resize-none transition-all"
+                                                autoFocus
+                                            />
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
                         </div>
                     </motion.div>
-                </>
+                </div>
             )}
         </AnimatePresence>
     );
