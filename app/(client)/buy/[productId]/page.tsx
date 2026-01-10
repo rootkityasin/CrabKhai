@@ -7,6 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowRight, MessageCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { getProduct } from '@/app/actions/product';
+import { getProductReviews } from '@/app/actions/review';
+import { ProductReviews } from '@/components/client/ProductReviews';
 import { cn } from '@/lib/utils';
 import useEmblaCarousel from 'embla-carousel-react';
 
@@ -88,19 +90,35 @@ function ProductImageCarousel({ images, name }: { images: string[], name: string
 export default function SmartLinkPage() {
     const params = useParams();
     const [product, setProduct] = useState<any>(null);
+    const [reviews, setReviews] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const loadProduct = async () => {
             const productId = Array.isArray(params.productId) ? params.productId[0] : params.productId;
             if (productId) {
-                const data = await getProduct(productId);
-                if (data) setProduct(data);
+                try {
+                    const [productData, reviewsData] = await Promise.all([
+                        getProduct(productId),
+                        getProductReviews(productId)
+                    ]);
+
+                    if (productData) setProduct(productData);
+                    setReviews(reviewsData || []);
+                } catch (error) {
+                    console.error("Failed to load product data:", error);
+                    // Try to at least get product if reviews failed?
+                    // Optional fallback logic could go here.
+                    const productOnly = await getProduct(productId).catch(() => null);
+                    if (productOnly) setProduct(productOnly);
+                    setReviews([]); // Ensure reviews is an empty array if fetch fails
+                }
             }
             setLoading(false);
         };
         loadProduct();
     }, [params.productId]);
+
 
     if (loading) {
         return (
@@ -240,6 +258,9 @@ export default function SmartLinkPage() {
                     </div>
 
                 </div>
+
+                {/* Reviews Section */}
+                <ProductReviews productId={product.id} reviews={reviews} />
             </div>
         </div>
     );

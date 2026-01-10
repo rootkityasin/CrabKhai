@@ -41,6 +41,7 @@ model Product {
   totalSold       Int         @default(0)
   createdAt       DateTime    @default(now())
   descriptionSwap Boolean     @default(false)
+  reviews         Review[]
 }
 
 model ComboItem {
@@ -85,12 +86,18 @@ model Category {
 }
 
 model PromoCard {
-  id          String   @id @default(cuid())
-  title       String
-  description String?
-  imageUrl    String
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
+  id            String   @id @default(cuid())
+  title         String
+  description   String?
+  imageUrl      String
+  style         String   @default("CLASSIC") // CLASSIC, DARK
+  buttonText    String?
+  buttonLink    String?
+  price         String?  // For DARK mode
+  originalPrice String?  // For DARK mode
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model SiteConfig {
@@ -137,6 +144,7 @@ model User {
   accounts  Account[]
   sessions  Session[]
   hub       Hub?      @relation(fields: [hubId], references: [id])
+  reviews   Review[]
 }
 
 model Account {
@@ -207,6 +215,26 @@ model Expense {
   hub         Hub?     @relation(fields: [hubId], references: [id])
 }
 
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED
+}
+
+model Coupon {
+  id            String       @id @default(cuid())
+  code          String       @unique
+  discountType  DiscountType @default(FIXED)
+  discountValue Int
+  minOrderAmount Int         @default(0)
+  expiresAt     DateTime?
+  isActive      Boolean      @default(true)
+  usageLimit    Int?         
+  usedCount     Int          @default(0)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
+
 model Order {
   id              String      @id @default(cuid())
   orderId         String      @unique
@@ -220,6 +248,8 @@ model Order {
   hubId           String?
   hub             Hub?        @relation(fields: [hubId], references: [id])
   items           OrderItem[]
+  couponCode      String?
+  discountAmount  Int?
 }
 
 model PaymentConfig {
@@ -305,5 +335,18 @@ model StorySection {
   id        String   @id @default(cuid())
   type      String   @unique
   content   Json
+  updatedAt DateTime @updatedAt
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  rating    Int
+  comment   String?
+  images    String[]
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

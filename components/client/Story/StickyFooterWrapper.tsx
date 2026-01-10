@@ -10,7 +10,7 @@ export function StickyFooterWrapper({ children, footer }: { children: React.Reac
     // However, for the Story page specifically, we can use this to wrap the page content.
 
     return (
-        <div className="relative z-10 bg-slate-900 mb-[50vh] md:mb-[400px]">
+        <div className="relative z-10 bg-slate-900">
             {/* The margin-bottom needs to match the footer height so there is space for the footer to be revealed */}
             {children}
         </div>

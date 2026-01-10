@@ -46,10 +46,10 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${inter.variable} ${hindSiliguri.variable} ${playfair.variable} antialiased bg-sand text-ocean-blue font-body md:bg-gray-100`}
+        className={`${inter.variable} ${hindSiliguri.variable} ${playfair.variable} antialiased bg-white text-ocean-blue font-body`}
         suppressHydrationWarning
       >
-        <main className="min-h-screen bg-sand relative">
+        <main className="min-h-screen relative">
           <SessionProvider>
             {children}
             <PromoPopup />

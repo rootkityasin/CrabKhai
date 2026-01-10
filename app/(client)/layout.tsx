@@ -18,7 +18,7 @@ export default async function ClientLayout({ // Changed to async
     return (
         <AdminProvider>
             <ThemeInjector primaryColor={config?.primaryColor} secondaryColor={config?.secondaryColor} />
-            <div className="flex flex-col min-h-screen bg-white pb-20 md:pb-0 relative">
+            <div className="flex flex-col min-h-screen bg-white relative">
                 <div className="md:hidden">
                     <MobileHeader />
                 </div>

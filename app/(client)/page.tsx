@@ -36,7 +36,7 @@ export default function ClientHomePage() {
     const newArrivals = activeProducts.slice(1, 5);
 
     return (
-        <div className="min-h-screen pb-12">
+        <div className="min-h-screen">
             <PromoModal />
             <HeroCarousel slides={heroSlides} />
 

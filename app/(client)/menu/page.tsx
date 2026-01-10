@@ -73,7 +73,7 @@ function MenuContent() {
     }
 
     return (
-        <div className="bg-gray-50 min-h-screen pb-20 pt-32">
+        <div className="bg-gray-50 min-h-screen pb-20 pt-20 md:pt-28">
             {/* Header */}
             <div className="bg-white sticky top-[72px] z-10 shadow-sm border-b border-gray-100">
                 <div className="max-w-7xl mx-auto px-4 py-3 md:py-6 flex flex-col md:flex-row md:items-center justify-between gap-4">

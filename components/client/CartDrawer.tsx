@@ -7,18 +7,23 @@ import Link from 'next/link';
 import { useAdmin } from '@/components/providers/AdminProvider';
 import { useEffect, useState } from 'react';
 
+import { CouponSection } from '@/components/client/CouponSection';
+
 export function CartDrawer() {
-    const { items, removeItem, addItem, isOpen, closeCart, total } = useCartStore();
+    const { items, removeItem, addItem, isOpen, closeCart, total, discount, finalTotal, coupon } = useCartStore();
     const { settings } = useAdmin();
     const [mounted, setMounted] = useState(false);
+
+    // Logic for variables
+    const subTotal = total();
+    const discountVal = discount();
+    const finalVal = finalTotal();
 
     useEffect(() => {
         setMounted(true);
     }, []);
 
     if (!mounted) return null;
-
-    const subTotal = total();
 
     const handleQuantityChange = (item: any, change: number) => {
         if (change === -1 && item.quantity === 1) {
@@ -147,10 +152,28 @@ export function CartDrawer() {
                         {/* Footer */}
                         {items.length > 0 && (
                             <div className="p-5 bg-white border-t border-gray-100 sticky bottom-0 z-20 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)]">
-                                <div className="flex justify-between items-center mb-4">
-                                    <span className="text-gray-500 font-medium text-sm">Subtotal</span>
-                                    <span className="text-xl font-bold text-gray-900">৳{subTotal}</span>
+                                {/* Coupon Section */}
+                                <CouponSection />
+
+                                <div className="space-y-2 mb-4">
+                                    <div className="flex justify-between items-center text-gray-500 text-sm">
+                                        <span>Subtotal</span>
+                                        <span>৳{subTotal}</span>
+                                    </div>
+
+                                    {discountVal > 0 && (
+                                        <div className="flex justify-between items-center text-green-600 text-sm font-medium">
+                                            <span>Discount {coupon?.code && `(${coupon.code})`}</span>
+                                            <span>-৳{discountVal}</span>
+                                        </div>
+                                    )}
+
+                                    <div className="flex justify-between items-center pt-2 border-t border-gray-100">
+                                        <span className="text-gray-900 font-bold">Total</span>
+                                        <span className="text-xl font-bold text-crab-red">৳{finalVal}</span>
+                                    </div>
                                 </div>
+
                                 <Link href="/cart" onClick={closeCart}>
                                     <button className="w-full py-4 bg-crab-red text-white font-bold text-lg rounded-xl shadow-lg hover:bg-red-600 active:scale-95 transition-all flex items-center justify-center gap-2 group relative overflow-hidden">
                                         <span className="relative z-10 flex items-center gap-2">

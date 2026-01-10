@@ -29,7 +29,7 @@ export default async function StoryPage() {
             <HeroStory data={getContent('HERO')} />
 
             <StickyFooterWrapper footer={null}>
-                <div className="relative bg-slate-950 z-10 shadow-2xl pb-20">
+                <div className="relative bg-slate-950 z-10 shadow-2xl">
                     <ValuesSection data={getContent('VALUES')} />
                     <StoryProducts data={productsContent} products={products} />
                     <GallerySection data={getContent('GALLERY')} />

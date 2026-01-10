@@ -1,21 +1,12 @@
 'use server';
 
-import { prisma } from '@/lib/prisma';
+import { prisma as globalPrisma } from '@/lib/prisma';
+import { PrismaClient } from '@prisma/client';
 
-export async function getPendingOrderCount() {
-    try {
-        const count = await prisma.order.count({
-            where: {
-                status: 'PENDING'
-            }
-        });
-        return count;
-    } catch (error) {
-        console.error("Failed to get order count:", error);
-        return 0;
-    }
-}
-// ... (existing imports)
+// Fallback to local instance if global is stale (missing coupon delegate)
+const prisma = (globalPrisma as any).coupon
+    ? globalPrisma
+    : new PrismaClient();
 
 import { checkBotId } from 'botid/server';
 
@@ -25,6 +16,8 @@ export async function createOrder(data: {
     customerAddress: string;
     items: { productId: string; quantity: number; price: number }[];
     totalAmount: number;
+    couponCode?: string;
+    discountAmount?: number;
 }) {
     const verification = await checkBotId();
     if (verification.isBot) {
@@ -40,6 +33,8 @@ export async function createOrder(data: {
                 customerPhone: data.customerPhone,
                 customerAddress: data.customerAddress,
                 totalAmount: data.totalAmount,
+                couponCode: data.couponCode,
+                discountAmount: data.discountAmount,
                 items: {
                     create: data.items.map(item => ({
                         productId: item.productId,
@@ -74,6 +69,22 @@ export async function createOrder(data: {
                     where: { id: item.productId },
                     data: { pieces: { decrement: item.quantity } }
                 });
+            }
+        }
+
+        // 3. Increment Coupon Usage
+        if (data.couponCode) {
+            // We use updateMany or try/catch to avoid error if coupon deleted/invalid race condition
+            // But since we just validated effectively, update is fine.
+            // Using prisma.coupon.update requires ID or unique field. Code is unique.
+            try {
+                await prisma.coupon.update({
+                    where: { code: data.couponCode },
+                    data: { usedCount: { increment: 1 } }
+                });
+            } catch (e) {
+                console.error("Failed to increment coupon usage", e);
+                // Non-blocking error
             }
         }
 

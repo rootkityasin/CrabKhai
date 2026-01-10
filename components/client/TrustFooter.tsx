@@ -50,7 +50,7 @@ export default function TrustFooter({ config: initialConfig, ...props }: TrustFo
         }
     ];
     return (
-        <section className="bg-gradient-to-br from-red-600 to-red-700 text-white py-12 px-4 overflow-hidden relative">
+        <section className="bg-gradient-to-br from-red-600 to-red-700 text-white pt-12 pb-24 md:pb-12 px-4 overflow-hidden relative">
             {/* Artistic Background Elements */}
             <div className="absolute top-0 left-0 w-32 h-32 bg-white/5 rounded-br-full blur-2xl" />
             <div className="absolute bottom-0 right-0 w-48 h-48 bg-black/10 rounded-tl-full blur-2xl" />

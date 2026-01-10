@@ -19,7 +19,14 @@ interface CartState {
     addItem: (item: CartItem) => void;
     removeItem: (itemId: string) => void;
     clearCart: () => void;
-    total: () => number;
+
+    coupon: { code: string; type: 'PERCENTAGE' | 'FIXED'; value: number } | null;
+    applyCoupon: (coupon: { code: string; type: 'PERCENTAGE' | 'FIXED'; value: number }) => void;
+    removeCoupon: () => void;
+
+    total: () => number; // Item Subtotal
+    discount: () => number; // Calculated discount
+    finalTotal: () => number; // Payable amount
 }
 
 export const useCartStore = create<CartState>()(
@@ -27,6 +34,7 @@ export const useCartStore = create<CartState>()(
         (set, get) => ({
             items: [],
             isOpen: false,
+            coupon: null,
             openCart: () => set({ isOpen: true }),
             closeCart: () => set({ isOpen: false }),
             toggleCart: () => set((state) => ({ isOpen: !state.isOpen })),
@@ -42,7 +50,7 @@ export const useCartStore = create<CartState>()(
                                     ? { ...i, quantity: i.quantity + item.quantity }
                                     : i
                             ),
-                            isOpen: true, // Auto open on add? Maybe. Let's do it for "premium" feel.
+                            isOpen: true,
                         };
                     }
                     return { items: [...state.items, item], isOpen: true };
@@ -51,12 +59,33 @@ export const useCartStore = create<CartState>()(
                 set((state) => ({
                     items: state.items.filter((i) => i.id !== itemId),
                 })),
-            clearCart: () => set({ items: [] }),
+            clearCart: () => set({ items: [], coupon: null }),
             total: () => get().items.reduce((acc, item) => acc + item.price * item.quantity, 0),
+
+            applyCoupon: (coupon) => set({ coupon }),
+            removeCoupon: () => set({ coupon: null }),
+
+            discount: () => {
+                const { coupon, total } = get();
+                if (!coupon) return 0;
+
+                const subTotal = total();
+                if (coupon.type === 'PERCENTAGE') {
+                    return Math.floor((subTotal * coupon.value) / 100);
+                } else {
+                    return Math.min(coupon.value, subTotal);
+                }
+            },
+
+            finalTotal: () => {
+                const total = get().total(); // This uses the getter from inside the object specifically? No, get().total() works
+                const discount = get().discount();
+                return Math.max(0, total - discount);
+            }
         }),
         {
             name: 'crabkhai-cart',
-            partialize: (state) => ({ items: state.items }), // Only persist items!, don't persist isOpen
+            partialize: (state) => ({ items: state.items, coupon: state.coupon }),
         }
     )
 );

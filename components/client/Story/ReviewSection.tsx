@@ -5,6 +5,8 @@ import { Star, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 
+import { ReviewMoodModal } from '@/components/client/ReviewMoodModal';
+
 interface ReviewProps {
     data: {
         featuredImage: string;
@@ -24,7 +26,7 @@ export function ReviewSection({ data }: ReviewProps) {
     ];
 
     return (
-        <section className="relative py-24 px-6 bg-slate-900">
+        <section className="relative pt-24 pb-20 md:py-24 px-6 bg-slate-900">
             <div className="max-w-7xl mx-auto">
                 <div className="text-center mb-16">
                     <h2 className="text-3xl md:text-5xl font-black text-white mb-6">Customer Stories</h2>
@@ -74,37 +76,18 @@ export function ReviewSection({ data }: ReviewProps) {
                         size="lg"
                         variant="outline"
                         className="bg-transparent border-crab-red text-crab-red hover:bg-crab-red hover:text-white transition-all rounded-full"
-                        onClick={() => setIsReviewFormOpen(!isReviewFormOpen)}
+                        onClick={() => setIsReviewFormOpen(true)}
                     >
-                        {isReviewFormOpen ? 'Close Review Form' : 'Write a Review'}
+                        Write a Review
                     </Button>
                 </div>
 
-                {/* Simple Expandable Review Form */}
-                {isReviewFormOpen && (
-                    <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        className="max-w-lg mx-auto mt-8 bg-slate-900 p-8 rounded-2xl border border-white/10"
-                    >
-                        <h4 className="text-white font-bold text-xl mb-4">Share your experience</h4>
-                        <div className="space-y-4">
-                            <input
-                                type="text"
-                                placeholder="Your Name"
-                                className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-white focus:outline-none focus:border-crab-red"
-                            />
-                            <textarea
-                                placeholder="Your Review"
-                                rows={4}
-                                className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-white focus:outline-none focus:border-crab-red"
-                            />
-                            <Button className="w-full bg-crab-red hover:bg-red-600 text-white">
-                                Submit Review
-                            </Button>
-                        </div>
-                    </motion.div>
-                )}
+                {/* Animated Review Modal */}
+                <ReviewMoodModal
+                    isOpen={isReviewFormOpen}
+                    onClose={() => setIsReviewFormOpen(false)}
+                    productId="story-page"
+                />
             </div>
         </section>
     );
