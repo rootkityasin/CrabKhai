@@ -1,6 +1,8 @@
+import { useState } from 'react';
+import { motion } from 'framer-motion';
 
 // Helper for Zoom - Placing this in the same file or separate
-function ZoomableImage({ src }: { src: string }) {
+export function ZoomableImage({ src }: { src: string }) {
     const [scale, setScale] = useState(1);
 
     // Simple double tap to zoom
