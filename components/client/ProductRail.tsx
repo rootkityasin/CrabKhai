@@ -41,7 +41,7 @@ export function ProductRail({ title, products, viewAllLink = '#', enableScrollAn
                 </Link>
             </div>
 
-            <div className={`overflow-x-auto pb-4 hide-scrollbar ${enableScrollAnimation ? '' : 'snap-x'}`}>
+            <div className={`overflow-x-auto pb-4 hide-scrollbar md:hidden ${enableScrollAnimation ? '' : 'snap-x'}`}>
                 <motion.div
                     className="flex gap-4 px-4 w-max"
                     style={{
@@ -71,6 +71,30 @@ export function ProductRail({ title, products, viewAllLink = '#', enableScrollAn
                         </div>
                     ))}
                 </motion.div>
+            </div>
+
+            {/* Desktop Grid */}
+            <div className="hidden md:grid grid-cols-4 gap-6">
+                {products.map((product) => (
+                    <ProductCard
+                        key={product.id}
+                        id={product.id}
+                        name={product.name}
+                        price={String(product.price)}
+                        image={product.image}
+                        name_bn={(product as any).name_bn}
+                        price_bn={(product as any).price_bn}
+                        nutritionImage={(product as any).nutritionImage}
+                        cookingImage={(product as any).cookingImage}
+                        nutrition={(product as any).nutrition}
+                        cookingInstructions={(product as any).cookingInstructions}
+                        pieces={(product as any).pieces}
+                        totalSold={(product as any).totalSold}
+                        weightOptions={(product as any).weightOptions}
+                        images={(product as any).images}
+                        stage={(product as any).stage}
+                    />
+                ))}
             </div>
         </section>
     );

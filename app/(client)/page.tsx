@@ -36,20 +36,28 @@ export default function ClientHomePage() {
     const newArrivals = activeProducts.slice(1, 5);
 
     return (
-        <div>
+        <div className="min-h-screen pb-12">
             <PromoModal />
             <HeroCarousel slides={heroSlides} />
-            <CategoryNav />
-            {bestSellers.length > 0 && <ProductRail title="Best Sellers" products={bestSellers} enableScrollAnimation={true} viewAllLink="/menu?filter=best-sellers" />}
-            {bestDeals.length > 0 && <ProductRail title="Super Savings" products={bestDeals} viewAllLink="/menu?filter=super-savings" />}
-            {newArrivals.length > 0 && <ProductRail title="New Arrivals" products={newArrivals} viewAllLink="/menu?filter=new-arrivals" />}
-            {/* Fallback to show something if no products exist yet (e.g. empty admin) */}
-            {activeProducts.length === 0 && (
-                <div className="p-8 text-center text-gray-500">
-                    <p>No products available yet. Add them in the Admin Panel!</p>
-                </div>
-            )}
-            <TrustFooter config={settings} />
+
+            <div className="max-w-7xl mx-auto px-4 md:px-8 space-y-8 md:space-y-16">
+                <CategoryNav />
+
+                {bestSellers.length > 0 && <ProductRail title="Best Sellers" products={bestSellers} enableScrollAnimation={true} viewAllLink="/menu?filter=best-sellers" />}
+                {bestDeals.length > 0 && <ProductRail title="Super Savings" products={bestDeals} viewAllLink="/menu?filter=super-savings" />}
+                {newArrivals.length > 0 && <ProductRail title="New Arrivals" products={newArrivals} viewAllLink="/menu?filter=new-arrivals" />}
+
+                {/* Fallback to show something if no products exist yet (e.g. empty admin) */}
+                {activeProducts.length === 0 && (
+                    <div className="p-8 text-center text-gray-500">
+                        <p>No products available yet. Add them in the Admin Panel!</p>
+                    </div>
+                )}
+            </div>
+
+            <div className="mt-12">
+                <TrustFooter config={settings} />
+            </div>
         </div>
     );
 }

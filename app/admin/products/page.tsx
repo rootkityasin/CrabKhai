@@ -16,6 +16,7 @@ import { ProductBoard } from '@/components/admin/ProductBoard';
 import { toast } from 'sonner';
 import { MediaUpload } from '@/components/admin/MediaUpload';
 import { Textarea } from '@/components/ui/textarea';
+import { Switch } from "@/components/ui/switch";
 import { getProducts, createProduct, updateProduct, deleteProduct } from '@/app/actions/product';
 import { getCategories } from '@/app/actions/category';
 import { getSiteConfig } from '@/app/actions/settings';
@@ -30,7 +31,7 @@ export default function ProductsPage() {
     const [isAdding, setIsAdding] = useState(false);
     const [newProduct, setNewProduct] = useState({
         name: '',
-        price: 0,
+        price: '' as number | string,
         sku: '',
         image: '',
         images: [] as string[],
@@ -38,11 +39,12 @@ export default function ProductsPage() {
         description: '',
         nutrition: '',
         cookingInstructions: '',
-        pointsReward: 0,
-        weight: 0,
-        pieces: 0,
+        pointsReward: '' as number | string,
+        weight: '' as number | string,
+        pieces: '' as number | string,
         stage: 'Draft',
         type: 'SINGLE',
+        descriptionSwap: false,
         comboItems: [] as { childId: string, quantity: number }[]
     });
 
@@ -138,6 +140,7 @@ export default function ProductsPage() {
             pieces: product.pieces || 0,
             stage: product.stage || 'Draft',
             type: product.type || 'SINGLE',
+            descriptionSwap: product.descriptionSwap || false,
             comboItems: product.comboItems || []
         });
         setEditingId(product.id);
@@ -240,7 +243,7 @@ export default function ProductsPage() {
                         </Popover>
                         <Button className="bg-orange-600 hover:bg-orange-700 text-white" onClick={() => {
                             setEditingId(null);
-                            setNewProduct({ name: '', price: 0, sku: '', image: '', images: [], categoryId: '', description: '', nutrition: '', cookingInstructions: '', pointsReward: 0, weight: 0, pieces: 0, stage: 'Draft', type: 'SINGLE', comboItems: [] });
+                            setNewProduct({ name: '', price: '', sku: '', image: '', images: [], categoryId: '', description: '', nutrition: '', cookingInstructions: '', pointsReward: '', weight: '', pieces: '', stage: 'Draft', type: 'SINGLE', descriptionSwap: false, comboItems: [] });
                             setIsAdding(true);
                         }}>
                             <Plus className="w-4 h-4 mr-2" /> Add Product
@@ -348,10 +351,35 @@ export default function ProductsPage() {
                                     </div>
                                 )}
 
+                                <div>
+                                    <label className="text-sm font-medium">Description</label>
+                                    <Textarea
+                                        value={newProduct.description}
+                                        onChange={e => setNewProduct({ ...newProduct, description: e.target.value })}
+                                        placeholder="Product description..."
+                                        className="mt-1"
+                                    />
+                                    <div className="flex items-center space-x-2 mt-2">
+                                        <Switch
+                                            id="swap-mode"
+                                            checked={newProduct.descriptionSwap}
+                                            onCheckedChange={(checked: boolean) => setNewProduct({ ...newProduct, descriptionSwap: checked })}
+                                        />
+                                        <label htmlFor="swap-mode" className="text-sm font-medium text-slate-600">
+                                            Swap Image/Text Position (Left/Right)
+                                        </label>
+                                    </div>
+                                </div>
+
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="text-sm font-medium">Price (৳)</label>
-                                        <Input type="number" value={newProduct.price} onChange={e => setNewProduct({ ...newProduct, price: parseInt(e.target.value) || 0 })} required />
+                                        <Input
+                                            type="number"
+                                            value={newProduct.price}
+                                            onChange={e => setNewProduct({ ...newProduct, price: e.target.value === '' ? '' : parseFloat(e.target.value) })}
+                                            required
+                                        />
                                     </div>
                                     {config.measurementUnit !== 'PCS' && (
                                         <div>
@@ -362,7 +390,7 @@ export default function ProductsPage() {
                                                 type="number"
                                                 placeholder="e.g. 200"
                                                 value={newProduct.weight}
-                                                onChange={e => setNewProduct({ ...newProduct, weight: parseInt(e.target.value) || 0 })}
+                                                onChange={e => setNewProduct({ ...newProduct, weight: e.target.value === '' ? '' : parseFloat(e.target.value) })}
                                             />
                                             <p className="text-[10px] text-slate-500">1 Unit = {newProduct.weight || 0} {config.measurementUnit === 'WEIGHT' ? 'g' : 'ml'}</p>
                                         </div>
@@ -376,7 +404,7 @@ export default function ProductsPage() {
                                                 type="number"
                                                 placeholder="0"
                                                 value={newProduct.pieces}
-                                                onChange={e => setNewProduct({ ...newProduct, pieces: parseInt(e.target.value) || 0 })}
+                                                onChange={e => setNewProduct({ ...newProduct, pieces: e.target.value === '' ? '' : parseFloat(e.target.value) })}
                                             />
                                         </div>
                                     )}
@@ -384,7 +412,12 @@ export default function ProductsPage() {
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="text-sm font-medium">Loyalty Points</label>
-                                        <Input type="number" placeholder="0" value={newProduct.pointsReward} onChange={e => setNewProduct({ ...newProduct, pointsReward: parseInt(e.target.value) || 0 })} />
+                                        <Input
+                                            type="number"
+                                            placeholder="0"
+                                            value={newProduct.pointsReward}
+                                            onChange={e => setNewProduct({ ...newProduct, pointsReward: e.target.value === '' ? '' : parseFloat(e.target.value) })}
+                                        />
                                     </div>
                                     <div>
                                         <label className="text-sm font-medium">SKU (Optional)</label>

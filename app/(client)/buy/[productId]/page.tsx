@@ -7,6 +7,83 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowRight, MessageCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { getProduct } from '@/app/actions/product';
+import { cn } from '@/lib/utils';
+import useEmblaCarousel from 'embla-carousel-react';
+
+
+function ProductImageCarousel({ images, name }: { images: string[], name: string }) {
+    // Revert to default settings for standard responsive swipe
+    const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
+    const [selectedIndex, setSelectedIndex] = useState(0);
+
+    useEffect(() => {
+        if (emblaApi) {
+            emblaApi.on('select', () => {
+                setSelectedIndex(emblaApi.selectedScrollSnap());
+            });
+        }
+    }, [emblaApi]);
+
+    const scrollPrev = () => emblaApi && emblaApi.scrollPrev();
+    const scrollNext = () => emblaApi && emblaApi.scrollNext();
+
+    return (
+        <div
+            className="relative w-full h-full group overflow-hidden"
+            ref={emblaRef}
+        >
+            <div className="flex h-full touch-pan-y">
+                {images.map((src, index) => (
+                    <div key={index} className="flex-[0_0_100%] min-w-0 h-full relative">
+                        <img
+                            src={src}
+                            alt={`${name} - Image ${index + 1}`}
+                            className="w-full h-full object-cover select-none"
+                            onDragStart={(e) => e.preventDefault()}
+                        />
+                    </div>
+                ))}
+            </div>
+
+            {/* Arrows - Only visible if multiple images */}
+            {images.length > 1 && (
+                <>
+                    <button
+                        className="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-white/80 text-slate-800 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white"
+                        onClick={(e) => { e.stopPropagation(); scrollPrev(); }}
+                    >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
+                    </button>
+                    <button
+                        className="absolute right-2 top-1/2 -translate-y-1/2 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-white/80 text-slate-800 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white"
+                        onClick={(e) => { e.stopPropagation(); scrollNext(); }}
+                    >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
+                    </button>
+                </>
+            )}
+
+            {/* Dots Navigation */}
+            {images.length > 1 && (
+                <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 z-10">
+                    {images.map((_, index) => (
+                        <button
+                            key={index}
+                            className={cn(
+                                "w-2 h-2 rounded-full transition-all shadow-sm",
+                                index === selectedIndex
+                                    ? "bg-white w-4"
+                                    : "bg-white/50 hover:bg-white/80"
+                            )}
+                            onClick={(e) => { e.stopPropagation(); emblaApi?.scrollTo(index); }}
+                        />
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
+
 
 export default function SmartLinkPage() {
     const params = useParams();
@@ -51,41 +128,119 @@ export default function SmartLinkPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-            <Card className="w-full max-w-md bg-white shadow-xl border-t-4 border-t-orange-600">
-                <div className="h-48 relative bg-gray-100 group">
-                    {/* Glass Pieces Tag */}
-                    {(product as any).pieces && (product as any).pieces > 0 && (
-                        <div className="absolute top-3 right-3 z-20">
-                            <span className="px-2.5 py-1 rounded-lg bg-white/70 backdrop-blur-md border border-white/50 text-xs font-bold text-gray-900 shadow-sm flex items-center gap-1">
-                                <span className="w-1.5 h-1.5 rounded-full bg-crab-red inline-block" />
-                                {(product as any).pieces} pcs
-                            </span>
+        <div className="min-h-screen bg-[#FDFCF8]">
+            {/* Desktop Background Elements */}
+            <div className="fixed inset-0 pointer-events-none hidden md:block">
+                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-orange-50/50 rounded-full blur-3xl -z-10" />
+                <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-blue-50/30 rounded-full blur-3xl -z-10" />
+            </div>
+
+            <div className="max-w-7xl mx-auto px-4 md:px-8 py-4 md:py-12 relative z-10">
+                {/* Desktop: Split Layout / Mobile: Stacked */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 items-start">
+
+                    {/* Left Column: Imagery (Sticky on Desktop) */}
+                    <div className="relative md:sticky md:top-24">
+                        <Card className="border-0 shadow-none bg-transparent md:bg-white md:shadow-2xl md:rounded-[2rem] overflow-hidden md:border-4 md:border-white">
+                            <div className="aspect-square relative bg-gray-100 group overflow-hidden">
+                                {/* Glass Pieces Tag */}
+                                {(product as any).pieces && (product as any).pieces > 0 && (
+                                    <div className="absolute top-4 right-4 z-20">
+                                        <div className="px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-lg flex items-center gap-2 group-hover:scale-105 transition-transform">
+                                            <span className="w-2 h-2 rounded-full bg-crab-red animate-pulse" />
+                                            <span className="text-sm font-bold text-slate-900">{(product as any).pieces} Pieces</span>
+                                        </div>
+                                    </div>
+                                )}
+
+                                <ProductImageCarousel
+                                    images={(product as any).images?.length > 0 ? (product as any).images : [product.image || '/placeholder.png']}
+                                    name={product.name}
+                                />
+                            </div>
+                        </Card>
+
+                        {/* Trust Badges - Desktop Only */}
+                        <div className="hidden md:flex justify-center gap-8 mt-8 opacity-70 grayscale hover:grayscale-0 transition-all duration-500">
+                            <div className="flex items-center gap-2 text-xs font-bold text-slate-500">
+                                <div className="p-2 bg-green-100 rounded-full text-green-600"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div>
+                                <span>Fresh Daily</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-xs font-bold text-slate-500">
+                                <div className="p-2 bg-blue-100 rounded-full text-blue-600"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.001 0 0012 21a9.003 9.001 0 008.354-5.646z" /></svg></div>
+                                <span>Organic Feed</span>
+                            </div>
                         </div>
-                    )}
-                    <img src={product.image || '/placeholder.png'} alt={product.name} className="w-full h-full object-cover" />
+                    </div>
+
+                    {/* Right Column: Details & Actions */}
+                    <div className="flex flex-col space-y-8 md:pt-4">
+                        <div>
+                            <div className="flex items-center gap-3 mb-4">
+                                <Badge variant="outline" className="rounded-full px-4 py-1 text-xs uppercase tracking-widest border-slate-300 text-slate-500">
+                                    Premium Selection
+                                </Badge>
+                                {(product as any).sku && (
+                                    <span className="text-xs text-slate-400 font-mono">SKU: {(product as any).sku}</span>
+                                )}
+                            </div>
+
+                            <h1 className="text-3xl md:text-5xl font-heading font-black text-slate-900 leading-tight mb-4">
+                                {product.name}
+                            </h1>
+
+                            <div className="flex items-baseline gap-4 mb-6">
+                                <span className="text-4xl font-bold text-crab-red">৳{product.price}</span>
+                                <span className="text-sm text-slate-400 font-medium uppercase tracking-wide">Per Unit</span>
+                            </div>
+
+                            <div className="prose prose-slate prose-lg text-slate-600 leading-relaxed mb-8">
+                                <p>{product.description}</p>
+                            </div>
+                        </div>
+
+                        {/* Action Area */}
+                        <Card className="bg-white border-none shadow-xl shadow-orange-500/5 rounded-2xl overflow-hidden">
+                            <div className="p-1 bg-gradient-to-r from-orange-500 via-red-500 to-orange-500 opacity-20" />
+                            <CardContent className="p-6 md:p-8 space-y-6">
+                                <div className="p-4 bg-blue-50/50 rounded-xl border border-blue-100 flex gap-3 text-blue-800">
+                                    <span className="text-xl">⚡</span>
+                                    <div>
+                                        <p className="font-bold text-sm">Instant WhatsApp Order</p>
+                                        <p className="text-xs text-blue-600/80">No account required • Fast confirmation</p>
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-col gap-4">
+                                    <Button
+                                        onClick={handleWhatsAppOrder}
+                                        className="w-full h-14 bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold text-lg rounded-xl shadow-lg hover:shadow-[#25D366]/30 transition-all transform hover:-translate-y-0.5"
+                                    >
+                                        <MessageCircle className="w-6 h-6 mr-2" />
+                                        Order via WhatsApp
+                                    </Button>
+
+                                    <div className="relative flex items-center gap-4 py-2">
+                                        <div className="h-px bg-slate-100 flex-1" />
+                                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">or</span>
+                                        <div className="h-px bg-slate-100 flex-1" />
+                                    </div>
+
+                                    <Button
+                                        variant="outline"
+                                        className="w-full h-14 border-2 border-slate-200 text-slate-700 font-bold text-lg rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all"
+                                        onClick={() => window.location.href = '/'}
+                                    >
+                                        <ArrowRight className="w-5 h-5 mr-2" />
+                                        Continue Shopping
+                                    </Button>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+
                 </div>
-                <CardHeader>
-                    <div className="flex justify-between items-start">
-                        <CardTitle className="text-xl font-bold text-slate-900">{product.name}</CardTitle>
-                        <Badge className="bg-orange-100 text-orange-700 font-bold text-lg">৳{product.price}</Badge>
-                    </div>
-                    <p className="text-sm text-slate-500 mt-2">{product.description}</p>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="p-3 bg-blue-50 text-blue-800 text-xs rounded-lg border border-blue-100">
-                        ⚡ <strong>Instant Order:</strong> No login required. Changes apply via WhatsApp.
-                    </div>
-                </CardContent>
-                <CardFooter className="flex-col gap-3">
-                    <Button onClick={handleWhatsAppOrder} className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold h-12 text-md">
-                        <MessageCircle className="w-5 h-5 mr-2" /> Order on WhatsApp
-                    </Button>
-                    <Button variant="outline" className="w-full" onClick={() => window.location.href = '/'}>
-                        <ArrowRight className="w-4 h-4 mr-2" /> Add to Cart & Browsing
-                    </Button>
-                </CardFooter>
-            </Card>
+            </div>
         </div>
     );
 }

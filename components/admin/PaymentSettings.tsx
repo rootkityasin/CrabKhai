@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getPaymentConfig, updatePaymentConfig, getSiteConfig, updateSiteConfig } from '@/app/actions/settings';
+import { updatePaymentConfig as updatePaymentServerConfig, getSiteConfig, updateSiteConfig } from '@/app/actions/settings';
+import { useAdmin } from '@/components/providers/AdminProvider';
 import { Percent } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
@@ -16,52 +17,37 @@ import { Loader2, Save } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export function PaymentSettings() {
-    const [loading, setLoading] = useState(true);
+    const { settings, paymentConfig, updateSettings, updatePaymentConfig: updateContextPayment } = useAdmin();
+    const [loading, setLoading] = useState(false); // No loading needed as context provides data
     const [saving, setSaving] = useState(false);
-    const [config, setConfig] = useState<any>({
-        codEnabled: true,
-        bkashEnabled: false,
-        bkashAppKey: '',
-        bkashSecretKey: '',
-        bkashUsername: '',
-        bkashPassword: '',
-        bkashImage: '',
-        nagadEnabled: false,
-        nagadMerchantNumber: '',
-        nagadPublicKey: '',
-        nagadPrivateKey: '',
-        selfMfsEnabled: false,
-        selfMfsType: 'bkash',
-        selfMfsPhone: '',
-        selfMfsInstruction: '',
-        selfMfsQrCode: '',
-        advancePaymentType: 'FULL',
-        advancePaymentValue: 0
-    });
-    const [taxPercentage, setTaxPercentage] = useState(0);
 
+    // Local state for form editing - init from context
+    const [config, setConfig] = useState<any>(paymentConfig);
+    const [taxPercentage, setTaxPercentage] = useState<number | string>(settings.taxPercentage || 0);
+
+    // Sync from context when it loads (in case hard reload)
     useEffect(() => {
-        async function load() {
-            const configData = await getPaymentConfig();
-            const siteData = await getSiteConfig();
-
-            if (configData) setConfig(configData);
-            if (siteData) setTaxPercentage(siteData.taxPercentage || 0);
-
-            setLoading(false);
-        }
-        load();
-    }, []);
+        setConfig(paymentConfig);
+        setTaxPercentage(settings.taxPercentage || 0);
+        // Only set loading false if context is ready (which it should be mostly)
+        // If paymentConfig is empty object initially (simplified), we might need to wait? 
+        // AdminProvider initializes empty, then fetches.
+        // It's acceptable for fields to populate as they arrive.
+    }, [paymentConfig, settings]);
 
     const handleSave = async () => {
         setSaving(true);
-        const res = await updatePaymentConfig(config);
+        const res = await updatePaymentServerConfig(config);
 
         // Update Tax separately (it lives in SiteConfig)
         const currentSiteConfig = await getSiteConfig();
         if (currentSiteConfig) {
             await updateSiteConfig({ ...currentSiteConfig, taxPercentage });
         }
+
+        // Update Context
+        updateContextPayment(config);
+        updateSettings({ ...settings, taxPercentage: parseFloat(taxPercentage as string) });
 
         if (res.success) {
             toast.success("Payment settings saved successfully");
@@ -105,7 +91,7 @@ export function PaymentSettings() {
                             <Input
                                 type="number"
                                 value={taxPercentage}
-                                onChange={(e) => setTaxPercentage(parseFloat(e.target.value) || 0)}
+                                onChange={(e) => setTaxPercentage(e.target.value === '' ? '' : parseFloat(e.target.value))}
                                 className="w-32 pr-8"
                                 min="0"
                                 step="any"
@@ -331,8 +317,8 @@ export function PaymentSettings() {
                                     type="number"
                                     className="w-24 h-8 ml-2"
                                     placeholder="%"
-                                    value={config.advancePaymentValue || ''}
-                                    onChange={e => setConfig({ ...config, advancePaymentValue: parseInt(e.target.value) || 0 })}
+                                    value={config.advancePaymentValue}
+                                    onChange={e => setConfig({ ...config, advancePaymentValue: e.target.value === '' ? '' : parseInt(e.target.value) })}
                                 />
                             )}
                         </div>
@@ -344,8 +330,8 @@ export function PaymentSettings() {
                                     type="number"
                                     className="w-32 h-8 ml-2"
                                     placeholder="Amount"
-                                    value={config.advancePaymentValue || ''}
-                                    onChange={e => setConfig({ ...config, advancePaymentValue: parseInt(e.target.value) || 0 })}
+                                    value={config.advancePaymentValue}
+                                    onChange={e => setConfig({ ...config, advancePaymentValue: e.target.value === '' ? '' : parseInt(e.target.value) })}
                                 />
                             )}
                         </div>

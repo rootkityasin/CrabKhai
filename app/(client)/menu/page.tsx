@@ -73,46 +73,59 @@ function MenuContent() {
     }
 
     return (
-        <div className="bg-gray-50 min-h-screen pb-20">
+        <div className="bg-gray-50 min-h-screen pb-20 pt-32">
             {/* Header */}
-            <div className="bg-white sticky top-0 z-10 px-4 py-3 shadow-sm">
-                <h1 className="text-2xl font-heading font-bold text-gray-900 mb-2">Full Menu</h1>
-                <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                    <input
-                        type="text"
-                        placeholder="Search for crabs..."
-                        className="w-full pl-9 pr-4 py-2 bg-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-crab-red/20"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
+            <div className="bg-white sticky top-[72px] z-10 shadow-sm border-b border-gray-100">
+                <div className="max-w-7xl mx-auto px-4 py-3 md:py-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <h1 className="text-2xl md:text-3xl font-heading font-bold text-gray-900">Full Menu</h1>
+                    <div className="relative w-full md:w-96">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <input
+                            type="text"
+                            placeholder="Search for crabs..."
+                            className="w-full pl-9 pr-4 py-2 md:py-3 bg-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-crab-red/20 transition-all font-body"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                    </div>
                 </div>
             </div>
 
             {/* Menu Grid */}
-            <div className="p-4 grid grid-cols-2 gap-4">
-                {filteredItems.length > 0 ? (
-                    filteredItems.map((item) => (
-                        <ProductCard
-                            key={item.id}
-                            id={item.id}
-                            name={item.name}
-                            price={String(item.price)}
-                            image={item.image}
-                            // Fallbacks for missing fields in AdminProvider 
-                            name_bn={(item as any).name_bn || item.name}
-                            price_bn={(item as any).price_bn || String(item.price)}
-                            pieces={(item as any).pieces}
-                            totalSold={(item as any).totalSold}
-                            weightOptions={(item as any).weightOptions}
-                            images={(item as any).images}
-                        />
-                    ))
-                ) : (
-                    <div className="col-span-2 text-center py-12 text-gray-500">
-                        <p>No delicious crabs found matching "{searchQuery}"</p>
-                    </div>
-                )}
+            <div className="max-w-7xl mx-auto px-4 py-6 md:py-8">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
+                    {filteredItems.length > 0 ? (
+                        filteredItems.map((item) => (
+                            <ProductCard
+                                key={item.id}
+                                id={item.id}
+                                name={item.name}
+                                price={String(item.price)}
+                                image={item.image}
+                                // Fallbacks for missing fields in AdminProvider 
+                                name_bn={(item as any).name_bn || item.name}
+                                price_bn={(item as any).price_bn || String(item.price)}
+                                pieces={(item as any).pieces}
+                                totalSold={(item as any).totalSold}
+                                weightOptions={(item as any).weightOptions}
+                                images={(item as any).images}
+                            />
+                        ))
+                    ) : (
+                        <div className="col-span-2 md:col-span-4 text-center py-20 text-gray-500">
+                            <div className="flex flex-col items-center gap-4">
+                                <span className="text-4xl">🦀</span>
+                                <p className="text-lg">No items found matching "{searchQuery}"</p>
+                                <button
+                                    onClick={() => setSearchQuery('')}
+                                    className="text-crab-red font-bold hover:underline"
+                                >
+                                    Clear Search
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
             </div>
 
             <div className="text-center py-8 text-gray-400 text-sm">

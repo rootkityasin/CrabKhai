@@ -210,267 +210,273 @@ export default function CartPage() {
     }
 
     return (
-        <div className="p-4 pb-32 max-w-lg mx-auto">
-            <h1 className={`text-2xl font-bold mb-6 ${headingClass}`}>{cartTexts?.title || t.cartPage.title}</h1>
+        <div className="p-4 pb-32 pt-24 md:pt-32 max-w-7xl mx-auto">
+            <h1 className={`text-2xl md:text-3xl font-bold mb-6 md:mb-10 ${headingClass}`}>{cartTexts?.title || t.cartPage.title}</h1>
 
-            {/* Cart Items List */}
-            <div className="space-y-4 mb-8">
-                {items.map((item) => (
-                    <div key={item.id} className="flex gap-4 bg-white p-3 rounded-xl shadow-sm border border-gray-100">
-                        {/* Image */}
-                        <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                            {item.image ? (
-                                <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-                            ) : (
-                                <div className="w-full h-full flex items-center justify-center text-gray-300">Img</div>
-                            )}
-                        </div>
-
-                        {/* Details */}
-                        <div className="flex-1 flex flex-col justify-between">
-                            <div className="flex justify-between items-start">
-                                <h3 className="font-bold text-gray-800 line-clamp-1">{item.name}</h3>
-                                <button
-                                    onClick={() => removeItem(item.id)}
-                                    className="text-gray-400 hover:text-red-500 transition-colors p-1"
-                                >
-                                    <Trash2 className="w-4 h-4" />
-                                </button>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                {/* Left Column: Cart Items */}
+                <div className="lg:col-span-2 space-y-4">
+                    {items.map((item) => (
+                        <div key={item.id} className="flex gap-4 bg-white p-3 rounded-xl shadow-sm border border-gray-100">
+                            {/* Image */}
+                            <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                                {item.image ? (
+                                    <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-gray-300">Img</div>
+                                )}
                             </div>
 
-                            <div className="flex justify-between items-end">
-                                <span className="text-crab-red font-bold">৳{item.price * item.quantity}</span>
-
-                                {/* Quantity Control */}
-                                <div className="flex items-center gap-3 bg-gray-50 rounded-full px-2 py-1">
+                            {/* Details */}
+                            <div className="flex-1 flex flex-col justify-between">
+                                <div className="flex justify-between items-start">
+                                    <h3 className="font-bold text-gray-800 line-clamp-1">{item.name}</h3>
                                     <button
-                                        className="w-6 h-6 flex items-center justify-center bg-white rounded-full shadow-sm text-gray-600 active:scale-95 flex-shrink-0"
-                                        onClick={() => handleQuantityChange(item, -1)}
+                                        onClick={() => removeItem(item.id)}
+                                        className="text-gray-400 hover:text-red-500 transition-colors p-1"
                                     >
-                                        <Minus className="w-3 h-3" />
-                                    </button>
-                                    <span className="text-sm font-bold min-w-[3rem] px-2 text-center whitespace-nowrap">
-                                        {(() => {
-                                            const unit = settings.measurementUnit || 'PCS';
-                                            if (unit === 'VOLUME') return `${item.quantity} Ltr`;
-                                            if (unit === 'WEIGHT') {
-                                                const weight = item.quantity * 200;
-                                                return weight >= 1000 ? `${(weight / 1000).toFixed(1)} kg` : `${weight} g`;
-                                            }
-                                            return item.quantity;
-                                        })()}
-                                    </span>
-                                    <button
-                                        className="w-6 h-6 flex items-center justify-center bg-crab-red text-white rounded-full shadow-sm active:scale-95 flex-shrink-0"
-                                        onClick={() => handleQuantityChange(item, 1)}
-                                    >
-                                        <Plus className="w-3 h-3" />
+                                        <Trash2 className="w-4 h-4" />
                                     </button>
                                 </div>
+
+                                <div className="flex justify-between items-end">
+                                    <span className="text-crab-red font-bold">৳{item.price * item.quantity}</span>
+
+                                    {/* Quantity Control */}
+                                    <div className="flex items-center gap-3 bg-gray-50 rounded-full px-2 py-1">
+                                        <button
+                                            className="w-6 h-6 flex items-center justify-center bg-white rounded-full shadow-sm text-gray-600 active:scale-95 flex-shrink-0"
+                                            onClick={() => handleQuantityChange(item, -1)}
+                                        >
+                                            <Minus className="w-3 h-3" />
+                                        </button>
+                                        <span className="text-sm font-bold min-w-[3rem] px-2 text-center whitespace-nowrap">
+                                            {(() => {
+                                                const unit = settings.measurementUnit || 'PCS';
+                                                if (unit === 'VOLUME') return `${item.quantity} Ltr`;
+                                                if (unit === 'WEIGHT') {
+                                                    const weight = item.quantity * 200;
+                                                    return weight >= 1000 ? `${(weight / 1000).toFixed(1)} kg` : `${weight} g`;
+                                                }
+                                                return item.quantity;
+                                            })()}
+                                        </span>
+                                        <button
+                                            className="w-6 h-6 flex items-center justify-center bg-crab-red text-white rounded-full shadow-sm active:scale-95 flex-shrink-0"
+                                            onClick={() => handleQuantityChange(item, 1)}
+                                        >
+                                            <Plus className="w-3 h-3" />
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                ))}
-            </div>
-
-            <div className="bg-sand/20 p-4 rounded-xl mb-8 border border-sand/30">
-                <div className="flex justify-between items-center mb-2">
-                    <span className="text-gray-600">{cartTexts?.subtotal || t.cartPage.subtotal}</span>
-                    <span className="font-bold text-gray-900">৳{subTotalAmount}</span>
-                </div>
-                <div className="flex justify-between items-center mb-2">
-                    <span className="text-gray-600">{cartTexts?.deliveryFee || t.cartPage.deliveryFee}</span>
-                    <span className="font-bold text-gray-900">৳{deliveryFee}</span>
-                </div>
-                {taxRate > 0 && (
-                    <div className="flex justify-between items-center mb-2">
-                        <span className="text-gray-600">Tax ({taxRate}%)</span>
-                        <span className="font-bold text-gray-900">৳{taxAmount}</span>
-                    </div>
-                )}
-                <div className="my-2 border-t border-gray-300/50"></div>
-                <div className="flex justify-between items-center text-lg">
-                    <span className="font-bold text-ocean-blue">{cartTexts?.total || t.cartPage.total}</span>
-                    <span className="font-black text-crab-red">৳{totalAmount}</span>
-                </div>
-            </div>
-
-            {/* Checkout Form */}
-            <div className="bg-white p-5 rounded-2xl shadow-lg border border-gray-100">
-                <h2 className={`text-lg font-bold text-ocean-blue mb-4 flex items-center gap-2 ${headingClass}`}>
-                    <span className="w-6 h-6 rounded-full bg-ocean-blue text-white text-xs flex items-center justify-center">1</span>
-                    {cartTexts?.deliveryDetails || t.cartPage.deliveryDetails}
-                </h2>
-
-                <form onSubmit={handlePlaceOrder} className="space-y-4">
-                    {/* Dynamic Field Rendering */}
-                    {(cartTexts?.fields || [
-                        { id: 'name', label: t.cartPage.name, type: 'text', required: true, enabled: true },
-                        { id: 'phone', label: t.cartPage.phone, type: 'tel', required: true, enabled: true },
-                        { id: 'area', label: t.cartPage.area, type: 'select', required: true, enabled: true },
-                        { id: 'address', label: t.cartPage.address, type: 'textarea', required: true, enabled: true },
-                    ]).filter((f: any) => f.enabled).map((field: any) => (
-                        <div key={field.id}>
-                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
-                                {field.label} {field.required && <span className="text-red-500">*</span>}
-                            </label>
-
-                            {field.type === 'select' && field.id === 'area' ? (
-                                <select
-                                    required={field.required}
-                                    className={`w-full p-3 bg-gray-50 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all appearance-none ${fontClass}`}
-                                    value={formData[field.id] || ''}
-                                    onChange={(e) => setFormData({ ...formData, [field.id]: e.target.value })}
-                                >
-                                    <option value="">{t.cartPage.selectArea}</option>
-                                    {['Dhaka', 'Khulna', 'Chattogram'].map((area) => (
-                                        <option key={area} value={area}>{area}</option>
-                                    ))}
-                                </select>
-                            ) : field.type === 'textarea' ? (
-                                <textarea
-                                    required={field.required}
-                                    placeholder={field.placeholder || field.label}
-                                    rows={2}
-                                    className={`w-full p-3 bg-gray-50 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all resize-none ${fontClass}`}
-                                    value={formData[field.id] || ''}
-                                    onChange={(e) => setFormData({ ...formData, [field.id]: e.target.value })}
-                                />
-                            ) : (
-                                <input
-                                    required={field.required}
-                                    type={field.type}
-                                    placeholder={field.placeholder || field.label}
-                                    className={`w-full p-3 bg-gray-50 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all ${fontClass}`}
-                                    value={formData[field.id] || ''}
-                                    onChange={(e) => setFormData({ ...formData, [field.id]: e.target.value })}
-                                />
-                            )}
                         </div>
                     ))}
+                </div>
 
-                    {/* Payment Method Selection */}
-                    <div className="pt-4 border-t border-gray-100">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Payment Method</label>
+            </div>
 
-                        <div className="grid grid-cols-1 gap-3">
-                            {paymentConfig?.codEnabled && (
-                                <div
-                                    onClick={() => setPaymentMethod('COD')}
-                                    className={`relative p-4 border rounded-xl cursor-pointer transition-all ${paymentMethod === 'COD' ? 'border-crab-red bg-red-50/50' : 'border-gray-200 hover:border-gray-300'}`}
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'COD' ? 'border-crab-red' : 'border-gray-300'}`}>
-                                            {paymentMethod === 'COD' && <div className="w-2.5 h-2.5 bg-crab-red rounded-full" />}
-                                        </div>
-                                        <span className="font-bold text-gray-800">Cash On Delivery</span>
-                                    </div>
-                                    {paymentConfig.advancePaymentType !== 'FULL' && paymentConfig.advancePaymentValue > 0 && (
-                                        <p className="text-xs text-orange-600 mt-2 ml-8">
-                                            Note: {paymentConfig.advancePaymentType === 'FIXED' ? `৳${paymentConfig.advancePaymentValue}` : `${paymentConfig.advancePaymentValue}%`} advance payment required.
-                                        </p>
-                                    )}
-                                </div>
-                            )}
-
-                            {paymentConfig?.bkashEnabled && (
-                                <div
-                                    onClick={() => setPaymentMethod('BKASH')}
-                                    className={`relative p-4 border rounded-xl cursor-pointer transition-all ${paymentMethod === 'BKASH' ? 'border-pink-500 bg-pink-50/30' : 'border-gray-200 hover:border-gray-300'}`}
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'BKASH' ? 'border-pink-500' : 'border-gray-300'}`}>
-                                            {paymentMethod === 'BKASH' && <div className="w-2.5 h-2.5 bg-pink-500 rounded-full" />}
-                                        </div>
-                                        <img src="/images/bkash-logo.png" alt="bKash" className="h-6 object-contain" />
-                                        <span className="font-bold text-gray-800">Pay with bKash</span>
-                                    </div>
-                                </div>
-                            )}
-
-                            {paymentConfig?.nagadEnabled && (
-                                <div
-                                    onClick={() => setPaymentMethod('NAGAD')}
-                                    className={`relative p-4 border rounded-xl cursor-pointer transition-all ${paymentMethod === 'NAGAD' ? 'border-orange-500 bg-orange-50/30' : 'border-gray-200 hover:border-gray-300'}`}
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'NAGAD' ? 'border-orange-500' : 'border-gray-300'}`}>
-                                            {paymentMethod === 'NAGAD' && <div className="w-2.5 h-2.5 bg-orange-500 rounded-full" />}
-                                        </div>
-                                        <img src="/images/nagad-logo.png" alt="Nagad" className="h-6 object-contain" />
-                                        <span className="font-bold text-gray-800">Pay with Nagad</span>
-                                    </div>
-                                </div>
-                            )}
-
-                            {paymentConfig?.selfMfsEnabled && (
-                                <div
-                                    onClick={() => setPaymentMethod('MANUAL')}
-                                    className={`relative p-4 border rounded-xl cursor-pointer transition-all ${paymentMethod === 'MANUAL' ? 'border-purple-500 bg-purple-50/30' : 'border-gray-200 hover:border-gray-300'}`}
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'MANUAL' ? 'border-purple-500' : 'border-gray-300'}`}>
-                                            {paymentMethod === 'MANUAL' && <div className="w-2.5 h-2.5 bg-purple-500 rounded-full" />}
-                                        </div>
-                                        <span className="font-bold text-gray-800">Manual Send Money</span>
-                                    </div>
-
-                                    {paymentMethod === 'MANUAL' && (
-                                        <div className="mt-4 ml-8 space-y-3 p-3 bg-white rounded-lg border border-gray-100 text-sm animate-in fade-in slide-in-from-top-2">
-                                            <p className="text-gray-600 font-medium">
-                                                Send money to: <span className="font-bold text-gray-900">{paymentConfig.selfMfsPhone}</span> ({paymentConfig.selfMfsType})
-                                            </p>
-
-                                            {paymentConfig.selfMfsQrCode && (
-                                                <div className="w-32 h-32 bg-gray-50 rounded-lg p-2 border border-gray-200">
-                                                    <img src={paymentConfig.selfMfsQrCode} alt="QR Code" className="w-full h-full object-contain" />
-                                                </div>
-                                            )}
-
-                                            <div className="text-gray-500 text-xs bg-gray-50 p-2 rounded">
-                                                {paymentConfig.selfMfsInstruction || "Use 'Send Money' option in your app."}
-                                            </div>
-
-                                            <div>
-                                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Transaction ID (TrxID)</label>
-                                                <input
-                                                    type="text"
-                                                    required
-                                                    placeholder="e.g. 8X3..."
-                                                    className="w-full p-2 border rounded-md font-mono text-sm uppercase"
-                                                    value={trxId}
-                                                    onChange={(e) => setTrxId(e.target.value)}
-                                                />
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-                        </div>
+            {/* Right Column: Summary & Checkout */}
+            <div className="space-y-6 lg:sticky lg:top-32">
+                <div className="bg-sand/20 p-4 rounded-xl border border-sand/30">
+                    <div className="flex justify-between items-center mb-2">
+                        <span className="text-gray-600">{cartTexts?.subtotal || t.cartPage.subtotal}</span>
+                        <span className="font-bold text-gray-900">৳{subTotalAmount}</span>
                     </div>
+                    <div className="flex justify-between items-center mb-2">
+                        <span className="text-gray-600">{cartTexts?.deliveryFee || t.cartPage.deliveryFee}</span>
+                        <span className="font-bold text-gray-900">৳{deliveryFee}</span>
+                    </div>
+                    {taxRate > 0 && (
+                        <div className="flex justify-between items-center mb-2">
+                            <span className="text-gray-600">Tax ({taxRate}%)</span>
+                            <span className="font-bold text-gray-900">৳{taxAmount}</span>
+                        </div>
+                    )}
+                    <div className="my-2 border-t border-gray-300/50"></div>
+                    <div className="flex justify-between items-center text-lg">
+                        <span className="font-bold text-ocean-blue">{cartTexts?.total || t.cartPage.total}</span>
+                        <span className="font-black text-crab-red">৳{totalAmount}</span>
+                    </div>
+                </div>
 
-                    <button
-                        type="submit"
-                        disabled={isAnimating}
-                        className={`w-full py-4 font-black text-lg uppercase tracking-widest rounded-xl shadow-xl active:scale-95 transition-all flex items-center justify-center gap-2 mt-6 ${fontClass} relative overflow-hidden ${isAnimating ? 'bg-white' : 'bg-crab-red text-white hover:bg-crab-red/90'}`}
-                    >
-                        {isAnimating ? (
-                            <motion.img
-                                src="/mascot/pose-delivery-cleaned.gif"
-                                alt="Processing..."
-                                initial={{ x: '-150%' }}
-                                animate={{ x: '150%' }}
-                                transition={{ duration: 4, ease: "linear" }}
-                                className="h-16 w-auto object-contain"
-                            />
-                        ) : (
-                            <>
-                                <span>{cartTexts?.confirmOrder || t.cartPage.confirmOrder}</span>
-                                <ArrowRight className="w-5 h-5" />
-                            </>
-                        )}
-                    </button>
-                </form>
+                {/* Checkout Form */}
+                <div className="bg-white p-5 rounded-2xl shadow-lg border border-gray-100">
+                    <h2 className={`text-lg font-bold text-ocean-blue mb-4 flex items-center gap-2 ${headingClass}`}>
+                        <span className="w-6 h-6 rounded-full bg-ocean-blue text-white text-xs flex items-center justify-center">1</span>
+                        {cartTexts?.deliveryDetails || t.cartPage.deliveryDetails}
+                    </h2>
+
+                    <form onSubmit={handlePlaceOrder} className="space-y-4">
+                        {/* Dynamic Field Rendering */}
+                        {(cartTexts?.fields || [
+                            { id: 'name', label: t.cartPage.name, type: 'text', required: true, enabled: true },
+                            { id: 'phone', label: t.cartPage.phone, type: 'tel', required: true, enabled: true },
+                            { id: 'area', label: t.cartPage.area, type: 'select', required: true, enabled: true },
+                            { id: 'address', label: t.cartPage.address, type: 'textarea', required: true, enabled: true },
+                        ]).filter((f: any) => f.enabled).map((field: any) => (
+                            <div key={field.id}>
+                                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
+                                    {field.label} {field.required && <span className="text-red-500">*</span>}
+                                </label>
+
+                                {field.type === 'select' && field.id === 'area' ? (
+                                    <select
+                                        required={field.required}
+                                        className={`w-full p-3 bg-gray-50 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all appearance-none ${fontClass}`}
+                                        value={formData[field.id] || ''}
+                                        onChange={(e) => setFormData({ ...formData, [field.id]: e.target.value })}
+                                    >
+                                        <option value="">{t.cartPage.selectArea}</option>
+                                        {['Dhaka', 'Khulna', 'Chattogram'].map((area) => (
+                                            <option key={area} value={area}>{area}</option>
+                                        ))}
+                                    </select>
+                                ) : field.type === 'textarea' ? (
+                                    <textarea
+                                        required={field.required}
+                                        placeholder={field.placeholder || field.label}
+                                        rows={2}
+                                        className={`w-full p-3 bg-gray-50 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all resize-none ${fontClass}`}
+                                        value={formData[field.id] || ''}
+                                        onChange={(e) => setFormData({ ...formData, [field.id]: e.target.value })}
+                                    />
+                                ) : (
+                                    <input
+                                        required={field.required}
+                                        type={field.type}
+                                        placeholder={field.placeholder || field.label}
+                                        className={`w-full p-3 bg-gray-50 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-crab-red/20 focus:border-crab-red transition-all ${fontClass}`}
+                                        value={formData[field.id] || ''}
+                                        onChange={(e) => setFormData({ ...formData, [field.id]: e.target.value })}
+                                    />
+                                )}
+                            </div>
+                        ))}
+
+                        {/* Payment Method Selection */}
+                        <div className="pt-4 border-t border-gray-100">
+                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Payment Method</label>
+
+                            <div className="grid grid-cols-1 gap-3">
+                                {paymentConfig?.codEnabled && (
+                                    <div
+                                        onClick={() => setPaymentMethod('COD')}
+                                        className={`relative p-4 border rounded-xl cursor-pointer transition-all ${paymentMethod === 'COD' ? 'border-crab-red bg-red-50/50' : 'border-gray-200 hover:border-gray-300'}`}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'COD' ? 'border-crab-red' : 'border-gray-300'}`}>
+                                                {paymentMethod === 'COD' && <div className="w-2.5 h-2.5 bg-crab-red rounded-full" />}
+                                            </div>
+                                            <span className="font-bold text-gray-800">Cash On Delivery</span>
+                                        </div>
+                                        {paymentConfig.advancePaymentType !== 'FULL' && paymentConfig.advancePaymentValue > 0 && (
+                                            <p className="text-xs text-orange-600 mt-2 ml-8">
+                                                Note: {paymentConfig.advancePaymentType === 'FIXED' ? `৳${paymentConfig.advancePaymentValue}` : `${paymentConfig.advancePaymentValue}%`} advance payment required.
+                                            </p>
+                                        )}
+                                    </div>
+                                )}
+
+                                {paymentConfig?.bkashEnabled && (
+                                    <div
+                                        onClick={() => setPaymentMethod('BKASH')}
+                                        className={`relative p-4 border rounded-xl cursor-pointer transition-all ${paymentMethod === 'BKASH' ? 'border-pink-500 bg-pink-50/30' : 'border-gray-200 hover:border-gray-300'}`}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'BKASH' ? 'border-pink-500' : 'border-gray-300'}`}>
+                                                {paymentMethod === 'BKASH' && <div className="w-2.5 h-2.5 bg-pink-500 rounded-full" />}
+                                            </div>
+                                            <img src="/images/bkash-logo.png" alt="bKash" className="h-6 object-contain" />
+                                            <span className="font-bold text-gray-800">Pay with bKash</span>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {paymentConfig?.nagadEnabled && (
+                                    <div
+                                        onClick={() => setPaymentMethod('NAGAD')}
+                                        className={`relative p-4 border rounded-xl cursor-pointer transition-all ${paymentMethod === 'NAGAD' ? 'border-orange-500 bg-orange-50/30' : 'border-gray-200 hover:border-gray-300'}`}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'NAGAD' ? 'border-orange-500' : 'border-gray-300'}`}>
+                                                {paymentMethod === 'NAGAD' && <div className="w-2.5 h-2.5 bg-orange-500 rounded-full" />}
+                                            </div>
+                                            <img src="/images/nagad-logo.png" alt="Nagad" className="h-6 object-contain" />
+                                            <span className="font-bold text-gray-800">Pay with Nagad</span>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {paymentConfig?.selfMfsEnabled && (
+                                    <div
+                                        onClick={() => setPaymentMethod('MANUAL')}
+                                        className={`relative p-4 border rounded-xl cursor-pointer transition-all ${paymentMethod === 'MANUAL' ? 'border-purple-500 bg-purple-50/30' : 'border-gray-200 hover:border-gray-300'}`}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'MANUAL' ? 'border-purple-500' : 'border-gray-300'}`}>
+                                                {paymentMethod === 'MANUAL' && <div className="w-2.5 h-2.5 bg-purple-500 rounded-full" />}
+                                            </div>
+                                            <span className="font-bold text-gray-800">Manual Send Money</span>
+                                        </div>
+
+                                        {paymentMethod === 'MANUAL' && (
+                                            <div className="mt-4 ml-8 space-y-3 p-3 bg-white rounded-lg border border-gray-100 text-sm animate-in fade-in slide-in-from-top-2">
+                                                <p className="text-gray-600 font-medium">
+                                                    Send money to: <span className="font-bold text-gray-900">{paymentConfig.selfMfsPhone}</span> ({paymentConfig.selfMfsType})
+                                                </p>
+
+                                                {paymentConfig.selfMfsQrCode && (
+                                                    <div className="w-32 h-32 bg-gray-50 rounded-lg p-2 border border-gray-200">
+                                                        <img src={paymentConfig.selfMfsQrCode} alt="QR Code" className="w-full h-full object-contain" />
+                                                    </div>
+                                                )}
+
+                                                <div className="text-gray-500 text-xs bg-gray-50 p-2 rounded">
+                                                    {paymentConfig.selfMfsInstruction || "Use 'Send Money' option in your app."}
+                                                </div>
+
+                                                <div>
+                                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Transaction ID (TrxID)</label>
+                                                    <input
+                                                        type="text"
+                                                        required
+                                                        placeholder="e.g. 8X3..."
+                                                        className="w-full p-2 border rounded-md font-mono text-sm uppercase"
+                                                        value={trxId}
+                                                        onChange={(e) => setTrxId(e.target.value)}
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        <button
+                            type="submit"
+                            disabled={isAnimating}
+                            className={`w-full py-4 font-black text-lg uppercase tracking-widest rounded-xl shadow-xl active:scale-95 transition-all flex items-center justify-center gap-2 mt-6 ${fontClass} relative overflow-hidden ${isAnimating ? 'bg-white' : 'bg-crab-red text-white hover:bg-crab-red/90'}`}
+                        >
+                            {isAnimating ? (
+                                <motion.img
+                                    src="/mascot/pose-delivery-cleaned.gif"
+                                    alt="Processing..."
+                                    initial={{ x: '-150%' }}
+                                    animate={{ x: '150%' }}
+                                    transition={{ duration: 4, ease: "linear" }}
+                                    className="h-16 w-auto object-contain"
+                                />
+                            ) : (
+                                <>
+                                    <span>{cartTexts?.confirmOrder || t.cartPage.confirmOrder}</span>
+                                    <ArrowRight className="w-5 h-5" />
+                                </>
+                            )}
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     );

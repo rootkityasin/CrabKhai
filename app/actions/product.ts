@@ -44,6 +44,7 @@ export async function createProduct(data: any) {
                 name: data.name,
                 price: data.price,
                 description: data.description,
+                descriptionSwap: data.descriptionSwap || false,
                 image: data.image,
                 sku: data.sku,
                 pieces: data.pieces, // Initial Stock
@@ -79,6 +80,8 @@ export async function updateProduct(id: string, data: any) {
                 image: data.image,
                 images: data.images || [], // Add images
                 weight: data.weight,
+                description: data.description,
+                descriptionSwap: data.descriptionSwap,
                 // Add other fields
             }
         });

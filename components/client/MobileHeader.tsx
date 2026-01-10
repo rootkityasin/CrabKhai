@@ -12,7 +12,9 @@ import { toast } from 'sonner';
 import { getSiteConfig } from '@/app/actions/settings';
 
 import { translations } from '@/lib/translations';
+import { useAdmin } from '@/components/providers/AdminProvider';
 import { Mascot } from './Mascot';
+import { AnimatedSearchBar } from './AnimatedSearchBar';
 
 export function MobileHeader() {
     const [mounted, setMounted] = useState(false);
@@ -92,25 +94,17 @@ export function MobileHeader() {
     return (
         <>
             <header className="sticky top-0 z-50 w-full bg-crab-red border-b border-white/10 shadow-md relative">
-                <div className="flex items-center justify-between px-4 h-16 text-white">
-                    {/* Left: Logo Area & Hamburger */}
+                <div className="flex items-center justify-between px-4 h-16 text-white max-w-7xl mx-auto">
+                    {/* Left: Logo Area */}
                     <div className="flex items-center gap-3">
+                        {/* Hamburger Trigger */}
                         <button
-                            className="p-1 -ml-1 text-white relative z-50 focus:outline-none"
-                            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                            onClick={() => setIsSidebarOpen(true)}
+                            className="p-1 -ml-2 text-white hover:bg-white/10 rounded-full transition-colors"
                         >
-                            <motion.svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <motion.line x1="4" x2="20" y1="6" y2="6"
-                                    animate={isSidebarOpen ? { rotate: 45, y: 6 } : { rotate: 0, y: 0 }}
-                                />
-                                <motion.line x1="4" x2="20" y1="12" y2="12"
-                                    animate={isSidebarOpen ? { opacity: 0 } : { opacity: 1 }}
-                                />
-                                <motion.line x1="4" x2="20" y1="18" y2="18"
-                                    animate={isSidebarOpen ? { rotate: -45, y: -6 } : { rotate: 0, y: 0 }}
-                                />
-                            </motion.svg>
+                            <Menu className="w-6 h-6" />
                         </button>
+
                         <Link href="/" className="flex items-center gap-2">
                             <img
                                 src={config?.logoUrl || "/logo.svg"}
@@ -136,13 +130,7 @@ export function MobileHeader() {
 
                     {/* Right: Icons (Search, Pin, Cart, User) */}
                     <div className="flex items-center gap-3">
-                        <button
-                            ref={searchTriggerRef}
-                            className={`p-1 transition-colors ${isSearchOpen ? 'text-yellow-400' : 'text-white'}`}
-                            onClick={() => setIsSearchOpen(!isSearchOpen)}
-                        >
-                            <Search className="w-5 h-5" />
-                        </button>
+                        <AnimatedSearchBar width="w-48" className="bg-transparent hover:bg-white/10" />
                         <button
                             onClick={() => {
                                 if ('geolocation' in navigator) {
@@ -192,69 +180,22 @@ export function MobileHeader() {
                         >
                             <MapPin className="w-5 h-5" />
                         </button>
-                        <Link href="/cart" className="p-1 text-white relative">
+                        <Link href="/cart" className="relative p-1 text-white">
                             <ShoppingCart className="w-5 h-5" />
                             {cartCount > 0 && (
-                                <span className="absolute -top-1 -right-1 bg-yellow-400 text-black text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                                <span className="absolute -top-1 -right-1 bg-white text-crab-red text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full shadow-sm">
                                     {cartCount}
                                 </span>
                             )}
                         </Link>
+
                         <Link href="/account" className="p-1 text-white">
                             <User className="w-5 h-5" />
                         </Link>
                     </div>
                 </div>
 
-                {/* Search Bar Popup */}
-                {isSearchOpen && (
-                    <div ref={searchRef} className="absolute top-16 left-0 right-0 bg-white p-4 shadow-lg animate-in slide-in-from-top-2 z-40 border-b border-gray-100">
-                        <form onSubmit={handleSearch} className="relative">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                            <input
-                                type="text"
-                                autoFocus
-                                placeholder={t.searchPlaceholder}
-                                className={`w-full pl-9 pr-4 py-3 bg-gray-100 rounded-xl text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-crab-red/50 ${language !== 'en' ? 'font-bangla' : 'font-body'}`}
-                                value={searchTerm}
-                                onChange={handleSearchInput}
-                            />
-                        </form>
 
-                        {/* Search Suggestions */}
-                        {searchTerm.length > 0 && (
-                            <div className="mt-2 bg-white rounded-lg border border-gray-100 shadow-sm max-h-60 overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-300">
-                                {menuItems
-                                    .filter(item => item.name.toLowerCase().includes(searchTerm.toLowerCase()))
-                                    .slice(0, 5) // Limit to 5 suggestions
-                                    .map((item, index) => (
-                                        <div
-                                            key={item.id}
-                                            className="flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-50 last:border-0 transition-colors duration-200 animate-in fade-in slide-in-from-left-1"
-                                            style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'backwards' }}
-                                            onClick={() => {
-                                                router.push(`/menu?search=${encodeURIComponent(item.name)}`);
-                                                setIsSearchOpen(false);
-                                                setSearchTerm('');
-                                            }}
-                                        >
-                                            <img src={item.image} alt={item.name} className="w-10 h-10 rounded-md object-cover" />
-                                            <div className="flex-1">
-                                                <p className="text-sm font-medium text-gray-800 line-clamp-1">{item.name}</p>
-                                                <p className="text-xs text-crab-red font-bold">৳{item.price}</p>
-                                            </div>
-                                        </div>
-                                    ))
-                                }
-                                {menuItems.filter(item => item.name.toLowerCase().includes(searchTerm.toLowerCase())).length === 0 && (
-                                    <div className={`p-4 text-center text-sm text-gray-400 ${language !== 'en' ? 'font-bangla' : 'font-body'}`}>
-                                        {t.noItemsFound}
-                                    </div>
-                                )}
-                            </div>
-                        )}
-                    </div>
-                )}
             </header>
 
             {/* Sidebar / Hamburger Menu */}

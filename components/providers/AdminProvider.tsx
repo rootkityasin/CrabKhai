@@ -5,6 +5,27 @@ import React, { createContext, useContext, useState, useMemo } from 'react';
 // --- Types ---
 export type Role = 'SUPER_ADMIN' | 'HUB_ADMIN';
 
+// Add Payment Config Type Definition (simplified)
+export interface PaymentConfigType {
+    codEnabled?: boolean;
+    bkashEnabled?: boolean;
+    bkashAppKey?: string;
+    bkashSecretKey?: string;
+    bkashUsername?: string;
+    bkashPassword?: string;
+    nagadEnabled?: boolean;
+    nagadMerchantNumber?: string;
+    nagadPublicKey?: string;
+    nagadPrivateKey?: string;
+    selfMfsEnabled?: boolean;
+    selfMfsType?: string;
+    selfMfsPhone?: string;
+    selfMfsInstruction?: string;
+    selfMfsQrCode?: string;
+    advancePaymentType?: string;
+    advancePaymentValue?: number | string;
+}
+
 export interface Hub {
     id: string;
     name: string;
@@ -150,7 +171,11 @@ interface AdminContextType {
         measurementUnit: string;
         allergensText: string;
         certificates: string[];
+        taxPercentage?: number;
+        primaryColor?: string;
+        secondaryColor?: string;
     };
+    paymentConfig: PaymentConfigType;
 
     // RBAC & Hubs
     currentUser: User;
@@ -164,6 +189,7 @@ interface AdminContextType {
     setOrders: (orders: any[]) => void;
     setProducts: (products: any[]) => void;
     updateSettings: (settings: any) => void;
+    updatePaymentConfig: (config: PaymentConfigType) => void;
     addOrder: (order: any) => void;
     updateOrder: (id: string, updates: any) => void;
     updateProduct: (id: string, updates: any) => void;
@@ -233,8 +259,13 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
         certificates: [
             "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/HACCP_Certification_Mark.svg/1200px-HACCP_Certification_Mark.svg.png",
             "https://www.qualityaustria.com/fileadmin/_processed_/c/9/csm_GMP_Good_Manufacturing_Practice_Logo_3502845680.jpg",
-        ]
+        ],
+        taxPercentage: 0,
+        primaryColor: "#ea0000",
+        secondaryColor: "#0f172a"
     });
+
+    const [paymentConfig, setPaymentConfigState] = useState<PaymentConfigType>({});
 
     // Load from LocalStorage on Mount AND fetch fresh config
     React.useEffect(() => {
@@ -271,17 +302,19 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
             const dataToSave = {
                 orders: orders,
                 products: products,
-                settings: settings
+                settings: settings,
+                paymentConfig: paymentConfig
             };
             localStorage.setItem('crab-khai-admin-data-v7', JSON.stringify(dataToSave));
         }
-    }, [orders, products, settings]);
+    }, [orders, products, settings, paymentConfig]);
 
 
     // --- Actions ---
     const setOrders = (newOrders: any[]) => setOrdersState(newOrders);
     const setProducts = (newProducts: any[]) => setProductsState(newProducts);
     const updateSettings = (newSettings: any) => setSettings(prev => ({ ...prev, ...newSettings }));
+    const updatePaymentConfig = (newConfig: any) => setPaymentConfigState(prev => ({ ...prev, ...newConfig }));
 
     const addOrder = (order: any) => setOrdersState([{ ...order, hubId: activeHubId === 'ALL' ? 'dhaka-central' : activeHubId }, ...orders]); // Default hub if ALL
     const updateOrder = (id: string, updates: any) => {
@@ -309,6 +342,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
             allProducts: products, // Expose raw products for client usage ignoring admin hub filter
             allOrders: orders, // Expose raw orders if needed
             settings,
+            paymentConfig,
 
             currentUser,
             activeHubId,
@@ -317,7 +351,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
             switchHub,
             loginAs,
 
-            setOrders, setProducts, updateSettings,
+            setOrders, setProducts, updateSettings, updatePaymentConfig,
             addOrder, updateOrder, deleteOrder,
             addProduct, updateProduct, deleteProduct, toggleStock,
             isSidebarCollapsed, toggleSidebar,

@@ -243,7 +243,7 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
                         <div className="p-0 flex-1 bg-slate-50/50 overflow-hidden relative">
                             <AnimatePresence mode="wait">
 
-                                <TabsContent key="overview" value="overview" className="mt-0 space-y-4 focus-visible:ring-0 absolute inset-0 p-6 pb-24 overflow-y-auto">
+                                <TabsContent key="overview" value="overview" className="mt-0 space-y-4 focus-visible:ring-0 absolute inset-0 p-4 md:p-6 pb-24 overflow-y-auto">
                                     <motion.div
                                         initial={{ opacity: 0, x: -10 }}
                                         animate={{ opacity: 1, x: 0 }}
@@ -287,7 +287,7 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
                                     </motion.div>
                                 </TabsContent>
 
-                                <TabsContent key="cooking" value="cooking" className="mt-0 space-y-4 focus-visible:ring-0 absolute inset-0 p-6 pb-24 overflow-y-auto">
+                                <TabsContent key="cooking" value="cooking" className="mt-0 space-y-3 focus-visible:ring-0 absolute inset-0 p-4 md:p-6 pb-24 overflow-y-auto">
                                     <motion.div
                                         initial={{ opacity: 0, x: -10 }}
                                         animate={{ opacity: 1, x: 0 }}
@@ -296,7 +296,7 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
                                     >
                                         {/* Constant (Default) Cooking Cards */}
                                         <motion.div
-                                            className="space-y-4"
+                                            className="space-y-3"
                                             variants={{
                                                 hidden: { opacity: 0 },
                                                 show: {
@@ -313,27 +313,27 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
                                                     hidden: { opacity: 0, y: 20 },
                                                     show: { opacity: 1, y: 0 }
                                                 }}
-                                                whileHover={{ scale: 1.02, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)" }}
+                                                whileHover={{ scale: 1.01, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)" }}
                                                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                                                className="bg-white rounded-xl p-5 shadow-sm border border-orange-100 relative overflow-hidden"
+                                                className="bg-white rounded-xl p-3 md:p-5 shadow-sm border border-orange-100 relative overflow-hidden"
                                             >
-                                                <div className="absolute top-0 right-0 w-24 h-24 bg-orange-50 rounded-bl-full -mr-4 -mt-4 z-0" />
+                                                <div className="absolute top-0 right-0 w-20 h-20 md:w-24 md:h-24 bg-orange-50 rounded-bl-full -mr-4 -mt-4 z-0" />
                                                 <div className="relative z-10 flex items-center justify-between">
-                                                    <div className="flex items-center gap-4">
-                                                        <div className="p-3 bg-orange-100 rounded-lg text-orange-600 shadow-sm relative overflow-hidden">
-                                                            <Flame className="w-6 h-6 fill-orange-600" />
+                                                    <div className="flex items-center gap-3 md:gap-4">
+                                                        <div className="p-2 md:p-3 bg-orange-100 rounded-lg text-orange-600 shadow-sm relative overflow-hidden">
+                                                            <Flame className="w-5 h-5 md:w-6 md:h-6 fill-orange-600" />
                                                         </div>
                                                         <div>
-                                                            <h4 className="font-bold text-slate-800 text-lg">Deep Fry</h4>
-                                                            <p className="text-sm text-slate-500 font-medium">BEST RESULT</p>
+                                                            <h4 className="font-bold text-slate-800 text-base md:text-lg leading-tight">Deep Fry</h4>
+                                                            <p className="text-xs md:text-sm text-slate-500 font-medium">BEST RESULT</p>
                                                         </div>
                                                     </div>
                                                     <div className="text-right">
                                                         <div className="flex items-baseline gap-1 justify-end">
-                                                            <span className="text-2xl font-bold text-slate-900">5-6</span>
-                                                            <span className="text-sm text-slate-500">min</span>
+                                                            <span className="text-xl md:text-2xl font-bold text-slate-900">5-6</span>
+                                                            <span className="text-xs md:text-sm text-slate-500">min</span>
                                                         </div>
-                                                        <div className="flex items-center gap-1 text-xs text-green-600 font-medium mt-1">
+                                                        <div className="flex items-center gap-1 text-[10px] md:text-xs text-green-600 font-medium mt-1">
                                                             <Timer className="w-3 h-3" /> Quick Clean
                                                         </div>
                                                     </div>
@@ -346,24 +346,24 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
                                                     hidden: { opacity: 0, y: 20 },
                                                     show: { opacity: 1, y: 0 }
                                                 }}
-                                                whileHover={{ scale: 1.02, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)" }}
+                                                whileHover={{ scale: 1.01, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)" }}
                                                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                                                className="bg-white rounded-xl p-5 shadow-sm border border-blue-50"
+                                                className="bg-white rounded-xl p-3 md:p-5 shadow-sm border border-blue-50"
                                             >
                                                 <div className="flex items-center justify-between">
-                                                    <div className="flex items-center gap-4">
-                                                        <div className="p-3 bg-blue-50 rounded-lg text-blue-600">
-                                                            <Utensils className="w-6 h-6" />
+                                                    <div className="flex items-center gap-3 md:gap-4">
+                                                        <div className="p-2 md:p-3 bg-blue-50 rounded-lg text-blue-600">
+                                                            <Utensils className="w-5 h-5 md:w-6 md:h-6" />
                                                         </div>
                                                         <div>
-                                                            <h4 className="font-bold text-slate-800 text-lg">Oven Bake</h4>
-                                                            <p className="text-sm text-slate-500">Low Oil Option</p>
+                                                            <h4 className="font-bold text-slate-800 text-base md:text-lg leading-tight">Oven Bake</h4>
+                                                            <p className="text-xs md:text-sm text-slate-500">Low Oil Option</p>
                                                         </div>
                                                     </div>
                                                     <div className="text-right">
                                                         <div className="flex items-baseline gap-1 justify-end">
-                                                            <span className="text-2xl font-bold text-slate-900">10-12</span>
-                                                            <span className="text-sm text-slate-500">min</span>
+                                                            <span className="text-xl md:text-2xl font-bold text-slate-900">10-12</span>
+                                                            <span className="text-xs md:text-sm text-slate-500">min</span>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -372,14 +372,14 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
                                     </motion.div>
                                 </TabsContent>
 
-                                <TabsContent key="nutrition" value="nutrition" className="mt-0 focus-visible:ring-0 absolute inset-0 p-6 pb-24 overflow-y-auto">
+                                <TabsContent key="nutrition" value="nutrition" className="mt-0 focus-visible:ring-0 absolute inset-0 p-4 md:p-6 pb-24 overflow-y-auto">
                                     <motion.div
                                         initial={{ opacity: 0, x: 10 }}
                                         animate={{ opacity: 1, x: 0 }}
                                         exit={{ opacity: 0, x: -10 }}
                                         transition={{ duration: 0.2 }}
                                     >
-                                        <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-2 gap-3 md:gap-4">
                                             {(function () {
                                                 // Constant (Default) Items for consistency
                                                 const defaultItems = [

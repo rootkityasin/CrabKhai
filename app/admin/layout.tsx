@@ -47,15 +47,21 @@ export default async function AdminLayout({
                 redirect('/api/clear-auth');
             }
         } else {
-            // Valid Device - Update Last Used
-            // We use a try-catch to ignore errors if concurrent updates happen
-            try {
-                await prisma.trustedDevice.update({
-                    where: { deviceId },
-                    data: { lastUsed: new Date() }
-                });
-            } catch (e) {
-                // Ignore update errors
+            // Valid Device - Update Last Used (Throttled)
+            const FIVE_MINUTES = 5 * 60 * 1000;
+            const lastUsed = trustedDevice.lastUsed ? new Date(trustedDevice.lastUsed).getTime() : 0;
+            const now = Date.now();
+
+            // Only update if > 5 minutes have passed since last update
+            if (now - lastUsed > FIVE_MINUTES) {
+                try {
+                    await prisma.trustedDevice.update({
+                        where: { deviceId },
+                        data: { lastUsed: new Date() }
+                    });
+                } catch (e) {
+                    // Ignore update errors (race conditions etc)
+                }
             }
         }
     }
