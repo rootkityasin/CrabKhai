@@ -28,6 +28,7 @@ export function DesktopNavbar() {
     const config = settings;
 
     const cartItems = useCartStore((state) => state.items);
+    const openCart = useCartStore((state) => state.openCart); // Get action
     const { language, toggleLanguage } = useLanguageStore();
     const t = translations[language];
     const [mounted, setMounted] = useState(false);
@@ -156,7 +157,7 @@ export function DesktopNavbar() {
                         </button>
 
                         {/* Cart */}
-                        <Link href="/cart" className="relative group">
+                        <button onClick={openCart} className="relative group">
                             <div className={cn(
                                 "p-2 rounded-full transition-colors",
                                 !isTransparent ? "text-slate-600 hover:bg-slate-100" : "text-white hover:bg-white/10"
@@ -168,7 +169,7 @@ export function DesktopNavbar() {
                                     </span>
                                 )}
                             </div>
-                        </Link>
+                        </button>
 
                         {/* Account */}
                         <Link href="/account">

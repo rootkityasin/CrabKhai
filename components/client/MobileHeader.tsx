@@ -180,14 +180,14 @@ export function MobileHeader() {
                         >
                             <MapPin className="w-5 h-5" />
                         </button>
-                        <Link href="/cart" className="relative p-1 text-white">
+                        <button onClick={() => useCartStore.getState().openCart()} className="relative p-1 text-white">
                             <ShoppingCart className="w-5 h-5" />
                             {cartCount > 0 && (
                                 <span className="absolute -top-1 -right-1 bg-white text-crab-red text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full shadow-sm">
                                     {cartCount}
                                 </span>
                             )}
-                        </Link>
+                        </button>
 
                         <Link href="/account" className="p-1 text-white">
                             <User className="w-5 h-5" />

@@ -48,9 +48,28 @@ export function ProductRail({ title, products, viewAllLink = '#', enableScrollAn
                         x: enableScrollAnimation ? x : 0,
                         willChange: enableScrollAnimation ? 'transform' : 'auto'
                     }}
+                    initial="hidden"
+                    whileInView="show"
+                    viewport={{ once: true, margin: "-10%" }} // Adjusted margin for mobile
+                    variants={{
+                        hidden: { opacity: 0 },
+                        show: {
+                            opacity: 1,
+                            transition: {
+                                staggerChildren: 0.1
+                            }
+                        }
+                    }}
                 >
                     {products.map((product) => (
-                        <div key={product.id} className={`w-[160px] flex-none ${enableScrollAnimation ? '' : 'snap-start'}`}>
+                        <motion.div
+                            key={product.id}
+                            className={`w-[160px] flex-none ${enableScrollAnimation ? '' : 'snap-start'}`}
+                            variants={{
+                                hidden: { opacity: 0, x: 20 }, // Slide in from right slightly
+                                show: { opacity: 1, x: 0, transition: { type: "spring", stiffness: 100 } }
+                            }}
+                        >
                             <ProductCard
                                 id={product.id}
                                 name={product.name}
@@ -68,34 +87,54 @@ export function ProductRail({ title, products, viewAllLink = '#', enableScrollAn
                                 images={(product as any).images}
                                 stage={(product as any).stage}
                             />
-                        </div>
+                        </motion.div>
                     ))}
                 </motion.div>
             </div>
 
-            {/* Desktop Grid */}
-            <div className="hidden md:grid grid-cols-4 gap-6">
+            {/* Desktop Grid via Staggered Motion */}
+            <motion.div
+                className="hidden md:grid grid-cols-4 gap-6"
+                initial="hidden"
+                whileInView="show"
+                viewport={{ once: true, margin: "-50px" }}
+                variants={{
+                    hidden: {},
+                    show: {
+                        transition: {
+                            staggerChildren: 0.1
+                        }
+                    }
+                }}
+            >
                 {products.map((product) => (
-                    <ProductCard
+                    <motion.div
                         key={product.id}
-                        id={product.id}
-                        name={product.name}
-                        price={String(product.price)}
-                        image={product.image}
-                        name_bn={(product as any).name_bn}
-                        price_bn={(product as any).price_bn}
-                        nutritionImage={(product as any).nutritionImage}
-                        cookingImage={(product as any).cookingImage}
-                        nutrition={(product as any).nutrition}
-                        cookingInstructions={(product as any).cookingInstructions}
-                        pieces={(product as any).pieces}
-                        totalSold={(product as any).totalSold}
-                        weightOptions={(product as any).weightOptions}
-                        images={(product as any).images}
-                        stage={(product as any).stage}
-                    />
+                        variants={{
+                            hidden: { opacity: 0, y: 30 },
+                            show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } }
+                        }}
+                    >
+                        <ProductCard
+                            id={product.id}
+                            name={product.name}
+                            price={String(product.price)}
+                            image={product.image}
+                            name_bn={(product as any).name_bn}
+                            price_bn={(product as any).price_bn}
+                            nutritionImage={(product as any).nutritionImage}
+                            cookingImage={(product as any).cookingImage}
+                            nutrition={(product as any).nutrition}
+                            cookingInstructions={(product as any).cookingInstructions}
+                            pieces={(product as any).pieces}
+                            totalSold={(product as any).totalSold}
+                            weightOptions={(product as any).weightOptions}
+                            images={(product as any).images}
+                            stage={(product as any).stage}
+                        />
+                    </motion.div>
                 ))}
-            </div>
+            </motion.div>
         </section>
     );
 }

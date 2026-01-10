@@ -6,6 +6,7 @@ import { getSiteConfig } from "@/app/actions/settings";
 import { AdminProvider } from "@/components/providers/AdminProvider";
 
 import { DesktopNavbar } from "@/components/client/DesktopNavbar";
+import { CartDrawer } from "@/components/client/CartDrawer"; // Import
 
 export default async function ClientLayout({ // Changed to async
     children,
@@ -22,6 +23,7 @@ export default async function ClientLayout({ // Changed to async
                     <MobileHeader />
                 </div>
                 <DesktopNavbar />
+                <CartDrawer />
                 <main className="flex-1 w-full relative">
                     <PageTransition>
                         {children}

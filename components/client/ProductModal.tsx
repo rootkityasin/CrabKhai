@@ -57,24 +57,31 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
 
     // Gallery State
     // Gallery State
+    // Gallery State
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [isZoomed, setIsZoomed] = useState(false);
     const [isPaused, setIsPaused] = useState(false);
-    const galleryImages = product.images && product.images.length > 0 ? product.images : [product.image];
+    const [direction, setDirection] = useState(0); // -1 for left, 1 for right
+
+    // Combine main image and gallery images, checking for duplicates
+    const rawImages = [product.image, ...(product.images || [])].filter(Boolean);
+    const galleryImages = Array.from(new Set(rawImages)); // Dedup
 
     React.useEffect(() => {
         if (isOpen) {
             setQuantity(1);
             setSelectedVariant(product.weightOptions?.[0] || 'Standard');
             setCurrentImageIndex(0);
+            setDirection(0);
+            setIsPaused(false);
         }
     }, [isOpen, product.weightOptions]);
 
     // Auto-scroll Gallery
-    // Auto-scroll Gallery
     React.useEffect(() => {
-        if (galleryImages.length <= 1 || isPaused) return; // Stop if paused
+        if (galleryImages.length <= 1 || isPaused) return;
         const interval = setInterval(() => {
+            setDirection(1);
             setCurrentImageIndex((prev) => (prev + 1) % galleryImages.length);
         }, 3000);
         return () => clearInterval(interval);
@@ -96,14 +103,36 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
         onClose();
     };
 
-    const nextImage = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        setCurrentImageIndex((prev) => (prev + 1) % galleryImages.length);
+    const paginate = (newDirection: number) => {
+        setIsPaused(true); // Stop auto-scroll on manual interaction
+        setDirection(newDirection);
+        setCurrentImageIndex((prev) => {
+            let nextIndex = prev + newDirection;
+            if (nextIndex < 0) nextIndex = galleryImages.length - 1;
+            if (nextIndex >= galleryImages.length) nextIndex = 0;
+            return nextIndex;
+        });
     };
 
-    const prevImage = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        setCurrentImageIndex((prev) => (prev - 1 + galleryImages.length) % galleryImages.length);
+    const variants = {
+        enter: (direction: number) => {
+            return {
+                x: direction > 0 ? 300 : -300,
+                opacity: 0
+            };
+        },
+        center: {
+            zIndex: 1,
+            x: 0,
+            opacity: 1
+        },
+        exit: (direction: number) => {
+            return {
+                zIndex: 0,
+                x: direction < 0 ? 300 : -300,
+                opacity: 0
+            };
+        }
     };
 
     return (
@@ -120,24 +149,43 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
                         <X className="w-5 h-5" />
                     </button>
 
-                    {/* Image Carousel */}
-                    <AnimatePresence mode="popLayout" initial={false}>
-                        <motion.img
-                            key={currentImageIndex}
-                            src={galleryImages[currentImageIndex]}
-                            alt={product.name}
-                            className="w-full h-full object-cover cursor-zoom-in"
-                            onClick={() => setIsZoomed(true)}
-                            onMouseEnter={() => setIsPaused(true)}
-                            onMouseLeave={() => setIsPaused(false)}
-                            onTouchStart={() => setIsPaused(true)}
-                            onTouchEnd={() => setIsPaused(false)}
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            transition={{ duration: 0.3 }}
-                        />
-                    </AnimatePresence>
+                    {/* Image Carousel with Swipe */}
+                    <div className="relative w-full h-full overflow-hidden touch-pan-y bg-slate-200">
+                        <AnimatePresence initial={false} custom={direction}>
+                            <motion.img
+                                key={currentImageIndex}
+                                src={galleryImages[currentImageIndex]}
+                                custom={direction}
+                                variants={variants}
+                                initial="enter"
+                                animate="center"
+                                exit="exit"
+                                transition={{
+                                    x: { type: "spring", stiffness: 300, damping: 30 },
+                                    opacity: { duration: 0.2 }
+                                }}
+                                alt={product.name}
+                                className="absolute inset-0 w-full h-full object-cover cursor-zoom-in"
+                                onClick={() => setIsZoomed(true)}
+
+                                // Drag / Swipe Logic
+                                drag="x"
+                                dragConstraints={{ left: 0, right: 0 }}
+                                dragElastic={1}
+                                onDragStart={() => setIsPaused(true)}
+                                onDragEnd={(e, { offset, velocity }) => {
+                                    const swipe = offset.x;
+
+                                    if (swipe < -50) {
+                                        paginate(1); // Swipe Left -> Next Image
+                                    } else if (swipe > 50) {
+                                        paginate(-1); // Swipe Right -> Prev Image
+                                    }
+                                }}
+                                whileTap={{ cursor: "grabbing" }}
+                            />
+                        </AnimatePresence>
+                    </div>
 
                     {/* Navigation Controls */}
                     {galleryImages.length > 1 && (
@@ -149,6 +197,8 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
                                         key={idx}
                                         onClick={(e) => {
                                             e.stopPropagation();
+                                            setIsPaused(true); // Stop auto-scroll
+                                            setDirection(idx > currentImageIndex ? 1 : -1);
                                             setCurrentImageIndex(idx);
                                         }}
                                         className={`transition-all duration-300 rounded-full ${idx === currentImageIndex
@@ -177,27 +227,21 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
                 <AnimatePresence>
                     {isZoomed && (
                         <Dialog open={isZoomed} onOpenChange={setIsZoomed}>
-                            <DialogContent className="!max-w-[95vw] !w-[95vw] !h-[95vh] !max-h-[95vh] !p-0 !bg-transparent !border-none !shadow-none flex items-center justify-center outline-none">
+                            <DialogContent className="!max-w-[100vw] !w-[100vw] !h-[100vh] !max-h-[100vh] !p-0 !bg-black/90 !border-none !shadow-none outline-none overflow-hidden">
                                 <DialogTitle className="sr-only">Zoomed Image: {product.name}</DialogTitle>
-                                <div className="relative w-full h-full flex items-center justify-center">
+                                <div className="relative w-full h-full flex items-center justify-center overflow-auto touch-manipulation">
                                     <button
                                         onClick={() => setIsZoomed(false)}
-                                        className="absolute top-4 right-4 z-50 p-2 bg-black/50 hover:bg-black/70 text-white rounded-full backdrop-blur-md"
+                                        className="absolute top-4 right-4 z-[60] p-3 bg-white/10 hover:bg-white/20 text-white rounded-full backdrop-blur-md"
                                     >
                                         <X className="w-8 h-8" />
                                     </button>
-                                    <motion.img
-                                        initial={{ opacity: 0, scale: 0.8 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        exit={{ opacity: 0, scale: 0.8 }}
+
+                                    {/* Pinch Zoom / Pan capable area */}
+                                    <ZoomableImage
                                         src={galleryImages[currentImageIndex]}
-                                        alt="Zoomed Product"
-                                        className="w-full h-full object-contain rounded-lg shadow-2xl"
-                                        onClick={() => setIsZoomed(false)}
-                                        onMouseEnter={() => setIsPaused(true)}
-                                        onMouseLeave={() => setIsPaused(false)}
-                                        onTouchStart={() => setIsPaused(true)}
-                                        onTouchEnd={() => setIsPaused(false)}
+                                        onNext={() => paginate(1)}
+                                        onPrev={() => paginate(-1)}
                                     />
                                 </div>
                             </DialogContent>
@@ -482,6 +526,86 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
                     </div>
                 </div>
             </DialogContent>
-        </Dialog>
+        </Dialog >
+    );
+}
+
+// Helper Component for Zoom Interaction
+// Helper Component for Zoom Interaction
+function ZoomableImage({ src, onNext, onPrev }: { src: string, onNext: () => void, onPrev: () => void }) {
+    const [scale, setScale] = useState(1.25);
+    const startDist = React.useRef(0);
+    const startScale = React.useRef(1.25);
+
+    const onTouchStart = (e: React.TouchEvent) => {
+        if (e.touches.length === 2) {
+            // Calculate initial distance
+            const dist = Math.hypot(
+                e.touches[0].clientX - e.touches[1].clientX,
+                e.touches[0].clientY - e.touches[1].clientY
+            );
+            startDist.current = dist;
+            startScale.current = scale;
+        }
+    };
+
+    const onTouchMove = (e: React.TouchEvent) => {
+        if (e.touches.length === 2) {
+            const dist = Math.hypot(
+                e.touches[0].clientX - e.touches[1].clientX,
+                e.touches[0].clientY - e.touches[1].clientY
+            );
+            if (startDist.current > 0) {
+                const newScale = startScale.current * (dist / startDist.current);
+                setScale(Math.min(Math.max(0.5, newScale), 5)); // Limit zoom
+            }
+        }
+    };
+
+    return (
+        <div
+            className="w-full h-full flex items-center justify-center overflow-hidden touch-none relative"
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+        >
+            <motion.img
+                key={src}
+                src={src}
+                alt="Full Screen"
+                className="max-w-none max-h-[90vh] object-contain"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: scale }}
+                transition={{ duration: 0.1 }} // Faster transition for pinch
+
+                drag
+                dragConstraints={{ left: -1000 * scale, right: 1000 * scale, top: -1000 * scale, bottom: 1000 * scale }}
+                dragElastic={0.1}
+            />
+
+            {/* Navigation Arrows - Side Centered */}
+            <button
+                onClick={(e) => { e.stopPropagation(); onPrev(); }}
+                className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-white/10 hover:bg-white/20 text-white rounded-full backdrop-blur-md z-[60] transition-transform active:scale-90"
+            >
+                <ChevronLeft className="w-8 h-8" />
+            </button>
+
+            <button
+                onClick={(e) => { e.stopPropagation(); onNext(); }}
+                className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-white/10 hover:bg-white/20 text-white rounded-full backdrop-blur-md z-[60] transition-transform active:scale-90"
+            >
+                <ChevronRight className="w-8 h-8" />
+            </button>
+
+            {/* Controls for manual zoom */}
+            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex gap-6 z-50">
+                <button onClick={() => setScale(s => Math.max(1, s - 0.5))} className="p-4 bg-white/10 hover:bg-white/20 rounded-full text-white backdrop-blur-md transition-transform active:scale-90 shadow-lg border border-white/10">
+                    <Minus className="w-6 h-6" />
+                </button>
+                <button onClick={() => setScale(s => Math.min(4, s + 0.5))} className="p-4 bg-white/10 hover:bg-white/20 rounded-full text-white backdrop-blur-md transition-transform active:scale-90 shadow-lg border border-white/10">
+                    <Plus className="w-6 h-6" />
+                </button>
+            </div>
+        </div>
     );
 }

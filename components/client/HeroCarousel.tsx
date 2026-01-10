@@ -4,6 +4,7 @@ import React from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 
 import { useLanguageStore } from '@/lib/languageStore';
 import { translations } from '@/lib/translations';
@@ -82,29 +83,50 @@ export function HeroCarousel({ slides = [] }: { slides?: HeroSlide[] }) {
     return (
         <div className="relative overflow-hidden bg-gray-100 aspect-[4/3] md:aspect-[21/9]" ref={emblaRef}>
             <div className="flex h-full touch-pan-y">
-                {displaySlides.map((slide) => (
+                {displaySlides.map((slide, index) => (
                     <div className="relative flex-none w-full h-full min-w-0" key={slide.id}>
                         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent z-10" />
 
-                        <img
-                            src={slide.imageUrl}
-                            alt={slide.title}
-                            className="object-cover w-full h-full"
-                        />
+                        {/* Ken Burns Effect / Parallax feel */}
+                        <div className="w-full h-full overflow-hidden">
+                            <motion.img
+                                src={slide.imageUrl}
+                                alt={slide.title}
+                                className="object-cover w-full h-full"
+                                initial={{ scale: 1 }}
+                                animate={{
+                                    scale: index === selectedIndex ? 1.1 : 1,
+                                    x: index === selectedIndex ? [-20, 0] : 0
+                                }}
+                                transition={{
+                                    scale: { duration: 8, ease: "linear" },
+                                    x: { duration: 8, ease: "linear" }
+                                }}
+                            />
+                        </div>
 
                         <div className="absolute z-20 left-6 bottom-8 max-w-[80%] text-white">
-                            <span className={`inline-block px-3 py-1 rounded-sm bg-crab-red text-white text-[10px] uppercase tracking-widest font-bold mb-3 shadow-sm ${language !== 'en' ? 'font-bangla' : 'font-body'}`}>
-                                {language === 'en' ? (slide.subtitle || '') : (slide.subtitle_bn || slide.subtitle || '')}
-                            </span>
-                            <h2 className={`text-4xl font-heading font-bold leading-tight drop-shadow-lg mb-2 ${language !== 'en' ? 'font-bangla' : 'font-heading'}`}>
-                                {language === 'en' ? slide.title : (slide.title_bn || slide.title)}
-                            </h2>
-                            <Link href={slide.buttonLink || '/menu'}>
-                                <button className="text-xs font-bold uppercase tracking-widest border-b-2 border-white/80 pb-0.5 hover:text-sand hover:border-sand transition-colors">
-                                    {/* Use slide specific button text if available, else standard translation */}
-                                    {(language === 'en' && slide.buttonText) ? slide.buttonText : t.orderNow}
-                                </button>
-                            </Link>
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{
+                                    opacity: index === selectedIndex ? 1 : 0,
+                                    y: index === selectedIndex ? 0 : 20
+                                }}
+                                transition={{ duration: 0.6, delay: 0.2 }}
+                            >
+                                <span className={`inline-block px-3 py-1 rounded-sm bg-crab-red text-white text-[10px] uppercase tracking-widest font-bold mb-3 shadow-sm ${language !== 'en' ? 'font-bangla' : 'font-body'}`}>
+                                    {language === 'en' ? (slide.subtitle || '') : (slide.subtitle_bn || slide.subtitle || '')}
+                                </span>
+                                <h2 className={`text-4xl font-heading font-bold leading-tight drop-shadow-lg mb-2 ${language !== 'en' ? 'font-bangla' : 'font-heading'}`}>
+                                    {language === 'en' ? slide.title : (slide.title_bn || slide.title)}
+                                </h2>
+                                <Link href={slide.buttonLink || '/menu'}>
+                                    <button className="text-xs font-bold uppercase tracking-widest border-b-2 border-white/80 pb-0.5 hover:text-sand hover:border-sand transition-colors">
+                                        {/* Use slide specific button text if available, else standard translation */}
+                                        {(language === 'en' && slide.buttonText) ? slide.buttonText : t.orderNow}
+                                    </button>
+                                </Link>
+                            </motion.div>
                         </div>
                     </div>
                 ))}
