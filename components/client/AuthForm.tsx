@@ -27,6 +27,18 @@ export function AuthForm() {
         signIn(provider, { callbackUrl: '/account' });
     };
 
+    // Fix: Reset loading state if user comes back (e.g. presses back button)
+    useEffect(() => {
+        const handlePageShow = () => setIsLoading(false);
+        window.addEventListener('pageshow', handlePageShow);
+        return () => window.removeEventListener('pageshow', handlePageShow);
+    }, []);
+
+    // Also reset on mount just in case
+    useEffect(() => {
+        setIsLoading(false);
+    }, []);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
