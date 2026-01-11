@@ -1,5 +1,8 @@
 'use client';
 
+
+
+
 import React, { createContext, useContext, useState, useMemo } from 'react';
 
 // --- Types ---
@@ -204,9 +207,9 @@ interface AdminContextType {
 
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
 
-export function AdminProvider({ children }: { children: React.ReactNode }) {
+export function AdminProvider({ children, initialUser }: { children: React.ReactNode; initialUser?: any }) {
     // Auth State
-    const [currentUser, setCurrentUser] = useState<User>(MOCK_USERS[0]); // Default Super Admin
+    const [currentUser, setCurrentUser] = useState<User>(initialUser || MOCK_USERS[0]); // Fallback for dev only
     const [activeHubId, setActiveHubId] = useState<string | 'ALL'>('ALL');
 
     const [orders, setOrdersState] = useState(initialOrders);
@@ -355,7 +358,9 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
             addOrder, updateOrder, deleteOrder,
             addProduct, updateProduct, deleteProduct, toggleStock,
             isSidebarCollapsed, toggleSidebar,
-            logout: () => window.location.href = '/'
+            logout: () => {
+                window.location.href = '/api/admin/logout';
+            }
         }}>
             {children}
         </AdminContext.Provider>

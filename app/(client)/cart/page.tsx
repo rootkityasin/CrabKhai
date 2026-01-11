@@ -16,6 +16,13 @@ import { toast } from 'sonner';
 import { useEffect } from 'react';
 import { useAdmin } from '@/components/providers/AdminProvider';
 import { getStorySections } from '@/app/actions/story';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 
 export default function CartPage() {
     const { items, removeItem, addItem, clearCart, total, discount, coupon } = useCartStore();
@@ -217,8 +224,8 @@ export default function CartPage() {
     }
 
     return (
-        <div className="max-w-7xl mx-auto px-4 pt-24 pb-12 lg:pt-36 lg:pb-24">
-            <h1 className={`text-3xl md:text-4xl font-bold text-gray-900 mb-8 md:mb-12 ${headingClass}`}>
+        <div className="max-w-7xl mx-auto px-4 pt-14 pb-12 lg:pt-20 lg:pb-24">
+            <h1 className={`text-2xl md:text-3xl font-bold text-gray-900 mb-6 md:mb-8 ${headingClass}`}>
                 My Basket <span className="text-gray-400 font-medium text-2xl">({items.length} Items)</span>
             </h1>
 
@@ -374,16 +381,19 @@ export default function CartPage() {
                                         onChange={e => setFormData({ ...formData, phone: e.target.value })}
                                     />
                                     <div className="grid grid-cols-3 gap-3">
-                                        <select
-                                            className="col-span-1 p-3 bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-black outline-none"
+                                        <Select
                                             value={formData.area}
-                                            onChange={e => setFormData({ ...formData, area: e.target.value })}
+                                            onValueChange={(val) => setFormData({ ...formData, area: val })}
                                             required
                                         >
-                                            <option value="">Area</option>
-                                            <option value="Dhaka">Dhaka</option>
-                                            <option value="Ctg">Ctg</option>
-                                        </select>
+                                            <SelectTrigger className="col-span-1 p-3 h-auto bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-black outline-none data-[placeholder]:text-gray-400">
+                                                <SelectValue placeholder="Area" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="Dhaka">Dhaka</SelectItem>
+                                                <SelectItem value="Ctg">Ctg</SelectItem>
+                                            </SelectContent>
+                                        </Select>
                                         <input
                                             type="text"
                                             placeholder="Address"

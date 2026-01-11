@@ -113,12 +113,7 @@ export function AdminSidebar() {
 
     return (
         <>
-            {/* Mobile Toggle Button (Visible only on mobile when sidebar is closed) */}
-            <div className="lg:hidden fixed top-4 left-4 z-50">
-                <Button variant="ghost" size="icon" onClick={toggleSidebar} className={cn("hover:bg-black/10 transition-opacity", !isSidebarCollapsed ? "opacity-0 pointer-events-none" : "opacity-100")}>
-                    <Menu className="w-6 h-6 text-slate-600" />
-                </Button>
-            </div>
+
 
             {/* Backdrop for Mobile */}
             {!isSidebarCollapsed && (

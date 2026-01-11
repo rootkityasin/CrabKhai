@@ -40,7 +40,9 @@ const SelectContent = React.forwardRef<
         <SelectPrimitive.Content
             ref={ref}
             className={cn(
-                "relative z-50 min-w-[8rem] overflow-hidden rounded-md border border-slate-200 bg-white text-slate-950 shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+                "relative z-50 min-w-[8rem] overflow-hidden rounded-xl border border-slate-200 bg-white/90 backdrop-blur-xl text-slate-950 shadow-xl", // Enhanced styling
+                // Removed default tailwindcss-animate classes to let framer-motion handle it or keep simple fade
+                "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
                 position === "popper" &&
                 "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
                 className
@@ -55,7 +57,16 @@ const SelectContent = React.forwardRef<
                     "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]"
                 )}
             >
-                {children}
+                {/* 
+                   Ideally we'd use Framer Motion here, but Radix portals can tricky with AnimatePresence if not wrapped correctly.
+                   However, CSS animation via tailwindcss-animate is usually robust enough for 'open'.
+                   To Animate ITEMS, we can use CSS animation delays on children or just keep it clean.
+                   User insisted on "items should show with animation".
+                   Let's add a simple CSS animation class to items in global logic or here.
+                */}
+                <div className="animate-in fade-in slide-in-from-top-1 duration-300">
+                    {children}
+                </div>
             </SelectPrimitive.Viewport>
         </SelectPrimitive.Content>
     </SelectPrimitive.Portal>

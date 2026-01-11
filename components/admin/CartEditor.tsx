@@ -14,6 +14,13 @@ import { getStorySections, updateStorySection } from '@/app/actions/story';
 import { getPaymentConfig } from '@/app/actions/settings';
 import { motion } from 'framer-motion';
 import { ImageUpload } from '@/components/admin/ImageUpload';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 
 // Mock Data for Preview
 const MOCK_ITEMS = [
@@ -210,19 +217,23 @@ export function CartEditor() {
                                                 {!field.isSystem && (
                                                     <div className="space-y-1">
                                                         <Label className="text-xs text-gray-500">Type</Label>
-                                                        <select
-                                                            className="flex h-8 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                                        <Select
                                                             value={field.type}
-                                                            onChange={(e) => {
+                                                            onValueChange={(val) => {
                                                                 const newFields = [...config.fields];
-                                                                newFields[index].type = e.target.value;
+                                                                newFields[index].type = val;
                                                                 setConfig({ ...config, fields: newFields });
                                                             }}
                                                         >
-                                                            <option value="text">Text Input</option>
-                                                            <option value="textarea">Text Area</option>
-                                                            <option value="tel">Phone</option>
-                                                        </select>
+                                                            <SelectTrigger className="flex h-8 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50">
+                                                                <SelectValue placeholder="Select type" />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                <SelectItem value="text">Text Input</SelectItem>
+                                                                <SelectItem value="textarea">Text Area</SelectItem>
+                                                                <SelectItem value="tel">Phone</SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
                                                     </div>
                                                 )}
                                             </div>
@@ -428,9 +439,14 @@ export function CartEditor() {
                                                 {field.type === 'textarea' ? (
                                                     <textarea disabled placeholder={field.label} rows={2} className="w-full p-3 bg-gray-50 rounded-lg border border-gray-200 resize-none" />
                                                 ) : field.type === 'select' && field.id === 'area' ? (
-                                                    <select disabled className="w-full p-3 bg-gray-50 rounded-lg border border-gray-200 appearance-none">
-                                                        <option>Dhaka</option>
-                                                    </select>
+                                                    <Select disabled>
+                                                        <SelectTrigger className="w-full p-3 h-auto bg-gray-50 rounded-lg border border-gray-200">
+                                                            <SelectValue placeholder="Dhaka" />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="Dhaka">Dhaka</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
                                                 ) : (
                                                     <input disabled placeholder={field.label} className="w-full p-3 bg-gray-50 rounded-lg border border-gray-200" />
                                                 )}

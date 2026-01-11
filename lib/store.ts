@@ -43,6 +43,13 @@ export const useCartStore = create<CartState>()(
                     const existingItem = state.items.find(
                         (i) => i.id === item.id && i.modifiers === item.modifiers
                     );
+
+                    const onCartPage = typeof window !== 'undefined' && window.location.pathname === '/cart';
+                    // Don't auto-open if on cart page (unless already open, but usually we just want to avoid forcing it true)
+                    // If manually toggled, isOpen state is respected. Here we are forcing it.
+                    // Let's just set it to 'true' only if NOT on cart page.
+                    const shouldOpen = !onCartPage;
+
                     if (existingItem) {
                         return {
                             items: state.items.map((i) =>
@@ -50,10 +57,10 @@ export const useCartStore = create<CartState>()(
                                     ? { ...i, quantity: i.quantity + item.quantity }
                                     : i
                             ),
-                            isOpen: true,
+                            isOpen: shouldOpen ? true : state.isOpen, // Only force open if not on cart page, otherwise keep current state
                         };
                     }
-                    return { items: [...state.items, item], isOpen: true };
+                    return { items: [...state.items, item], isOpen: shouldOpen ? true : state.isOpen };
                 }),
             removeItem: (itemId) =>
                 set((state) => ({

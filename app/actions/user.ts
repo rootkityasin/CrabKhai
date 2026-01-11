@@ -14,14 +14,10 @@ export async function checkUserExists(phone: string) {
     }
 }
 
-import { checkBotId } from 'botid/server';
-
 // Basic simplified create for signup
 export async function createUser(data: { name: string; phone: string; email?: string; address?: string; password?: string }) {
-    const verification = await checkBotId();
-    if (verification.isBot) {
-        return { success: false, error: "Bot detected" };
-    }
+    // Bot check removed
+
 
     try {
         const existing = await prisma.user.findFirst({ where: { phone: data.phone } });

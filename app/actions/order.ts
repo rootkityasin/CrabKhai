@@ -8,8 +8,6 @@ const prisma = (globalPrisma as any).coupon
     ? globalPrisma
     : new PrismaClient();
 
-import { checkBotId } from 'botid/server';
-
 export async function createOrder(data: {
     customerName: string;
     customerPhone: string;
@@ -19,10 +17,8 @@ export async function createOrder(data: {
     couponCode?: string;
     discountAmount?: number;
 }) {
-    const verification = await checkBotId();
-    if (verification.isBot) {
-        throw new Error("Bot detected");
-    }
+    // Bot check removed
+
 
     try {
         // 1. Create Order

@@ -134,7 +134,16 @@ export function MobileHeader() {
                         <button
                             onClick={() => {
                                 if ('geolocation' in navigator) {
+                                    const options = {
+                                        enableHighAccuracy: false, // Set to false for better compatibility on Desktops/Localhost
+                                        timeout: 15000,
+                                        maximumAge: 10000
+                                    };
+
+                                    toast.loading("Locating you...", { id: "location-toast" });
+
                                     navigator.geolocation.getCurrentPosition((position) => {
+                                        toast.dismiss("location-toast");
                                         const userLat = position.coords.latitude;
                                         const userLng = position.coords.longitude;
 
@@ -165,13 +174,27 @@ export function MobileHeader() {
                                         });
 
                                         if (minDistance <= 20) {
-                                            alert(`${t.deliveryAreaSuccess} ${nearestCity}.`);
+                                            toast.success(`${t.deliveryAreaSuccess} ${nearestCity}.`);
                                         } else {
-                                            alert(t.deliveryAreaFail);
+                                            toast.error(t.deliveryAreaFail || "Sorry, we don't deliver to your area yet.");
                                         }
                                     }, (error) => {
-                                        toast.error(t.locationError || "Location access denied.");
-                                    });
+                                        toast.dismiss("location-toast");
+                                        let errorMessage = "Location access failed.";
+                                        switch (error.code) {
+                                            case error.PERMISSION_DENIED:
+                                                errorMessage = "User denied the request for Geolocation. Please enable location permissions.";
+                                                break;
+                                            case error.POSITION_UNAVAILABLE:
+                                                errorMessage = "Location information is unavailable.";
+                                                break;
+                                            case error.TIMEOUT:
+                                                errorMessage = "The request to get user location timed out.";
+                                                break;
+                                        }
+                                        toast.error(errorMessage);
+                                        console.error("Geolocation Error:", error);
+                                    }, options);
                                 } else {
                                     toast.error(t.geoNotSupported || "Geolocation is not supported by this browser.");
                                 }

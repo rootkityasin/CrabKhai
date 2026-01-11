@@ -1,6 +1,6 @@
 'use client';
 
-import { Bell, Check, Trash2, X, Mail, LogOut } from 'lucide-react';
+import { Bell, Check, Trash2, X, Mail, LogOut, Menu } from 'lucide-react';
 import { useAdmin } from '@/components/providers/AdminProvider';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -23,7 +23,7 @@ interface AdminHeaderProps {
 }
 
 export function AdminHeader({ title }: AdminHeaderProps) {
-    const { currentUser, logout } = useAdmin();
+    const { currentUser, logout, toggleSidebar } = useAdmin();
     const [notifications, setNotifications] = useState<any[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
 
@@ -61,9 +61,14 @@ export function AdminHeader({ title }: AdminHeaderProps) {
     if (!mounted) {
         return (
             <header className="flex items-center justify-between p-4 bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-40 shadow-sm transition-all duration-300">
-                <h1 className="text-xl font-bold bg-gradient-to-r from-slate-900 to-slate-600 bg-clip-text text-transparent">
-                    {title || 'Dashboard'}
-                </h1>
+                <div className="flex items-center gap-3">
+                    <Button variant="ghost" size="icon" disabled className="lg:hidden text-slate-500 -ml-2">
+                        <Menu className="w-6 h-6" />
+                    </Button>
+                    <h1 className="text-xl font-bold bg-gradient-to-r from-slate-900 to-slate-600 bg-clip-text text-transparent">
+                        {title || 'Dashboard'}
+                    </h1>
+                </div>
 
                 <div className="flex items-center gap-4">
                     <button className="relative p-2.5 rounded-full hover:bg-slate-100 transition-all duration-300 outline-none group">
@@ -80,9 +85,14 @@ export function AdminHeader({ title }: AdminHeaderProps) {
 
     return (
         <header className="flex items-center justify-between p-4 bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-40 shadow-sm transition-all duration-300">
-            <h1 className="text-xl font-bold bg-gradient-to-r from-slate-900 to-slate-600 bg-clip-text text-transparent">
-                {title || 'Dashboard'}
-            </h1>
+            <div className="flex items-center gap-3">
+                <Button variant="ghost" size="icon" onClick={toggleSidebar} className="lg:hidden text-slate-500 hover:text-slate-700 -ml-2">
+                    <Menu className="w-6 h-6" />
+                </Button>
+                <h1 className="text-xl font-bold bg-gradient-to-r from-slate-900 to-slate-600 bg-clip-text text-transparent">
+                    {title || 'Dashboard'}
+                </h1>
+            </div>
 
             <div className="flex items-center gap-4">
                 <DropdownMenu>

@@ -1,3 +1,4 @@
+import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
@@ -13,6 +14,12 @@ export default async function AdminLayout({
     const deviceId = cookieStore.get('trusted_device')?.value;
     const headersList = await headers();
     const pathname = headersList.get('x-pathname') || '';
+
+    // Server-side Auth Check
+    const session = await auth();
+    if (!session || !session.user || (session.user as any).role === 'USER') {
+        redirect('/');
+    }
 
     // Exception for device-setup page to prevent infinite redirect loops 
     // Wait, layouts wrap pages. If I enforce this here, check if device-setup is UNDER this layout.
@@ -67,5 +74,5 @@ export default async function AdminLayout({
     }
 
     // Return Client Layout
-    return <AdminLayoutClient>{children}</AdminLayoutClient>;
+    return <AdminLayoutClient initialUser={session.user}>{children}</AdminLayoutClient>;
 }

@@ -7,11 +7,13 @@ import { cn } from '@/lib/utils';
 
 export default function AdminLayoutClient({
     children,
+    initialUser,
 }: {
     children: React.ReactNode;
+    initialUser: any;
 }) {
     return (
-        <AdminProvider>
+        <AdminProvider initialUser={initialUser}>
             <div className="min-h-screen bg-gray-50">
                 <AdminSidebar />
                 <MainContentWrapper>
