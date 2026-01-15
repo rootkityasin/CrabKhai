@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { signIn } from 'next-auth/react';
+import { signIn, getSession } from 'next-auth/react';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import { createUser } from '@/app/actions/user';
@@ -51,7 +51,23 @@ export function AuthForm() {
                     password: formData.password,
                     redirect: false,
                 });
-                // ...
+
+                if (res?.error) {
+                    toast.error("Login failed. Check your credentials.");
+                    setIsLoading(false);
+                    return;
+                }
+
+                // Check Role immediately
+                const session = await getSession();
+                // @ts-ignore
+                const role = session?.user?.role;
+                if (role === 'SUPER_ADMIN' || role === 'HUB_ADMIN') {
+                    router.push('/admin');
+                } else {
+                    router.push('/account');
+                }
+                router.refresh();
             } else {
                 // Register
                 const res = await createUser({
@@ -74,7 +90,15 @@ export function AuthForm() {
                         toast.error("Login failed. Please try logging in manually.");
                         setIsLogin(true);
                     } else {
-                        router.push('/account');
+                        // Check Role immediately
+                        const session = await getSession();
+                        // @ts-ignore
+                        const role = session?.user?.role;
+                        if (role === 'SUPER_ADMIN' || role === 'HUB_ADMIN') {
+                            router.push('/admin');
+                        } else {
+                            router.push('/account');
+                        }
                         router.refresh();
                     }
                 } else {

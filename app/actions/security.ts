@@ -12,27 +12,27 @@ function generateDeviceId() {
 }
 
 export async function authorizeDevice(token: string, userAgentString: string) {
-    const config = await prisma.siteConfig.findFirst();
-    const VALID_TOKEN = config?.adminSetupToken || process.env.ADMIN_SETUP_SECRET || "crab-secret-setup-123";
-
-    if (token !== VALID_TOKEN) {
-        return { success: false, error: "Invalid Setup Token" };
-    }
-
-    const deviceId = generateDeviceId();
-    const ua = new UAParser(userAgentString);
-    const os = ua.getOS().name || "Unknown OS";
-    const browser = ua.getBrowser().name || "Unknown Browser";
-    const deviceType = ua.getDevice().type || "Desktop";
-    const deviceName = `${browser} on ${os}`;
-
-    const headersList = await headers();
-    const ip = headersList.get('x-forwarded-for') || "127.0.0.1";
-
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 30); // 30 Days Validity
-
     try {
+        const config = await prisma.siteConfig.findFirst();
+        const VALID_TOKEN = config?.adminSetupToken || process.env.ADMIN_SETUP_SECRET || "crab-secret-setup-123";
+
+        if (token !== VALID_TOKEN) {
+            return { success: false, error: "Invalid Setup Token" };
+        }
+
+        const deviceId = generateDeviceId();
+        const ua = new UAParser(userAgentString);
+        const os = ua.getOS().name || "Unknown OS";
+        const browser = ua.getBrowser().name || "Unknown Browser";
+        const deviceType = ua.getDevice().type || "Desktop";
+        const deviceName = `${browser} on ${os}`;
+
+        const headersList = await headers();
+        const ip = headersList.get('x-forwarded-for') || "127.0.0.1";
+
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + 30); // 30 Days Validity
+
         await prisma.trustedDevice.create({
             data: {
                 deviceId,
@@ -79,30 +79,29 @@ export async function authorizeDevice(token: string, userAgentString: string) {
         return { success: true };
     } catch (error) {
         console.error("Device Auth Error:", error);
-        return { success: false, error: "Database Error" };
+        return { success: false, error: "System Error" };
     }
 }
 
 export async function checkDeviceTrust() {
-    const cookieStore = await cookies();
-    const deviceId = cookieStore.get('trusted_device')?.value;
+    try {
+        const cookieStore = await cookies();
+        const deviceId = cookieStore.get('trusted_device')?.value;
 
-    if (!deviceId) return false;
+        if (!deviceId) return false;
 
-    const device = await prisma.trustedDevice.findUnique({
-        where: { deviceId }
-    });
+        const device = await prisma.trustedDevice.findUnique({
+            where: { deviceId }
+        });
 
-    if (!device) return false;
-    if (new Date() > device.expiresAt) return false;
+        if (!device) return false;
+        if (new Date() > device.expiresAt) return false;
 
-    // Update last used asynchronously (fire and forget sort of)
-    /* await prisma.trustedDevice.update({
-        where: { id: device.id },
-        data: { lastUsed: new Date() }
-    }); */
-
-    return true;
+        return true;
+    } catch (error) {
+        console.error("Check Trust Error:", error);
+        return false;
+    }
 }
 
 export async function logSecurityEvent(action: string, severity: string, details?: string) {

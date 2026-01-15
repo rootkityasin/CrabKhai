@@ -43,6 +43,14 @@ export default function AccountPage() {
             if (status === 'loading') return;
 
             if (status === 'authenticated' && session?.user) {
+                // Admin Redirect Check
+                // @ts-ignore
+                const role = session.user.role;
+                if (role === 'SUPER_ADMIN' || role === 'HUB_ADMIN') {
+                    router.push('/admin');
+                    return;
+                }
+
                 setIsLoggedIn(true);
 
                 // Fetch latest data from DB

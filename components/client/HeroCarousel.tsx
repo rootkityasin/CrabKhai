@@ -93,9 +93,9 @@ export function HeroCarousel({ slides = [] }: { slides?: HeroSlide[] }) {
                                 src={slide.imageUrl}
                                 alt={slide.title}
                                 className="object-cover w-full h-full"
-                                initial={{ scale: 1 }}
+                                initial={{ scale: 1.05 }}
                                 animate={{
-                                    scale: index === selectedIndex ? 1.1 : 1,
+                                    scale: index === selectedIndex ? 1.15 : 1.05,
                                     x: index === selectedIndex ? [-20, 0] : 0
                                 }}
                                 transition={{

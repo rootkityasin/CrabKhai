@@ -72,6 +72,8 @@ This project includes a robust backend administrative dashboard designed to stre
 - **Customer Database**: Manage customer profiles and order history.
 - **Billing & Subscriptions**: Integrated financial tools for invoicing and subscription plans.
 - **Marketing Tools**: Manage promos, themes, and automation settings.
+- **Trusted Device Security**: Advanced security layer requiring device authorization for admin access.
+- **Smart Admin Redirect**: Intelligent routing that instantly directs admins to the dashboard upon login.
 - **User Roles**: Granular access control for admins, kitchen staff, and managers.
 
 ## Design System
