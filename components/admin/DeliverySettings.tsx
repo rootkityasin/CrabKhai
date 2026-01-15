@@ -23,6 +23,51 @@ const DISTRICTS = [
     "Sherpur", "Sirajganj", "Sunamganj", "Sylhet", "Tangail", "Thakurgaon"
 ].sort();
 
+// All 495 Upazilas of Bangladesh organized alphabetically
+const UPAZILAS = [
+    "Abhaynagar", "Adamdighi", "Aditmari", "Agailjhara", "Ajmiriganj", "Akhaura", "Akkelpur", "Alamdanga", "Alfadanga", "Alikadam",
+    "Anowara", "Araihazar", "Ashuganj", "Atgharia", "Atpara", "Austagram", "Babuganj", "Badarganj", "Badda", "Bagerhat Sadar",
+    "Bagha", "Baghaichhari", "Bagmara", "Bahirbazar", "Bajitpur", "Bakerganj", "Bakshiganj", "Baliakandi", "Banani", "Bancharampur",
+    "Bandarban Sadar", "Baniachang", "Banshkhali", "Baraigram", "Barchana", "Barguna Sadar", "Barisal Sadar", "Barkal", "Barlekha",
+    "Barura", "Basail", "Batiaghata", "Bauphal", "Begumganj", "Belabo", "Belkuchi", "Betagi", "Bhairab", "Bhaluka", "Bhandaria",
+    "Bhanga", "Bheramara", "Bhola Sadar", "Bholahat", "Bhurungamari", "Bijoynagar", "Birampur", "Birganj", "Bishwamvarpur", "Bishwanath",
+    "Boalkhali", "Boalmari", "Bogura Sadar", "Bochaganj", "Borhanuddin", "Brahmanbaria Sadar", "Burichang", "Cantonment", "Chagalnaiya",
+    "Chakaria", "Chandanaish", "Chandina", "Chandpur Sadar", "Chapainawabganj Sadar", "Charbhadrasan", "Charfashion", "Chatkhil", "Chatmohar",
+    "Chauddagram", "Chhagalnaiya", "Charghat", "Chitalmari", "Chittagong Port", "Chuadanga Sadar", "Chunarughat", "Companiganj", "Cox's Bazar Sadar",
+    "Daganbhuiyan", "Dagonbhuiyan", "Dakkhin Surma", "Damurhuda", "Dashmina", "Daulatpur", "Daulatkhan", "Debhata", "Debidwar", "Demra",
+    "Delduar", "Dewanganj", "Dhamrai", "Dhanmondi", "Dhanbari", "Dhamoirhat", "Dharmapasha", "Dhobaura", "Dhunat", "Dhupchanchia",
+    "Dighinala", "Dinajpur Sadar", "Dohar", "Domar", "Dumki", "Dumuria", "Durgapur", "Fakirhat", "Faridganj", "Faridpur Sadar",
+    "Fatikchhari", "Fatulla", "Fenchuganj", "Feni Sadar", "Fulbaria", "Fulchhari", "Fulpur", "Gabtali", "Gaibandha Sadar", "Gafargaon",
+    "Galachipa", "Gangachara", "Gangni", "Gaurnadi", "Gazipur Sadar", "Ghatail", "Ghior", "Goalanda", "Golapganj", "Godagari",
+    "Gomastapur", "Gopalganj Sadar", "Gopalpur", "Gowainghat", "Gurudaspur", "Gulshan", "Habiganj Sadar", "Haimchar", "Hajiganj", "Hakimpur",
+    "Halishahar", "Haluaghat", "Harinakundu", "Harintana", "Haripur", "Hatibandha", "Hathazari", "Hizla", "Homna", "Ishwardi",
+    "Ishwarganj", "Islampur", "Itna", "Jaintiapur", "Jajira", "Jamalpur Sadar", "Jessore Sadar", "Jhalkathi Sadar", "Jhenaidah Sadar", "Jhikargacha",
+    "Jibannagar", "Joypurhat Sadar", "Joynagar", "Kachua", "Kadamtali", "Kafrul", "Kahaloo", "Kalaroa", "Kalapara", "Kalai",
+    "Kalia", "Kaliganj", "Kaliakair", "Kalihati", "Kalmakanda", "Kamalpur", "Kamalganj", "Kamrangirchar", "Kamarkhand", "Kanaighat",
+    "Kapasia", "Karimganj", "Kasba", "Katiadi", "Kaunia", "Kawkhali", "Kendua", "Keraniganj", "Keshabpur", "Khagrachhari Sadar",
+    "Khaliajuri", "Khilgaon", "Khoksa", "Khulna Sadar", "Kishoreganj Sadar", "Kolapara", "Kotalipara", "Kotchandpur", "Kulaura", "Kuliarchar",
+    "Kumarkhali", "Kundaghat", "Kurigram Sadar", "Kushtia Sadar", "Kutubdia", "Laksham", "Lakshmipur Sadar", "Lalbag", "Lalmai", "Lalmohan",
+    "Lalmonirhat Sadar", "Lalpur", "Langadu", "Lohagara", "Lohajang", "Madarganj", "Madaripur Sadar", "Madhabpur", "Madhukhali", "Madhupur",
+    "Magura Sadar", "Maheshkhali", "Maheshpur", "Maijdee", "Manikchhari", "Manikganj Sadar", "Manirampur", "Manpura", "Matiranga", "Mawna",
+    "Meghna", "Mehendiganj", "Meherpur Sadar", "Mirersarai", "Mirsharai", "Mirpur", "Mirzapur", "Mithapukur", "Modhukhali", "Mohanganj",
+    "Mohammadpur", "Moheshkhali", "Monohordi", "Morrelganj", "Motijheel", "Moulvi Bazar Sadar", "Mujibnagar", "Muktagachha", "Muktagasa", "Muladi",
+    "Munshiganj Sadar", "Muksudpur", "Mymensingh Sadar", "Nabinagar", "Nachol", "Nagarkanda", "Nageswari", "Nakla", "Nalchity", "Nalitabari",
+    "Nandigram", "Nandail", "Naogaon Sadar", "Narail Sadar", "Narayanganj Sadar", "Narsingdi Sadar", "Natore Sadar", "Nawabganj", "Netrokona Sadar",
+    "New Market", "Nilphamari Sadar", "Niyamatpur", "Noakhali Sadar", "Paba", "Pabna Sadar", "Pahartali", "Pakundia", "Palang", "Palash",
+    "Pallabi", "Panchagar", "Panchagarh Sadar", "Pangsha", "Parbatipur", "Parshuram", "Patgram", "Patharghata", "Pathiya", "Patnitala",
+    "Patuakhali Sadar", "Pekua", "Phulbari", "Phulpur", "Pirgachha", "Pirganj", "Pirojpur Sadar", "Porsha", "Pubail", "Purbadhala",
+    "Rahanpur", "Raipur", "Raipura", "Rajbari Sadar", "Rajnagar", "Rajoir", "Rajshahi Sadar", "Ramganj", "Ramgarh", "Ramgati",
+    "Ramna", "Rampal", "Ramu", "Rangamati Sadar", "Rangpur Sadar", "Ranisankail", "Raninagar", "Rangunia", "Raozan", "Rashahi",
+    "Rohanpur", "Rowmari", "Rupganj", "Rupsa", "Sabang", "Sadarghat", "Sadar", "Sadarpur", "Sadullapur", "Saidpur",
+    "Sakhipur", "Saltha", "Sandwip", "Santhia", "Sapahar", "Sarishabari", "Sarail", "Satkhira Sadar", "Savar", "Sayedabad",
+    "Senbag", "Shahjadpur", "Shailkupa", "Shajahanpur", "Shalikha", "Shalua", "Shantiganj", "Shantinagar", "Shapahar", "Shariatpur Sadar",
+    "Sherpur Sadar", "Sher-e-Bangla Nagar", "Shibchar", "Shibganj", "Shibpur", "Shimlia", "Shirajdikhan", "Shreepur", "Shreenagar", "Shyamganj",
+    "Shyamnagar", "Sirajganj Sadar", "Sitakunda", "Sonagazi", "Sonadanga", "Sonargaon", "Sonatala", "Sreepur", "Sreemangal", "Sreerampur",
+    "Subarnachar", "Sujanagar", "Sunamganj Sadar", "Sundarganj", "Sylhet Sadar", "Tala", "Taltali", "Tanore", "Tangail Sadar", "Tarabo",
+    "Tarakanda", "Tarash", "Teknaf", "Tetulia", "Thakurgaon Sadar", "Titas", "Tongibari", "Tongi", "Ullapara", "Ullahpara",
+    "Ukhia", "Uttara", "Uzipur", "Ulipur", "Wazirpur", "Zakiganj", "Zanjira", "Zilha Sadar"
+].sort();
+
 export function DeliverySettings({ onBack }: { onBack?: () => void }) {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -39,6 +84,8 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
     // Combobox state
     const [openDistrict, setOpenDistrict] = useState(false);
     const [districtSearch, setDistrictSearch] = useState("");
+    const [openUpazila, setOpenUpazila] = useState(false);
+    const [upazilaSearch, setUpazilaSearch] = useState("");
 
     useEffect(() => {
         loadConfig();
@@ -135,6 +182,7 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
     const upazilas = (config.deliveryZones || []).filter((z: any) => z.type === 'UPAZILA');
 
     const filteredDistricts = DISTRICTS.filter(d => d.toLowerCase().includes(districtSearch.toLowerCase()));
+    const filteredUpazilas = UPAZILAS.filter(u => u.toLowerCase().includes(upazilaSearch.toLowerCase()));
 
     return (
         <div className="space-y-6 max-w-5xl mx-auto pb-20 animate-in fade-in slide-in-from-bottom-4 duration-300">
@@ -355,10 +403,57 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
                                             </div>
                                         )}
                                     </div>
+                                ) : newZone.type === 'UPAZILA' ? (
+                                    <div className="flex-1 relative">
+                                        <Input
+                                            placeholder="Search upazilas..."
+                                            value={upazilaSearch}
+                                            onChange={(e) => {
+                                                setUpazilaSearch(e.target.value);
+                                                setOpenUpazila(true);
+                                            }}
+                                            onFocus={() => setOpenUpazila(true)}
+                                            onBlur={() => {
+                                                setTimeout(() => setOpenUpazila(false), 150);
+                                            }}
+                                            className="w-full bg-white pr-8"
+                                        />
+                                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+
+                                        {/* Upazila Dropdown list */}
+                                        {openUpazila && (
+                                            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-md shadow-lg z-50 max-h-[300px] overflow-y-auto">
+                                                {filteredUpazilas.length === 0 ? (
+                                                    <div className="px-4 py-3 text-sm text-slate-500 text-center">No upazila found.</div>
+                                                ) : (
+                                                    filteredUpazilas.map((upazila) => {
+                                                        const isSelected = newZone.name === upazila;
+                                                        return (
+                                                            <div
+                                                                key={upazila}
+                                                                className={cn(
+                                                                    "px-4 py-2.5 cursor-pointer text-sm text-slate-700",
+                                                                    isSelected ? "bg-blue-100" : "hover:bg-blue-50"
+                                                                )}
+                                                                onMouseDown={(e) => e.preventDefault()}
+                                                                onClick={() => {
+                                                                    setNewZone({ ...newZone, name: upazila });
+                                                                    setUpazilaSearch(upazila);
+                                                                    setOpenUpazila(false);
+                                                                }}
+                                                            >
+                                                                {upazila}
+                                                            </div>
+                                                        );
+                                                    })
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
                                 ) : (
                                     <Input
-                                        className="flex-1" // Use Select for districts/upazilas in future if needed
-                                        placeholder={`Select delivery ${newZone.type.toLowerCase()}`}
+                                        className="flex-1"
+                                        placeholder={`Enter delivery ${newZone.type.toLowerCase()}`}
                                         value={newZone.name}
                                         onChange={(e) => setNewZone({ ...newZone, name: e.target.value })}
                                     />
