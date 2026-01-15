@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import fs from 'fs';
 
 export async function GET() {
     try {
-        const prisma = new PrismaClient(); // Instantiated inside try/catch
+        // const prisma = new PrismaClient(); // Instantiated inside try/catch
 
         const defaults = [
             { title: 'Best Sellers', slug: 'best-sellers', order: 0 },
@@ -57,7 +57,7 @@ export async function GET() {
             });
         }
 
-        await prisma.$disconnect();
+        // await prisma.$disconnect();
         return NextResponse.json({ success: true, message: "Seeding complete (Lazy Instantiation)" });
     } catch (error: any) {
         const msg = String(error) + '\n' + (error.stack || '');

@@ -1,4 +1,3 @@
-
 import NextAuth from "next-auth"
 import Google from "next-auth/providers/google"
 import Apple from "next-auth/providers/apple"
@@ -9,8 +8,15 @@ import bcrypt from "bcryptjs"
 import { authConfig } from "./auth.config"
 import { checkRateLimit } from "@/lib/rate-limit"
 
+export const runtime = "nodejs";
+
+if (!process.env.AUTH_SECRET) {
+    throw new Error('AUTH_SECRET is not defined in environment variables')
+}
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
     ...authConfig,
+    secret: process.env.AUTH_SECRET,
     adapter: PrismaAdapter(prisma),
     providers: [
         Google({
