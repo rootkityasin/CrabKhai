@@ -132,7 +132,6 @@ export async function updatePaymentConfig(data: any) {
         revalidatePath('/admin/shop');
         return { success: true };
     } catch (error) {
-        console.error("Failed to update payment config:", error);
         return { success: false, error: "Failed to save payment config" };
     }
 }

@@ -8,9 +8,20 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Loader2, Save, ArrowLeft, Trash2, Plus, AlertCircle } from 'lucide-react';
+import { Loader2, Save, ArrowLeft, Trash2, Plus, AlertCircle, Check, ChevronDown } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+
+const DISTRICTS = [
+    "Bagerhat", "Bandarban", "Barguna", "Barisal", "Bhola", "Bogura", "Brahmanbaria", "Chandpur", "Chittagong", "Chuadanga", "Comilla", "Cox's Bazar",
+    "Dhaka", "Dinajpur", "Faridpur", "Feni", "Gaibandha", "Gazipur", "Gopalganj", "Habiganj", "Jamalpur", "Jessore", "Jhalokati", "Jhenaidah",
+    "Joypurhat", "Khagrachari", "Khulna", "Kishoreganj", "Kurigram", "Kushtia", "Lakshmipur", "Lalmonirhat", "Madaripur", "Magura", "Manikganj",
+    "Meherpur", "Moulvibazar", "Munshiganj", "Mymensingh", "Naogaon", "Narail", "Narayanganj", "Narsingdi", "Natore", "Netrokona", "Nilphamari",
+    "Noakhali", "Pabna", "Panchagarh", "Patuakhali", "Pirojpur", "Rajbari", "Rajshahi", "Rangamati", "Rangpur", "Satkhira", "Shariatpur",
+    "Sherpur", "Sirajganj", "Sunamganj", "Sylhet", "Tangail", "Thakurgaon"
+].sort();
 
 export function DeliverySettings({ onBack }: { onBack?: () => void }) {
     const [loading, setLoading] = useState(true);
@@ -24,6 +35,10 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
         courierPathaoEnabled: false,
         courierPathaoCredentials: null
     });
+
+    // Combobox state
+    const [openDistrict, setOpenDistrict] = useState(false);
+    const [districtSearch, setDistrictSearch] = useState("");
 
     useEffect(() => {
         loadConfig();
@@ -51,11 +66,19 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
     };
 
     // Weight Based Charges Handlers
+    const [newWeightCharge, setNewWeightCharge] = useState({ weight: '', charge: '' });
+
     const addWeightCharge = () => {
+        if (!newWeightCharge.weight || !newWeightCharge.charge) return;
         setConfig({
             ...config,
-            weightBasedCharges: [...(config.weightBasedCharges || []), { min: 0, max: 0, charge: 0 }]
+            weightBasedCharges: [...(config.weightBasedCharges || []), {
+                min: Number(newWeightCharge.weight), // Using 'min' as per previous code, or change to 'weight' if schema allows. sticking to 'min' for now to match list below
+                max: 0,
+                charge: Number(newWeightCharge.charge)
+            }]
         });
+        setNewWeightCharge({ weight: '', charge: '' });
     };
 
     const updateWeightCharge = (index: number, field: string, value: any) => {
@@ -71,7 +94,7 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
     };
 
     // Zone Handlers
-    const [newZone, setNewZone] = useState({ name: '', price: 0, type: 'ZONE' });
+    const [newZone, setNewZone] = useState({ name: '', price: 0, type: 'DISTRICT' });
 
     const addZone = () => {
         if (!newZone.name) return toast.error("Name is required");
@@ -110,6 +133,8 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
     const zones = (config.deliveryZones || []).filter((z: any) => z.type === 'ZONE');
     const districts = (config.deliveryZones || []).filter((z: any) => z.type === 'DISTRICT');
     const upazilas = (config.deliveryZones || []).filter((z: any) => z.type === 'UPAZILA');
+
+    const filteredDistricts = DISTRICTS.filter(d => d.toLowerCase().includes(districtSearch.toLowerCase()));
 
     return (
         <div className="space-y-6 max-w-5xl mx-auto pb-20 animate-in fade-in slide-in-from-bottom-4 duration-300">
@@ -218,10 +243,25 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
 
                         <div className="flex gap-4 items-center">
                             <div className="grid grid-cols-2 gap-4 flex-1">
-                                <Input disabled placeholder="Weight (in kg)" />
-                                <Input disabled placeholder="Extra Charge" />
+                                <Input
+                                    placeholder="Weight (in kg)"
+                                    type="number"
+                                    value={newWeightCharge.weight}
+                                    onChange={(e) => setNewWeightCharge({ ...newWeightCharge, weight: e.target.value })}
+                                />
+                                <Input
+                                    placeholder="Extra Charge"
+                                    type="number"
+                                    value={newWeightCharge.charge}
+                                    onChange={(e) => setNewWeightCharge({ ...newWeightCharge, charge: e.target.value })}
+                                />
                             </div>
-                            <Button variant="secondary" onClick={addWeightCharge} className="w-24">
+                            <Button
+                                variant="secondary"
+                                onClick={addWeightCharge}
+                                className="w-24"
+                                disabled={!newWeightCharge.weight || !newWeightCharge.charge}
+                            >
                                 Add <Plus className="w-4 h-4 ml-1" />
                             </Button>
                         </div>
@@ -267,12 +307,62 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
 
                             {/* Add New Zone */}
                             <div className="flex gap-3 pt-2">
-                                <Input
-                                    className="flex-1" // Use Select for districts/upazilas in future if needed
-                                    placeholder={`Select delivery ${newZone.type.toLowerCase()}`}
-                                    value={newZone.name}
-                                    onChange={(e) => setNewZone({ ...newZone, name: e.target.value })}
-                                />
+                                {newZone.type === 'DISTRICT' ? (
+                                    <div className="flex-1 relative">
+                                        <Input
+                                            placeholder="Search districts..."
+                                            value={districtSearch}
+                                            onChange={(e) => {
+                                                setDistrictSearch(e.target.value);
+                                                setOpenDistrict(true);
+                                            }}
+                                            onFocus={() => setOpenDistrict(true)}
+                                            onBlur={() => {
+                                                // Delay to allow click on dropdown items
+                                                setTimeout(() => setOpenDistrict(false), 150);
+                                            }}
+                                            className="w-full bg-white pr-8"
+                                        />
+                                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+
+                                        {/* Dropdown list */}
+                                        {openDistrict && (
+                                            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-md shadow-lg z-50 max-h-[300px] overflow-y-auto">
+                                                {filteredDistricts.length === 0 ? (
+                                                    <div className="px-4 py-3 text-sm text-slate-500 text-center">No district found.</div>
+                                                ) : (
+                                                    filteredDistricts.map((district) => {
+                                                        const isSelected = newZone.name === district;
+                                                        return (
+                                                            <div
+                                                                key={district}
+                                                                className={cn(
+                                                                    "px-4 py-2.5 cursor-pointer text-sm text-slate-700",
+                                                                    isSelected ? "bg-blue-100" : "hover:bg-blue-50"
+                                                                )}
+                                                                onMouseDown={(e) => e.preventDefault()}
+                                                                onClick={() => {
+                                                                    setNewZone({ ...newZone, name: district });
+                                                                    setDistrictSearch(district);
+                                                                    setOpenDistrict(false);
+                                                                }}
+                                                            >
+                                                                {district}
+                                                            </div>
+                                                        );
+                                                    })
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <Input
+                                        className="flex-1" // Use Select for districts/upazilas in future if needed
+                                        placeholder={`Select delivery ${newZone.type.toLowerCase()}`}
+                                        value={newZone.name}
+                                        onChange={(e) => setNewZone({ ...newZone, name: e.target.value })}
+                                    />
+                                )}
                                 <Input
                                     className="w-24"
                                     placeholder="Price"
