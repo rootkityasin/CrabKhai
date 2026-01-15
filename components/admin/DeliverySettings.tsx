@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Loader2, Save, ArrowLeft, Trash2, Plus, AlertCircle, Check, ChevronDown } from 'lucide-react';
+import { Loader2, Save, ArrowLeft, Trash2, Plus, AlertCircle, Check, ChevronDown, Eye, EyeOff } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -78,7 +78,13 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
         weightBasedCharges: [],
         deliveryZones: [],
         courierPathaoEnabled: false,
-        courierPathaoCredentials: null
+        courierPathaoCredentials: null,
+        courierSteadfastEnabled: false,
+        courierSteadfastCredentials: null,
+        courierRedxEnabled: false,
+        courierRedxCredentials: null,
+        courierPaperflyEnabled: false,
+        courierPaperflyCredentials: null
     });
 
     // Combobox state
@@ -86,6 +92,15 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
     const [districtSearch, setDistrictSearch] = useState("");
     const [openUpazila, setOpenUpazila] = useState(false);
     const [upazilaSearch, setUpazilaSearch] = useState("");
+
+    // Password visibility states
+    const [showPathaoSecret, setShowPathaoSecret] = useState(false);
+    const [showPathaoPassword, setShowPathaoPassword] = useState(false);
+    const [showSteadfastApiKey, setShowSteadfastApiKey] = useState(false);
+    const [showSteadfastSecret, setShowSteadfastSecret] = useState(false);
+    const [showRedxApiKey, setShowRedxApiKey] = useState(false);
+    const [showPaperflyUsername, setShowPaperflyUsername] = useState(false);
+    const [showPaperflyPassword, setShowPaperflyPassword] = useState(false);
 
     useEffect(() => {
         loadConfig();
@@ -487,9 +502,8 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 p-4">
                         <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 bg-red-50 rounded-lg flex items-center justify-center p-2">
-                                {/* Pathao Logo Placeholder */}
-                                <span className="text-red-600 font-bold text-xs">Pathao</span>
+                            <div className="w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden">
+                                <img src="https://asset.brandfetch.io/idihVImzEd/idW3j-c5de.png" alt="Pathao" className="w-full h-full object-contain" />
                             </div>
                             <div>
                                 <CardTitle className="text-base">Pathao</CardTitle>
@@ -502,38 +516,258 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
                         />
                     </CardHeader>
                     {config.courierPathaoEnabled && (
-                        <CardContent className="p-4 pt-0 border-t bg-slate-50/50">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                                <div className="space-y-2">
-                                    <Label>Client ID</Label>
+                        <CardContent className="p-6 border-t bg-white">
+                            {/* Pathao Header */}
+                            <div className="flex items-center gap-2 mb-2">
+                                <img src="https://asset.brandfetch.io/idihVImzEd/idW3j-c5de.png" alt="Pathao" className="h-6 object-contain" />
+                                <span className="text-slate-400">|</span>
+                                <span className="font-semibold text-slate-800">Configure Pathao</span>
+                            </div>
+                            <p className="text-sm text-slate-500 mb-4">Please provide your Pathao credentials to integrate Pathao</p>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <Input
+                                    placeholder="Store ID"
+                                    value={config.courierPathaoCredentials?.store_id || ''}
+                                    onChange={(e) => setConfig({ ...config, courierPathaoCredentials: { ...config.courierPathaoCredentials, store_id: e.target.value } })}
+                                />
+                                <Input
+                                    placeholder="Client ID"
+                                    value={config.courierPathaoCredentials?.client_id || ''}
+                                    onChange={(e) => setConfig({ ...config, courierPathaoCredentials: { ...config.courierPathaoCredentials, client_id: e.target.value } })}
+                                />
+                                <div className="relative">
                                     <Input
-                                        value={config.courierPathaoCredentials?.client_id || ''}
-                                        onChange={(e) => setConfig({ ...config, courierPathaoCredentials: { ...config.courierPathaoCredentials, client_id: e.target.value } })}
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label>Client Secret</Label>
-                                    <Input
-                                        type="password"
+                                        type={showPathaoSecret ? "text" : "password"}
+                                        placeholder="Client Secret"
                                         value={config.courierPathaoCredentials?.client_secret || ''}
                                         onChange={(e) => setConfig({ ...config, courierPathaoCredentials: { ...config.courierPathaoCredentials, client_secret: e.target.value } })}
+                                        className="pr-10"
                                     />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPathaoSecret(!showPathaoSecret)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                                    >
+                                        {showPathaoSecret ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                    </button>
                                 </div>
-                                <div className="space-y-2">
-                                    <Label>Username</Label>
+                                <div className="relative">
                                     <Input
-                                        value={config.courierPathaoCredentials?.username || ''}
-                                        onChange={(e) => setConfig({ ...config, courierPathaoCredentials: { ...config.courierPathaoCredentials, username: e.target.value } })}
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label>Password</Label>
-                                    <Input
-                                        type="password"
+                                        type={showPathaoPassword ? "text" : "password"}
+                                        placeholder="Password"
                                         value={config.courierPathaoCredentials?.password || ''}
                                         onChange={(e) => setConfig({ ...config, courierPathaoCredentials: { ...config.courierPathaoCredentials, password: e.target.value } })}
+                                        className="pr-10"
                                     />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPathaoPassword(!showPathaoPassword)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                                    >
+                                        {showPathaoPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                    </button>
                                 </div>
+                                <Input
+                                    placeholder="Username"
+                                    value={config.courierPathaoCredentials?.username || ''}
+                                    onChange={(e) => setConfig({ ...config, courierPathaoCredentials: { ...config.courierPathaoCredentials, username: e.target.value } })}
+                                />
+                                <Button className="bg-indigo-600 hover:bg-indigo-700 text-white">
+                                    Add <Plus className="w-4 h-4 ml-1" />
+                                </Button>
+                            </div>
+                        </CardContent>
+                    )}
+                </Card>
+
+                {/* Steadfast Courier */}
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 p-4">
+                        <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden">
+                                <img src="https://asset.brandfetch.io/idTLxLNpfL/idMzOSgXI-.png" alt="Steadfast" className="w-full h-full object-contain" />
+                            </div>
+                            <div>
+                                <CardTitle className="text-base">Steadfast</CardTitle>
+                                <CardDescription>Configure delivery credentials</CardDescription>
+                            </div>
+                        </div>
+                        <Switch
+                            checked={config.courierSteadfastEnabled}
+                            onCheckedChange={(c) => setConfig({ ...config, courierSteadfastEnabled: c })}
+                        />
+                    </CardHeader>
+                    {config.courierSteadfastEnabled && (
+                        <CardContent className="p-6 border-t bg-white">
+                            {/* Steadfast Header */}
+                            <div className="flex items-center gap-2 mb-2">
+                                <img src="https://asset.brandfetch.io/idTLxLNpfL/idMzOSgXI-.png" alt="Steadfast" className="h-6 object-contain" />
+                                <span className="text-slate-400">|</span>
+                                <span className="font-semibold text-slate-800">Configure Steadfast</span>
+                            </div>
+                            <p className="text-sm text-slate-500 mb-4">Please provide your Steadfast credentials to integrate Steadfast</p>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="relative">
+                                    <Input
+                                        type={showSteadfastApiKey ? "text" : "password"}
+                                        placeholder="API key"
+                                        value={config.courierSteadfastCredentials?.api_key || ''}
+                                        onChange={(e) => setConfig({ ...config, courierSteadfastCredentials: { ...config.courierSteadfastCredentials, api_key: e.target.value } })}
+                                        className="pr-10"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowSteadfastApiKey(!showSteadfastApiKey)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                                    >
+                                        {showSteadfastApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                    </button>
+                                </div>
+                                <div className="relative">
+                                    <Input
+                                        type={showSteadfastSecret ? "text" : "password"}
+                                        placeholder="App Secret"
+                                        value={config.courierSteadfastCredentials?.app_secret || ''}
+                                        onChange={(e) => setConfig({ ...config, courierSteadfastCredentials: { ...config.courierSteadfastCredentials, app_secret: e.target.value } })}
+                                        className="pr-10"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowSteadfastSecret(!showSteadfastSecret)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                                    >
+                                        {showSteadfastSecret ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="flex justify-end mt-4">
+                                <Button className="bg-indigo-600 hover:bg-indigo-700 text-white">
+                                    Add <Plus className="w-4 h-4 ml-1" />
+                                </Button>
+                            </div>
+                        </CardContent>
+                    )}
+                </Card>
+
+                {/* Redx Courier */}
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 p-4">
+                        <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden">
+                                <img src="https://asset.brandfetch.io/idoQm_MIQe/idoZvNRrOH.png" alt="Redx" className="w-full h-full object-contain" />
+                            </div>
+                            <div>
+                                <CardTitle className="text-base">Redx</CardTitle>
+                                <CardDescription>Configure delivery credentials</CardDescription>
+                            </div>
+                        </div>
+                        <Switch
+                            checked={config.courierRedxEnabled}
+                            onCheckedChange={(c) => setConfig({ ...config, courierRedxEnabled: c })}
+                        />
+                    </CardHeader>
+                    {config.courierRedxEnabled && (
+                        <CardContent className="p-6 border-t bg-white">
+                            {/* Redx Header */}
+                            <div className="flex items-center gap-2 mb-2">
+                                <img src="https://asset.brandfetch.io/idoQm_MIQe/idoZvNRrOH.png" alt="Redx" className="h-6 object-contain" />
+                                <span className="text-slate-400">|</span>
+                                <span className="font-semibold text-slate-800">Configure Redx</span>
+                            </div>
+                            <p className="text-sm text-slate-500 mb-4">Please provide your Redx credentials to integrate Redx</p>
+
+                            <div className="relative">
+                                <Input
+                                    type={showRedxApiKey ? "text" : "password"}
+                                    placeholder="API key"
+                                    value={config.courierRedxCredentials?.api_key || ''}
+                                    onChange={(e) => setConfig({ ...config, courierRedxCredentials: { ...config.courierRedxCredentials, api_key: e.target.value } })}
+                                    className="pr-10"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowRedxApiKey(!showRedxApiKey)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                                >
+                                    {showRedxApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                </button>
+                            </div>
+                            <div className="flex justify-end mt-4">
+                                <Button className="bg-indigo-600 hover:bg-indigo-700 text-white">
+                                    Add <Plus className="w-4 h-4 ml-1" />
+                                </Button>
+                            </div>
+                        </CardContent>
+                    )}
+                </Card>
+
+                {/* Paperfly Courier */}
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 p-4">
+                        <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden">
+                                <img src="https://asset.brandfetch.io/idnMyVyiZS/idRO-r67R7.png" alt="Paperfly" className="w-full h-full object-contain" />
+                            </div>
+                            <div>
+                                <CardTitle className="text-base">Paperfly</CardTitle>
+                                <CardDescription>Configure delivery credentials</CardDescription>
+                            </div>
+                        </div>
+                        <Switch
+                            checked={config.courierPaperflyEnabled}
+                            onCheckedChange={(c) => setConfig({ ...config, courierPaperflyEnabled: c })}
+                        />
+                    </CardHeader>
+                    {config.courierPaperflyEnabled && (
+                        <CardContent className="p-6 border-t bg-white">
+                            {/* Paperfly Header */}
+                            <div className="flex items-center gap-2 mb-2">
+                                <img src="https://asset.brandfetch.io/idnMyVyiZS/idRO-r67R7.png" alt="Paperfly" className="h-6 object-contain" />
+                                <span className="text-slate-400">|</span>
+                                <span className="font-semibold text-slate-800">Configure Paperfly</span>
+                            </div>
+                            <p className="text-sm text-slate-500 mb-4">Please provide your Paperfly credentials to integrate Paperfly</p>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="relative">
+                                    <Input
+                                        type={showPaperflyUsername ? "text" : "password"}
+                                        placeholder="Username"
+                                        value={config.courierPaperflyCredentials?.username || ''}
+                                        onChange={(e) => setConfig({ ...config, courierPaperflyCredentials: { ...config.courierPaperflyCredentials, username: e.target.value } })}
+                                        className="pr-10"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPaperflyUsername(!showPaperflyUsername)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                                    >
+                                        {showPaperflyUsername ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                    </button>
+                                </div>
+                                <div className="relative">
+                                    <Input
+                                        type={showPaperflyPassword ? "text" : "password"}
+                                        placeholder="Password"
+                                        value={config.courierPaperflyCredentials?.password || ''}
+                                        onChange={(e) => setConfig({ ...config, courierPaperflyCredentials: { ...config.courierPaperflyCredentials, password: e.target.value } })}
+                                        className="pr-10"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPaperflyPassword(!showPaperflyPassword)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                                    >
+                                        {showPaperflyPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="flex justify-end mt-4">
+                                <Button className="bg-indigo-600 hover:bg-indigo-700 text-white">
+                                    Add <Plus className="w-4 h-4 ml-1" />
+                                </Button>
                             </div>
                         </CardContent>
                     )}

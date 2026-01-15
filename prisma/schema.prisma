@@ -375,7 +375,16 @@ model DeliveryConfig {
   deliveryZones         Json?    // Array of { type: 'ZONE'|'DISTRICT'|'UPAZILA', id: string, name: string, price: number, codEnabled: boolean }
   
   courierPathaoEnabled  Boolean  @default(false)
-  courierPathaoCredentials Json? // { client_id, client_secret, username, password }
+  courierPathaoCredentials Json? // { store_id, client_id, client_secret, username, password }
+  
+  courierSteadfastEnabled Boolean @default(false)
+  courierSteadfastCredentials Json? // { api_key, app_secret }
+  
+  courierRedxEnabled Boolean @default(false)
+  courierRedxCredentials Json? // { api_key }
+  
+  courierPaperflyEnabled Boolean @default(false)
+  courierPaperflyCredentials Json? // { username, password }
   
   updatedAt             DateTime @updatedAt
 }
