@@ -1,10 +1,4 @@
-import { HeroStory } from '@/components/client/Story/HeroStory';
-import { ValuesSection } from '@/components/client/Story/ValuesSection';
-import { GallerySection } from '@/components/client/Story/GallerySection';
-import { WholesaleCTA } from '@/components/client/Story/WholesaleCTA';
-import { ReviewSection } from '@/components/client/Story/ReviewSection';
-import { TeamSection } from '@/components/client/Story/TeamSection';
-import { StickyFooterWrapper } from '@/components/client/Story/StickyFooterWrapper';
+import { StoryLayout } from '@/components/client/Story/StoryLayout';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -13,7 +7,6 @@ export const metadata: Metadata = {
 };
 
 import { getStorySections, getProductsByIds } from '@/app/actions/story';
-import { StoryProducts } from '@/components/client/Story/StoryProducts';
 
 export default async function StoryPage() {
     const sections = await getStorySections();
@@ -24,20 +17,19 @@ export default async function StoryPage() {
     const productsContent = getContent('PRODUCTS');
     const products = productsContent?.productIds ? await getProductsByIds(productsContent.productIds) : [];
 
-    return (
-        <main className="relative bg-slate-950 min-h-screen overflow-x-hidden">
-            <HeroStory data={getContent('HERO')} />
+    const storyData = {
+        hero: getContent('HERO'),
+        values: getContent('VALUES'),
+        productsContent: productsContent,
+        gallery: getContent('GALLERY'),
+        team: getContent('TEAM'),
+        wholesale: getContent('WHOLESALE'),
+        reviews: getContent('REVIEWS'),
+    };
 
-            <StickyFooterWrapper footer={null}>
-                <div className="relative bg-slate-950 z-10 shadow-2xl">
-                    <ValuesSection data={getContent('VALUES')} />
-                    <StoryProducts data={productsContent} products={products} />
-                    <GallerySection data={getContent('GALLERY')} />
-                    <TeamSection data={getContent('TEAM')} />
-                    <WholesaleCTA data={getContent('WHOLESALE')} />
-                    <ReviewSection data={getContent('REVIEWS')} />
-                </div>
-            </StickyFooterWrapper>
+    return (
+        <main>
+            <StoryLayout data={storyData} products={products} />
         </main>
     );
 }

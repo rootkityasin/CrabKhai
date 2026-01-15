@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, startTransition } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -180,7 +180,9 @@ export default function LandingPage() {
 
                 // Update order in DB
                 const orderUpdates = newItems.map((item, index) => ({ id: item.id, order: index }));
-                updateHeroSlideOrder(orderUpdates); // Fire and forget
+                startTransition(() => {
+                    updateHeroSlideOrder(orderUpdates);
+                });
 
                 return newItems;
             });

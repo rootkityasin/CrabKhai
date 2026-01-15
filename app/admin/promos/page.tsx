@@ -14,14 +14,14 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Ticket, Copy, Trash2, Plus, X, Calendar, Image as ImageIcon, Check, LayoutTemplate } from 'lucide-react';
+import { Ticket, Copy, Trash2, Plus, X, Calendar, Image as ImageIcon, Check, LayoutTemplate, Pencil } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { ImageUpload } from '@/components/admin/ImageUpload';
 import { toast } from 'sonner';
-import { getPromos, createPromo, deletePromo, togglePromoStatus } from '@/app/actions/promo';
-import { getCoupons, createCoupon, deleteCoupon } from '@/app/actions/coupon';
+import { getPromos, createPromo, deletePromo, togglePromoStatus, updatePromo } from '@/app/actions/promo';
+import { getCoupons, createCoupon, deleteCoupon, updateCoupon, toggleCouponStatus } from '@/app/actions/coupon';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function PromoPage() {
@@ -31,6 +31,7 @@ export default function PromoPage() {
     // Promos
     const [promoCards, setPromoCards] = useState<any[]>([]);
     const [isAddingCard, setIsAddingCard] = useState(false);
+    const [editingPromoId, setEditingPromoId] = useState<string | null>(null);
     const [newCard, setNewCard] = useState({
         title: '',
         description: '',
@@ -46,6 +47,7 @@ export default function PromoPage() {
     // Coupons
     const [coupons, setCoupons] = useState<any[]>([]);
     const [isAddingCoupon, setIsAddingCoupon] = useState(false);
+    const [editingCouponId, setEditingCouponId] = useState<string | null>(null);
     const [newCoupon, setNewCoupon] = useState({
         code: '',
         discountType: 'FIXED', // 'PERCENTAGE' | 'FIXED'
@@ -83,10 +85,18 @@ export default function PromoPage() {
 
     const handleAddCard = async (e: React.FormEvent) => {
         e.preventDefault();
-        const res = await createPromo(newCard);
+
+        let res;
+        if (editingPromoId) {
+            res = await updatePromo(editingPromoId, newCard);
+        } else {
+            res = await createPromo(newCard);
+        }
+
         if (res.success) {
-            toast.success("Promo created successfully!");
+            toast.success(editingPromoId ? "Promo updated!" : "Promo created successfully!");
             setIsAddingCard(false);
+            setEditingPromoId(null);
             setNewCard({
                 title: '',
                 description: '',
@@ -100,8 +110,24 @@ export default function PromoPage() {
             });
             refreshData();
         } else {
-            toast.error("Failed to create promo");
+            toast.error(res.error || "Failed to save promo");
         }
+    };
+
+    const handleEditPromo = (card: any) => {
+        setNewCard({
+            title: card.title,
+            description: card.description || '',
+            imageUrl: card.imageUrl,
+            isActive: card.isActive,
+            style: card.style || 'CLASSIC',
+            buttonText: card.buttonText || '',
+            buttonLink: card.buttonLink || '',
+            price: card.price || '',
+            originalPrice: card.originalPrice || ''
+        });
+        setEditingPromoId(card.id);
+        setIsAddingCard(true);
     };
 
     const toggleCardStatus = async (id: string, currentStatus: boolean) => {
@@ -131,10 +157,17 @@ export default function PromoPage() {
             return;
         }
 
-        const res = await createCoupon(newCoupon);
+        let res;
+        if (editingCouponId) {
+            res = await updateCoupon(editingCouponId, newCoupon);
+        } else {
+            res = await createCoupon(newCoupon);
+        }
+
         if (res.success) {
-            toast.success("Coupon created!");
+            toast.success(editingCouponId ? "Coupon updated!" : "Coupon created!");
             setIsAddingCoupon(false);
+            setEditingCouponId(null);
             setNewCoupon({
                 code: '',
                 discountType: 'FIXED',
@@ -145,8 +178,21 @@ export default function PromoPage() {
             });
             refreshData();
         } else {
-            toast.error(res.error || "Failed to create coupon");
+            toast.error(res.error || "Failed to save coupon");
         }
+    };
+
+    const handleEditCoupon = (coupon: any) => {
+        setNewCoupon({
+            code: coupon.code,
+            discountType: coupon.discountType,
+            discountValue: String(coupon.discountValue),
+            minOrderAmount: String(coupon.minOrderAmount),
+            expiresAt: coupon.expiresAt ? new Date(coupon.expiresAt).toISOString().split('T')[0] : '',
+            usageLimit: coupon.usageLimit ? String(coupon.usageLimit) : ''
+        });
+        setEditingCouponId(coupon.id);
+        setIsAddingCoupon(true);
     };
 
     const handleDeleteCoupon = async (id: string) => {
@@ -160,6 +206,20 @@ export default function PromoPage() {
     const copyToClipboard = (text: string) => {
         navigator.clipboard.writeText(text);
         toast.success("Code copied!");
+    };
+
+    const toggleCoupon = async (id: string, currentStatus: boolean) => {
+        // Optimistic update
+        const updatedCoupons = coupons.map(c => c.id === id ? { ...c, isActive: !currentStatus } : c);
+        setCoupons(updatedCoupons);
+
+        const res = await toggleCouponStatus(id, !currentStatus);
+        if (!res.success) {
+            toast.error("Failed to update status");
+            refreshData(); // Revert
+        } else {
+            refreshData(); // Sync
+        }
     };
 
     return (
@@ -180,7 +240,21 @@ export default function PromoPage() {
                 {/* --- POPUPS TAB --- */}
                 <TabsContent value="popups" className="mt-6 space-y-6">
                     <div className="flex justify-end">
-                        <Button onClick={() => setIsAddingCard(true)} className="bg-ocean-blue hover:bg-ocean-blue/90 text-white shadow-lg shadow-blue-900/20">
+                        <Button onClick={() => {
+                            setEditingPromoId(null);
+                            setNewCard({
+                                title: '',
+                                description: '',
+                                imageUrl: '',
+                                isActive: true,
+                                style: 'CLASSIC',
+                                buttonText: 'Order Now',
+                                buttonLink: '/menu',
+                                price: '',
+                                originalPrice: ''
+                            });
+                            setIsAddingCard(true);
+                        }} className="bg-ocean-blue hover:bg-ocean-blue/90 text-white shadow-lg shadow-blue-900/20">
                             <Plus className="w-4 h-4 mr-2" /> Create Popup
                         </Button>
                     </div>
@@ -192,7 +266,9 @@ export default function PromoPage() {
                             {promoCards.map((card) => (
                                 <Card key={card.id} className={`overflow-hidden group relative flex flex-col h-full border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300 ${card.isActive ? 'ring-2 ring-green-500/20' : ''}`}>
                                     <div className="relative h-48 bg-slate-900">
-                                        <img src={card.imageUrl} alt={card.title} className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-500" />
+                                        {card.imageUrl && (
+                                            <img src={card.imageUrl} alt={card.title} className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-500" />
+                                        )}
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
 
                                         <div className="absolute top-3 left-3">
@@ -237,12 +313,20 @@ export default function PromoPage() {
                                                     {card.isActive ? 'Live' : 'Off'}
                                                 </span>
                                             </div>
-                                            <button
-                                                onClick={() => handleDeleteCard(card.id)}
-                                                className="text-slate-400 hover:text-red-500 p-2 hover:bg-red-50 rounded-full transition-colors"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
+                                            <div className="flex gap-1">
+                                                <button
+                                                    onClick={() => handleEditPromo(card)}
+                                                    className="text-slate-400 hover:text-blue-500 p-2 hover:bg-blue-50 rounded-full transition-colors"
+                                                >
+                                                    <Pencil className="w-4 h-4" />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDeleteCard(card.id)}
+                                                    className="text-slate-400 hover:text-red-500 p-2 hover:bg-red-50 rounded-full transition-colors"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </Card>
@@ -262,7 +346,18 @@ export default function PromoPage() {
                 {/* --- COUPONS TAB --- */}
                 <TabsContent value="coupons" className="mt-6 space-y-6">
                     <div className="flex justify-end">
-                        <Button onClick={() => setIsAddingCoupon(true)} className="bg-orange-600 hover:bg-orange-700 text-white shadow-lg shadow-orange-900/20">
+                        <Button onClick={() => {
+                            setEditingCouponId(null);
+                            setNewCoupon({
+                                code: '',
+                                discountType: 'FIXED',
+                                discountValue: '',
+                                minOrderAmount: '',
+                                expiresAt: '',
+                                usageLimit: ''
+                            });
+                            setIsAddingCoupon(true);
+                        }} className="bg-orange-600 hover:bg-orange-700 text-white shadow-lg shadow-orange-900/20">
                             <Plus className="w-4 h-4 mr-2" /> Create Coupon
                         </Button>
                     </div>
@@ -306,10 +401,25 @@ export default function PromoPage() {
                                                 Used: {coupon.usedCount} / {coupon.usageLimit}
                                             </span>
                                         )}
+                                        <div className="flex items-center gap-2 mt-1">
+                                            <Switch
+                                                checked={coupon.isActive}
+                                                onCheckedChange={() => toggleCoupon(coupon.id, coupon.isActive)}
+                                                className="scale-75 origin-left"
+                                            />
+                                            <span className={`text-[10px] font-bold ${coupon.isActive ? 'text-green-600' : 'text-slate-400'}`}>
+                                                {coupon.isActive ? 'LIVE' : 'OFF'}
+                                            </span>
+                                        </div>
                                     </div>
-                                    <button onClick={() => handleDeleteCoupon(coupon.id)} className="text-red-400 hover:text-red-500 hover:bg-red-50 p-2 rounded-full transition-colors flex items-center gap-1">
-                                        <Trash2 className="w-4 h-4" />
-                                    </button>
+                                    <div className="flex gap-1">
+                                        <button onClick={() => handleEditCoupon(coupon)} className="text-blue-400 hover:text-blue-500 hover:bg-blue-50 p-2 rounded-full transition-colors flex items-center gap-1">
+                                            <Pencil className="w-4 h-4" />
+                                        </button>
+                                        <button onClick={() => handleDeleteCoupon(coupon.id)} className="text-red-400 hover:text-red-500 hover:bg-red-50 p-2 rounded-full transition-colors flex items-center gap-1">
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    </div>
                                 </div>
                             </Card>
                         ))}
@@ -330,8 +440,10 @@ export default function PromoPage() {
                     <Card className="w-full max-w-sm animate-in zoom-in-95 duration-200 p-6 shadow-2xl border-none">
                         <div className="flex justify-between items-center mb-5">
                             <div>
-                                <h2 className="text-xl font-bold text-slate-800">New Coupon</h2>
-                                <p className="text-xs text-slate-500">Create a discount code</p>
+                                <div>
+                                    <h2 className="text-xl font-bold text-slate-800">{editingCouponId ? 'Edit Coupon' : 'New Coupon'}</h2>
+                                    <p className="text-xs text-slate-500">{editingCouponId ? 'Update discount details' : 'Create a discount code'}</p>
+                                </div>
                             </div>
                             <button onClick={() => setIsAddingCoupon(false)} className="p-2 hover:bg-slate-100 rounded-full"><X className="w-5 h-5 text-slate-400" /></button>
                         </div>
@@ -392,7 +504,7 @@ export default function PromoPage() {
                             </div>
 
                             <Button type="submit" className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold h-11 shadow-lg shadow-orange-900/10">
-                                Create Coupon
+                                {editingCouponId ? 'Update Coupon' : 'Create Coupon'}
                             </Button>
                         </form>
                     </Card>
@@ -405,7 +517,10 @@ export default function PromoPage() {
                     <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200 p-0 shadow-2xl border-none">
                         <div className="sticky top-0 z-10 bg-white px-6 py-4 border-b border-slate-100 flex justify-between items-center">
                             <div>
-                                <h2 className="text-xl font-bold text-slate-800">New Promotion Popup</h2>
+                                <div>
+                                    <h2 className="text-xl font-bold text-slate-800">{editingPromoId ? 'Edit Promotion' : 'New Promotion Popup'}</h2>
+                                    <p className="text-xs text-slate-500">Create engaging popups for your visitors</p>
+                                </div>
                                 <p className="text-xs text-slate-500">Create engaging popups for your visitors</p>
                             </div>
                             <button onClick={() => setIsAddingCard(false)} className="p-2 hover:bg-slate-100 rounded-full transition-colors"><X className="w-5 h-5 text-slate-400" /></button>
@@ -492,7 +607,7 @@ export default function PromoPage() {
 
                             <div className="pt-4 border-t border-slate-100 flex gap-3">
                                 <Button type="button" variant="outline" className="flex-1" onClick={() => setIsAddingCard(false)}>Cancel</Button>
-                                <Button type="submit" className="flex-1 bg-ocean-blue hover:bg-ocean-blue/90">Create Promotion</Button>
+                                <Button type="submit" className="flex-1 bg-ocean-blue hover:bg-ocean-blue/90">{editingPromoId ? 'Update Promotion' : 'Create Promotion'}</Button>
                             </div>
                         </form>
                     </Card>

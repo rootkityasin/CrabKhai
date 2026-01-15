@@ -59,6 +59,37 @@ export async function deleteCoupon(id: string) {
     }
 }
 
+export async function updateCoupon(id: string, data: any) {
+    try {
+        // Check availability if code changed
+        const existing = await prisma.coupon.findUnique({
+            where: { code: data.code },
+        });
+
+        if (existing && existing.id !== id) {
+            return { success: false, error: "Coupon code already exists" };
+        }
+
+        const coupon = await prisma.coupon.update({
+            where: { id },
+            data: {
+                code: data.code,
+                discountType: data.discountType,
+                discountValue: Number(data.discountValue),
+                minOrderAmount: Number(data.minOrderAmount),
+                expiresAt: data.expiresAt ? new Date(data.expiresAt) : null,
+                usageLimit: data.usageLimit ? Number(data.usageLimit) : null,
+            },
+        });
+
+        revalidatePath('/admin/promos');
+        return { success: true, coupon };
+    } catch (error) {
+        console.error("Update coupon error:", error);
+        return { success: false, error: "Failed to update coupon" };
+    }
+}
+
 export async function validateCoupon(code: string, cartTotal: number) {
     try {
         const coupon = await prisma.coupon.findUnique({
@@ -109,5 +140,20 @@ export async function validateCoupon(code: string, cartTotal: number) {
     } catch (error) {
         console.error("Validate coupon error:", error);
         return { success: false, error: "Validation failed" };
+    }
+}
+
+export async function toggleCouponStatus(id: string, isActive: boolean) {
+    try {
+        await prisma.coupon.update({
+            where: { id },
+            data: { isActive },
+        });
+
+        revalidatePath('/admin/promos');
+        return { success: true };
+    } catch (error) {
+        console.error("Toggle coupon status error:", error);
+        return { success: false, error: "Failed to toggle status" };
     }
 }

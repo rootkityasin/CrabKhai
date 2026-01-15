@@ -7,6 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Search, Plus, X, Edit, Trash2 } from 'lucide-react';
 import { getCategories, createCategory, deleteCategory } from '@/app/actions/category';
 import { toast } from 'sonner';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SectionsManager } from '@/components/admin/SectionsManager';
 
 export default function CategoriesPage() {
     const [categories, setCategories] = useState<any[]>([]);
@@ -54,61 +56,78 @@ export default function CategoriesPage() {
         <div className="space-y-6 relative">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-slate-800">Categories</h1>
-                    <p className="text-sm text-slate-500">Manage product categories (Real DB).</p>
+                    <h1 className="text-2xl font-bold tracking-tight text-slate-800">Menu Management</h1>
+                    <p className="text-sm text-slate-500">Manage Categories and Home Page Sections.</p>
                 </div>
-                <Button onClick={() => setIsModalOpen(true)} className="bg-orange-600 hover:bg-orange-700 text-white">
-                    <Plus className="w-4 h-4 mr-2" /> Add Category
-                </Button>
             </div>
 
-            {isModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                    <Card className="w-full max-w-sm p-6">
-                        <div className="flex justify-between items-center mb-4">
-                            <h2 className="font-bold">Add Category</h2>
-                            <button onClick={() => setIsModalOpen(false)}><X className="w-4 h-4" /></button>
-                        </div>
-                        <form onSubmit={handleCreate} className="space-y-4">
-                            <Input
-                                placeholder="Category Name (e.g. Meal)"
-                                value={newItemName}
-                                onChange={(e) => setNewItemName(e.target.value)}
-                                autoFocus
-                            />
-                            <Button type="submit" className="w-full bg-orange-600">Create</Button>
-                        </form>
-                    </Card>
-                </div>
-            )}
+            <Tabs defaultValue="categories" className="w-full">
+                <TabsList className="grid w-full max-w-md grid-cols-2 mb-8">
+                    <TabsTrigger value="categories">Categories (Menu)</TabsTrigger>
+                    <TabsTrigger value="sections">Home Page Sections</TabsTrigger>
+                </TabsList>
 
-            <Card className="p-0 overflow-hidden">
-                <table className="w-full text-sm text-left">
-                    <thead className="bg-gray-50 text-slate-500 font-medium border-b border-gray-100">
-                        <tr>
-                            <th className="p-4">Name</th>
-                            <th className="p-4">Products</th>
-                            <th className="p-4 text-right">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-50">
-                        {categories.map((cat) => (
-                            <tr key={cat.id} className="hover:bg-gray-50">
-                                <td className="p-4 font-bold text-slate-800">{cat.name}</td>
-                                <td className="p-4 text-slate-500">{cat._count?.products || 0} items</td>
-                                <td className="p-4 text-right">
-                                    <Button size="icon" variant="ghost" className="h-8 w-8 text-red-400 hover:text-red-600" onClick={() => handleDelete(cat.id)}>
-                                        <Trash2 className="w-4 h-4" />
-                                    </Button>
-                                </td>
-                            </tr>
-                        ))}
-                        {!loading && categories.length === 0 && (
-                            <tr><td colSpan={3} className="p-8 text-center text-slate-400">No categories found.</td></tr>
-                        )}
-                    </tbody>
-                </table>
-            </Card>
+                <TabsContent value="categories" className="space-y-6">
+                    <div className="flex justify-between items-center">
+                        <h2 className="text-lg font-bold">Product Categories</h2>
+                        <Button onClick={() => setIsModalOpen(true)} className="bg-orange-600 hover:bg-orange-700 text-white" size="sm">
+                            <Plus className="w-4 h-4 mr-2" /> Add Category
+                        </Button>
+                    </div>
+
+                    {isModalOpen && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                            <Card className="w-full max-w-sm p-6">
+                                <div className="flex justify-between items-center mb-4">
+                                    <h2 className="font-bold">Add Category</h2>
+                                    <button onClick={() => setIsModalOpen(false)}><X className="w-4 h-4" /></button>
+                                </div>
+                                <form onSubmit={handleCreate} className="space-y-4">
+                                    <Input
+                                        placeholder="Category Name (e.g. Meal)"
+                                        value={newItemName}
+                                        onChange={(e) => setNewItemName(e.target.value)}
+                                        autoFocus
+                                    />
+                                    <Button type="submit" className="w-full bg-orange-600">Create</Button>
+                                </form>
+                            </Card>
+                        </div>
+                    )}
+
+                    <Card className="p-0 overflow-hidden">
+                        <table className="w-full text-sm text-left">
+                            <thead className="bg-gray-50 text-slate-500 font-medium border-b border-gray-100">
+                                <tr>
+                                    <th className="p-4">Name</th>
+                                    <th className="p-4">Products</th>
+                                    <th className="p-4 text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-50">
+                                {categories.map((cat) => (
+                                    <tr key={cat.id} className="hover:bg-gray-50">
+                                        <td className="p-4 font-bold text-slate-800">{cat.name}</td>
+                                        <td className="p-4 text-slate-500">{cat._count?.products || 0} items</td>
+                                        <td className="p-4 text-right">
+                                            <Button size="icon" variant="ghost" className="h-8 w-8 text-red-400 hover:text-red-600" onClick={() => handleDelete(cat.id)}>
+                                                <Trash2 className="w-4 h-4" />
+                                            </Button>
+                                        </td>
+                                    </tr>
+                                ))}
+                                {!loading && categories.length === 0 && (
+                                    <tr><td colSpan={3} className="p-8 text-center text-slate-400">No categories found.</td></tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </Card>
+                </TabsContent>
+
+                <TabsContent value="sections">
+                    <SectionsManager />
+                </TabsContent>
+            </Tabs>
         </div>
     );
 }

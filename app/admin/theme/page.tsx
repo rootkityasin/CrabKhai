@@ -16,6 +16,8 @@ import { toast } from 'sonner';
 import { getSiteConfig, updateSiteConfig } from '@/app/actions/settings';
 import { getHeroSlides } from '@/app/actions/hero';
 import { getProducts } from '@/app/actions/product';
+import { getStorySections } from '@/app/actions/story';
+import { StoryLayout } from '@/components/client/Story/StoryLayout';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function ThemeSettingsPage() {
@@ -25,6 +27,7 @@ export default function ThemeSettingsPage() {
     const [secondaryColor, setSecondaryColor] = useState('#0f172a'); // Default Slate 900
     const [heroSlides, setHeroSlides] = useState<any[]>([]);
     const [products, setProducts] = useState<any[]>([]);
+    const [storyData, setStoryData] = useState<any>(null);
     const [activeTab, setActiveTab] = useState('home');
     const [device, setDevice] = useState<'desktop' | 'mobile'>('desktop');
     const [config, setConfig] = useState<any>(null);
@@ -35,10 +38,11 @@ export default function ThemeSettingsPage() {
 
     async function loadConfig() {
         try {
-            const [config, slides, allProducts] = await Promise.all([
+            const [config, slides, allProducts, sections] = await Promise.all([
                 getSiteConfig(),
                 getHeroSlides(),
-                getProducts()
+                getProducts(),
+                getStorySections()
             ]);
 
             if (config) {
@@ -50,6 +54,20 @@ export default function ThemeSettingsPage() {
             }
             if (slides) setHeroSlides(slides.filter((s: any) => s.isActive));
             if (allProducts) setProducts(allProducts);
+
+            if (sections) {
+                const getContent = (type: string) => sections.find((s: any) => s.type === type)?.content as any || null;
+                const productsContent = getContent('PRODUCTS');
+                setStoryData({
+                    hero: getContent('HERO'),
+                    values: getContent('VALUES'),
+                    productsContent: productsContent,
+                    gallery: getContent('GALLERY'),
+                    team: getContent('TEAM'),
+                    wholesale: getContent('WHOLESALE'),
+                    reviews: getContent('REVIEWS'),
+                });
+            }
         } finally {
             setLoading(false);
         }
@@ -354,25 +372,12 @@ export default function ThemeSettingsPage() {
                                             </div>
                                         )}
 
-                                        {activeTab === 'story' && (
-                                            <div className="bg-slate-950 text-white min-h-screen">
-                                                <div className="h-[600px] relative flex items-center justify-center">
-                                                    <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1534080564583-6be75777b70a?w=1600&q=80')] bg-cover bg-center opactiy-50" />
-                                                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/50 to-transparent" />
-                                                    <div className="relative z-10 text-center max-w-4xl mx-auto px-6">
-                                                        <h1 className="text-7xl font-serif font-bold mb-6">Our Legacy from the Deep</h1>
-                                                        <p className="text-xl text-slate-300 leading-relaxed">From the pristine waters of the Sundarbans to the bustling tables of Dhaka. <br />We bring you the freshest, most authentic crab experience.</p>
-                                                    </div>
-                                                </div>
-                                                <div className="grid grid-cols-2 max-w-6xl mx-auto py-32 gap-32">
-                                                    <div className="space-y-8 flex flex-col justify-center">
-                                                        <h2 className="text-4xl font-serif font-bold">Sustainable Sourcing</h2>
-                                                        <p className="text-slate-400 text-lg leading-relaxed">We work directly with local fishermen, ensuring fair trade and sustainable practices. Every crab is hand-picked for quality and liveliness.</p>
-                                                    </div>
-                                                    <div className="aspect-square bg-slate-800 rounded-3xl overflow-hidden relative rotate-3 hover:rotate-0 transition-transform duration-700">
-                                                        <img src="https://images.unsplash.com/photo-1559742811-822873691df8?w=800&q=80" className="w-full h-full object-cover" />
-                                                    </div>
-                                                </div>
+                                        {activeTab === 'story' && storyData && (
+                                            <div className="h-full overflow-y-auto custom-scrollbar bg-slate-950">
+                                                <StoryLayout
+                                                    data={storyData}
+                                                    products={products.filter((p: any) => storyData.productsContent?.productIds?.includes(p.id))}
+                                                />
                                             </div>
                                         )}
 
@@ -612,32 +617,12 @@ export default function ThemeSettingsPage() {
                                                 </div>
                                             )}
 
-                                            {activeTab === 'story' && (
-                                                <div className="min-h-full bg-slate-950 text-white pb-20">
-                                                    {/* Hero */}
-                                                    <div className="h-64 relative overflow-hidden flex items-center justify-center text-center px-6">
-                                                        <div className="absolute inset-0 opacity-30 bg-[url('https://images.unsplash.com/photo-1534080564583-6be75777b70a?w=800&q=80')] bg-cover bg-center" />
-                                                        <div className="absolute inset-0 bg-gradient-to-b from-slate-950/20 via-slate-950/60 to-slate-950" />
-                                                        <div className="relative z-10">
-                                                            <h1 className="text-3xl font-serif font-bold mb-2">Our Legacy</h1>
-                                                            <p className="text-xs text-slate-300">From the Sundarbans to your plate.</p>
-                                                        </div>
-                                                    </div>
-                                                    {/* Values */}
-                                                    <div className="px-4 py-8 space-y-8">
-                                                        <div className="grid grid-cols-2 gap-4">
-                                                            {[1, 2, 3, 4].map(i => (
-                                                                <div key={i} className="aspect-square bg-slate-900/50 rounded-2xl border border-white/5 p-4 flex flex-col items-center justify-center text-center">
-                                                                    <div className="w-10 h-10 rounded-full bg-white/10 mb-2" />
-                                                                    <div className="h-2 w-12 bg-white/20 rounded" />
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                    </div>
-                                                    {/* Footer Mock */}
-                                                    <div className="p-4 bg-slate-900 text-center">
-                                                        <p className="text-[10px] text-slate-500">Est. 2025</p>
-                                                    </div>
+                                            {activeTab === 'story' && storyData && (
+                                                <div className="h-full overflow-y-auto bg-slate-950 no-scrollbar">
+                                                    <StoryLayout
+                                                        data={storyData}
+                                                        products={products.filter((p: any) => storyData.productsContent?.productIds?.includes(p.id))}
+                                                    />
                                                 </div>
                                             )}
 

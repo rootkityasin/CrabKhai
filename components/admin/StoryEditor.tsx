@@ -11,13 +11,7 @@ import { ImageUpload } from '@/components/admin/ImageUpload';
 import { Loader2, Plus, Trash2, Save } from 'lucide-react';
 import { toast } from 'sonner';
 import { getStorySections, updateStorySection, getAllProductsSimple } from '@/app/actions/story';
-import { HeroStory } from '@/components/client/Story/HeroStory';
-import { ValuesSection } from '@/components/client/Story/ValuesSection';
-import { GallerySection } from '@/components/client/Story/GallerySection';
-import { TeamSection } from '@/components/client/Story/TeamSection';
-import { WholesaleCTA } from '@/components/client/Story/WholesaleCTA';
-import { ReviewSection } from '@/components/client/Story/ReviewSection';
-import { StoryProducts } from '@/components/client/Story/StoryProducts';
+import { StoryLayout } from '@/components/client/Story/StoryLayout';
 import { Eye } from 'lucide-react';
 
 export function StoryEditor() {
@@ -36,6 +30,27 @@ export function StoryEditor() {
     useEffect(() => {
         loadData();
     }, []);
+
+    useEffect(() => {
+        // Scroll to section in preview when tab changes
+        const sectionMap: Record<string, string> = {
+            hero: 'story-section-hero',
+            values: 'story-section-values',
+            products: 'story-section-products',
+            gallery: 'story-section-gallery',
+            team: 'story-section-team',
+            wholesale: 'story-section-wholesale',
+            reviews: 'story-section-reviews'
+        };
+
+        const elementId = sectionMap[activeTab];
+        if (elementId) {
+            const el = document.getElementById(elementId);
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+    }, [activeTab]);
 
     const loadData = async () => {
         setLoading(true);
@@ -374,24 +389,19 @@ export function StoryEditor() {
                     <div className="absolute top-4 left-4 z-50 bg-black/50 backdrop-blur px-3 py-1 rounded-full border border-white/10 text-xs text-white flex items-center gap-2">
                         <Eye className="w-3 h-3 text-green-400" /> Live Preview
                     </div>
-                    <div className="h-full overflow-y-auto">
-                        <div className="min-h-full">
-                            {/* Render based on active tab */}
-                            {activeTab === 'hero' && <HeroStory data={hero} />}
-                            {activeTab === 'values' && <div className="py-10"><ValuesSection data={values} /></div>}
-                            {activeTab === 'gallery' && <div className="py-10"><GallerySection data={gallery} /></div>}
-                            {activeTab === 'team' && <div className="py-10"><TeamSection data={team} /></div>}
-                            {activeTab === 'wholesale' && <div className="py-10"><WholesaleCTA data={wholesale} /></div>}
-                            {activeTab === 'reviews' && <div className="py-10"><ReviewSection data={reviews} /></div>}
-                            {activeTab === 'products' && (
-                                <div className="py-10">
-                                    <StoryProducts
-                                        data={productsSection}
-                                        products={availableProducts.filter((p: any) => productsSection.productIds?.includes(p.id))}
-                                    />
-                                </div>
-                            )}
-                        </div>
+                    <div id="story-preview-container" className="h-full overflow-y-auto custom-scrollbar">
+                        <StoryLayout
+                            data={{
+                                hero,
+                                values,
+                                productsContent: productsSection,
+                                gallery,
+                                team,
+                                wholesale,
+                                reviews
+                            }}
+                            products={availableProducts.filter((p: any) => productsSection.productIds?.includes(p.id))}
+                        />
                     </div>
                 </div>
             </div>

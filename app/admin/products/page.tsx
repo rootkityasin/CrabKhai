@@ -20,10 +20,12 @@ import { Switch } from "@/components/ui/switch";
 import { getProducts, createProduct, updateProduct, deleteProduct } from '@/app/actions/product';
 import { getCategories } from '@/app/actions/category';
 import { getSiteConfig } from '@/app/actions/settings';
+import { getSections } from '@/app/actions/section';
 
 export default function ProductsPage() {
     const [products, setProducts] = useState<any[]>([]);
     const [categories, setCategories] = useState<any[]>([]);
+    const [sectionsList, setSectionsList] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [config, setConfig] = useState<any>({});
 
@@ -45,7 +47,8 @@ export default function ProductsPage() {
         stage: 'Draft',
         type: 'SINGLE',
         descriptionSwap: false,
-        comboItems: [] as { childId: string, quantity: number }[]
+        comboItems: [] as { childId: string, quantity: number }[],
+        sections: [] as string[]
     });
 
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -55,9 +58,15 @@ export default function ProductsPage() {
     // Initial Fetch
     const fetchData = async () => {
         try {
-            const [pData, cData, confData] = await Promise.all([getProducts(), getCategories(), getSiteConfig()]);
+            const [pData, cData, sData, confData] = await Promise.all([
+                getProducts(),
+                getCategories(),
+                getSections(),
+                getSiteConfig()
+            ]);
             setProducts(pData);
             setCategories(cData);
+            setSectionsList(sData);
             setConfig(confData || { measurementUnit: 'PCS' });
         } catch (error) {
             toast.error("Failed to load data");
@@ -116,7 +125,8 @@ export default function ProductsPage() {
             sku: `${product.sku}-COPY-${Date.now()}`,
             id: undefined, // Create new
             updatedAt: undefined,
-            createdAt: undefined
+            createdAt: undefined,
+            sections: product.sections?.map((s: any) => s.id) || []
         });
         if (res.success) {
             toast.success("Product cloned");
@@ -141,7 +151,8 @@ export default function ProductsPage() {
             stage: product.stage || 'Draft',
             type: product.type || 'SINGLE',
             descriptionSwap: product.descriptionSwap || false,
-            comboItems: product.comboItems || []
+            comboItems: product.comboItems || [],
+            sections: product.sections?.map((s: any) => s.id) || []
         });
         setEditingId(product.id);
         setIsAdding(true);
@@ -243,7 +254,7 @@ export default function ProductsPage() {
                         </Popover>
                         <Button className="bg-orange-600 hover:bg-orange-700 text-white" onClick={() => {
                             setEditingId(null);
-                            setNewProduct({ name: '', price: '', sku: '', image: '', images: [], categoryId: '', description: '', nutrition: '', cookingInstructions: '', pointsReward: '', weight: '', pieces: '', stage: 'Draft', type: 'SINGLE', descriptionSwap: false, comboItems: [] });
+                            setNewProduct({ name: '', price: '', sku: '', image: '', images: [], categoryId: '', description: '', nutrition: '', cookingInstructions: '', pointsReward: '', weight: '', pieces: '', stage: 'Draft', type: 'SINGLE', descriptionSwap: false, comboItems: [], sections: [] });
                             setIsAdding(true);
                         }}>
                             <Plus className="w-4 h-4 mr-2" /> Add Product
@@ -290,6 +301,34 @@ export default function ProductsPage() {
                                                 ))}
                                             </SelectContent>
                                         </Select>
+                                    </div>
+                                </div>
+
+                                {/* Sections Selection */}
+                                <div>
+                                    <label className="text-sm font-medium mb-2 block text-slate-700">Display Sections</label>
+                                    <div className="flex flex-wrap gap-2 p-3 bg-slate-50 rounded-lg border border-slate-100">
+                                        {sectionsList.length === 0 ? (
+                                            <p className="text-xs text-slate-400">No sections created yet.</p>
+                                        ) : sectionsList.map(sec => (
+                                            <div key={sec.id}
+                                                onClick={() => {
+                                                    const current = newProduct.sections || [];
+                                                    const updated = current.includes(sec.id)
+                                                        ? current.filter(id => id !== sec.id)
+                                                        : [...current, sec.id];
+                                                    setNewProduct({ ...newProduct, sections: updated });
+                                                }}
+                                                className={cn(
+                                                    "cursor-pointer px-3 py-1.5 rounded-full text-xs font-bold border transition-all select-none flex items-center gap-1",
+                                                    (newProduct.sections || []).includes(sec.id)
+                                                        ? "bg-orange-600 border-orange-600 text-white shadow-sm scale-105"
+                                                        : "bg-white border-slate-200 text-slate-500 hover:border-orange-300 hover:text-orange-600"
+                                                )}
+                                            >
+                                                {sec.title}
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
 

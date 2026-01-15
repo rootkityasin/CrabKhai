@@ -64,7 +64,9 @@ export default function PromoPopup() {
                                 </button>
 
                                 <div className="relative h-56">
-                                    <img src={promo.imageUrl} alt={promo.title} className="w-full h-full object-cover" />
+                                    {promo.imageUrl && (
+                                        <img src={promo.imageUrl} alt={promo.title} className="w-full h-full object-cover" />
+                                    )}
                                     <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/80 to-transparent" />
                                     <div className="absolute bottom-4 left-6 right-6 text-white">
                                         <h2 className="text-2xl font-bold mb-1 leading-tight">{promo.title}</h2>
@@ -94,11 +96,13 @@ export default function PromoPopup() {
                         {(promo.style === 'DARK' || !promo.style) && (
                             <div className="relative w-full h-[400px] bg-gray-900 group">
                                 {/* Full Background Image */}
-                                <img
-                                    src={promo.imageUrl}
-                                    alt={promo.title}
-                                    className="absolute inset-0 w-full h-full object-cover opacity-90"
-                                />
+                                {promo.imageUrl && (
+                                    <img
+                                        src={promo.imageUrl}
+                                        alt={promo.title}
+                                        className="absolute inset-0 w-full h-full object-cover opacity-90"
+                                    />
+                                )}
 
                                 {/* Gradient Overlays */}
                                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />

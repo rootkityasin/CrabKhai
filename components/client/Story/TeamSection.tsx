@@ -72,8 +72,13 @@ export function TeamSection({ data }: TeamProps) {
                             <div className="relative mb-8 inline-block w-full">
                                 <div className="aspect-square overflow-hidden rounded-3xl bg-slate-800 border-2 border-white/10 group-hover:border-crab-red/50 transition-colors shadow-2xl">
                                     <img
-                                        src={member.image}
+                                        src={member.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${member.name}`}
                                         alt={member.name}
+                                        onError={(e) => {
+                                            const target = e.target as HTMLImageElement;
+                                            target.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${member.name}`;
+                                            target.onerror = null;
+                                        }}
                                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale group-hover:grayscale-0"
                                     />
                                 </div>

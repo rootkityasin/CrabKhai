@@ -9,6 +9,7 @@ export async function getProducts() {
         include: {
             category: true,
             inventory: true,
+            sections: true,
             comboItems: {
                 include: {
                     child: true
@@ -24,6 +25,7 @@ export async function getProduct(id: string) {
             where: { id },
             include: {
                 category: true,
+                sections: true,
                 comboItems: {
                     include: {
                         child: true
@@ -52,6 +54,9 @@ export async function createProduct(data: any) {
                 categoryId: data.categoryId,
                 images: data.images || [], // Add images
                 type: data.type || 'SINGLE', // Default to SINGLE
+                sections: data.sections && data.sections.length > 0 ? {
+                    connect: data.sections.map((id: string) => ({ id }))
+                } : undefined,
                 comboItems: data.type === 'COMBO' && data.comboItems ? {
                     create: data.comboItems.map((item: any) => ({
                         childId: item.childId,
@@ -82,6 +87,9 @@ export async function updateProduct(id: string, data: any) {
                 weight: data.weight,
                 description: data.description,
                 descriptionSwap: data.descriptionSwap,
+                sections: data.sections ? {
+                    set: data.sections.map((id: string) => ({ id }))
+                } : undefined,
                 // Add other fields
             }
         });
