@@ -49,14 +49,9 @@ export async function createProduct(data: any) {
                 descriptionSwap: data.descriptionSwap || false,
                 image: data.image,
                 sku: data.sku,
-<<<<<<< HEAD
-                pieces: data.pieces, // Initial Stock
-                weight: data.weight,
-                stage: data.stage, // Add Stage
-=======
                 pieces: parseInt(String(data.pieces || 0)) || 0, // Initial Stock
                 weight: parseInt(String(data.weight || 0)) || 0,
->>>>>>> origin/wip/delivery-settings
+                stage: data.stage, // Add Stage
                 categoryId: data.categoryId,
                 images: data.images || [], // Add images
                 type: data.type || 'SINGLE', // Default to SINGLE

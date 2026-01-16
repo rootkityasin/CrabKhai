@@ -1,13 +1,12 @@
 'use server';
 
-import { prisma } from "@/lib/prisma"; // Changed to directly import 'prisma'
-import { PrismaClient } from "@prisma/client"; // Keep this import if PrismaClient is used elsewhere, otherwise it can be removed. Based on the instruction, it's not explicitly removed.
+import { prisma as globalPrisma } from "@/lib/prisma";
+import { PrismaClient } from "@prisma/client";
 
-// The previous fallback logic for 'prisma' is removed as per the instruction to use the imported singleton.
-// The 'globalForPrisma' and related logic from the provided snippet are not directly applicable to the instruction
-// "Replace the local PrismaClient instantiation with the imported singleton" for this file,
-// as this file should now just *use* the singleton, not define it.
-// The `revalidatePath` import should remain.
+// Fallback to local instance if global is stale (missing coupon delegate)
+const prisma = (globalPrisma as any).coupon
+    ? globalPrisma
+    : new PrismaClient();
 import { revalidatePath } from "next/cache";
 
 export async function createCoupon(data: any) {
