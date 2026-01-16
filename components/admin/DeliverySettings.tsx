@@ -220,16 +220,7 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
                 </Button>
             </div>
 
-            {/* Banner Image Placeholder */}
-            <div className="relative w-full h-48 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl overflow-hidden shadow-sm border border-blue-100 flex items-center justify-center">
-                {/* Replace with actual banner if user uploads one, or keep this stylized placeholder */}
-                <div className="text-center p-6">
-                    <h3 className="text-2xl font-bold text-blue-600 mb-2">বেছে নিন আপনার পছন্দের ডেলিভারি সার্ভিস</h3>
-                    <p className="text-blue-400">Manage delivery partners and costs efficiently</p>
-                </div>
-                {/* Decorative elements */}
-                <div className="absolute right-0 top-0 h-full w-1/3 bg-blue-600 transform skew-x-12 translate-x-12 opacity-10"></div>
-            </div>
+
 
             {/* Default Service Config */}
             <Card>
