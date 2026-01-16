@@ -269,9 +269,13 @@ export function AdminProvider({ children, initialUser }: { children: React.React
     });
 
     const [paymentConfig, setPaymentConfigState] = useState<PaymentConfigType>({});
+    const hasFetched = React.useRef(false);
 
     // Load from LocalStorage on Mount AND fetch fresh config
     React.useEffect(() => {
+        if (hasFetched.current) return;
+        hasFetched.current = true;
+
         if (typeof window !== 'undefined') {
             // 1. Try LocalStorage for instant render
             const savedData = localStorage.getItem('crab-khai-admin-data-v7');

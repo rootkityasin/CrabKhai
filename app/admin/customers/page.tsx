@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -17,8 +17,12 @@ export default function CustomersPage() {
     const [editingId, setEditingId] = useState<number | null>(null);
     const [newCustomer, setNewCustomer] = useState({ name: '', phone: '', email: '' });
     const [search, setSearch] = useState('');
+    const hasFetched = useRef(false);
 
     useEffect(() => {
+        if (hasFetched.current) return;
+        hasFetched.current = true;
+
         const fetchUsers = async () => {
             const users = await getAllUsers();
             // Map Prisma users to the UI shape

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { getCategories } from '@/app/actions/category';
 import { cn } from '@/lib/utils';
@@ -28,8 +28,11 @@ const getCategoryIcon = (name: string) => {
 export function CategoryNav() {
     const [categories, setCategories] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const hasFetched = useRef(false);
 
     useEffect(() => {
+        if (hasFetched.current) return;
+        hasFetched.current = true;
         const fetchData = async () => {
             const cats = await getCategories();
             setCategories(cats);

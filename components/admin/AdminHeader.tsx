@@ -39,6 +39,7 @@ export function AdminHeader({ title }: AdminHeaderProps) {
 
     const [mounted, setMounted] = useState(false);
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const hasFetched = useRef(false); // Prevent duplicate fetches (React Strict Mode)
 
     // Polling Loop
     const scheduleNextPoll = () => {
@@ -53,6 +54,9 @@ export function AdminHeader({ title }: AdminHeaderProps) {
     };
 
     useEffect(() => {
+        if (hasFetched.current) return; // Skip if already fetched
+        hasFetched.current = true;
+
         setMounted(true);
         fetchNotifications();
         scheduleNextPoll();

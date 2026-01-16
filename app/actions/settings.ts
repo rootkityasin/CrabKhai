@@ -4,7 +4,17 @@ import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { ShopType } from '@prisma/client';
 
+// Simple in-memory cache with TTL for getSiteConfig
+let siteConfigCache: { data: any | null; timestamp: number } = { data: null, timestamp: 0 };
+const CACHE_TTL = 60 * 1000; // 60 seconds
+
 export async function getSiteConfig() {
+    // Return cached data if still valid
+    const now = Date.now();
+    if (siteConfigCache.data && (now - siteConfigCache.timestamp) < CACHE_TTL) {
+        return siteConfigCache.data;
+    }
+
     const defaults = {
         contactPhone: "+880 1804 221 161",
         contactEmail: "crabkhaibangladesh@gmail.com",
@@ -58,17 +68,20 @@ We accept Cash on Delivery (COD) and Mobile Financial Services (bKash, Nagad). F
     try {
         const config = await prisma.siteConfig.findFirst();
         if (!config) {
+            siteConfigCache = { data: defaults, timestamp: Date.now() };
             return defaults;
         }
         // Merge: Use DB values, but fall back to defaults for any missing/null fields
-        return {
+        const result = {
             ...defaults,
             ...config,
             shopType: config.shopType || defaults.shopType, // Explicit fallback
         };
+        siteConfigCache = { data: result, timestamp: Date.now() };
+        return result;
     } catch (error) {
         console.error("Failed to fetch site config:", error);
-        return defaults;
+        return siteConfigCache.data || defaults; // Return stale cache on error
     }
 }
 
@@ -118,6 +131,8 @@ export async function updateSiteConfig(data: any) {
             });
         }
 
+        // Invalidate cache after update
+        siteConfigCache = { data: null, timestamp: 0 };
         revalidatePath('/');
         return { success: true };
     } catch (error) {

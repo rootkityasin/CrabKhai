@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { HeroCarousel } from '@/components/client/HeroCarousel';
 import { CategoryNav } from '@/components/client/CategoryNav';
 import { ProductRail } from '@/components/client/ProductRail';
@@ -15,8 +15,12 @@ export default function ClientHomePage() {
     const [config, setConfig] = useState<any>(null);
     const [sections, setSections] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const hasFetched = useRef(false);
 
     useEffect(() => {
+        if (hasFetched.current) return;
+        hasFetched.current = true;
+
         const loadData = async () => {
             try {
                 const [hData, cData, sData] = await Promise.all([

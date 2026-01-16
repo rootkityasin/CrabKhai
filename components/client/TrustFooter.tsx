@@ -27,13 +27,16 @@ interface TrustFooterProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 import { getSiteConfig } from '@/app/actions/settings';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 export default function TrustFooter({ config: initialConfig, ...props }: TrustFooterProps) {
     const [config, setConfig] = useState<any>(initialConfig || null);
     const [policyOpen, setPolicyOpen] = useState<'privacy' | 'refund' | 'terms' | null>(null);
+    const hasFetched = useRef(false);
 
     useEffect(() => {
+        if (hasFetched.current) return;
+        hasFetched.current = true;
         getSiteConfig().then((data) => {
             if (data) setConfig(data);
         });
