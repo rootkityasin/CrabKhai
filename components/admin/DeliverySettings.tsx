@@ -503,7 +503,7 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 p-4">
                         <div className="flex items-center gap-4">
                             <div className="w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden">
-                                <img src="https://asset.brandfetch.io/idihVImzEd/idW3j-c5de.png" alt="Pathao" className="w-full h-full object-contain" />
+                                <img src="/images/pathao.png" alt="Pathao" className="w-full h-full object-contain" />
                             </div>
                             <div>
                                 <CardTitle className="text-base">Pathao</CardTitle>
@@ -519,7 +519,7 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
                         <CardContent className="p-6 border-t bg-white">
                             {/* Pathao Header */}
                             <div className="flex items-center gap-2 mb-2">
-                                <img src="https://asset.brandfetch.io/idihVImzEd/idW3j-c5de.png" alt="Pathao" className="h-6 object-contain" />
+                                <img src="/images/pathao.png" alt="Pathao" className="h-6 object-contain" />
                                 <span className="text-slate-400">|</span>
                                 <span className="font-semibold text-slate-800">Configure Pathao</span>
                             </div>
@@ -586,7 +586,7 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 p-4">
                         <div className="flex items-center gap-4">
                             <div className="w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden">
-                                <img src="https://asset.brandfetch.io/idTLxLNpfL/idMzOSgXI-.png" alt="Steadfast" className="w-full h-full object-contain" />
+                                <img src="/images/steadfast.png" alt="Steadfast" className="w-full h-full object-contain" />
                             </div>
                             <div>
                                 <CardTitle className="text-base">Steadfast</CardTitle>
@@ -602,7 +602,7 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
                         <CardContent className="p-6 border-t bg-white">
                             {/* Steadfast Header */}
                             <div className="flex items-center gap-2 mb-2">
-                                <img src="https://asset.brandfetch.io/idTLxLNpfL/idMzOSgXI-.png" alt="Steadfast" className="h-6 object-contain" />
+                                <img src="/images/steadfast.png" alt="Steadfast" className="h-6 object-contain" />
                                 <span className="text-slate-400">|</span>
                                 <span className="font-semibold text-slate-800">Configure Steadfast</span>
                             </div>
@@ -656,7 +656,7 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 p-4">
                         <div className="flex items-center gap-4">
                             <div className="w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden">
-                                <img src="https://asset.brandfetch.io/idoQm_MIQe/idoZvNRrOH.png" alt="Redx" className="w-full h-full object-contain" />
+                                <img src="/images/images.png" alt="Redx" className="w-full h-full object-contain" />
                             </div>
                             <div>
                                 <CardTitle className="text-base">Redx</CardTitle>
@@ -672,7 +672,7 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
                         <CardContent className="p-6 border-t bg-white">
                             {/* Redx Header */}
                             <div className="flex items-center gap-2 mb-2">
-                                <img src="https://asset.brandfetch.io/idoQm_MIQe/idoZvNRrOH.png" alt="Redx" className="h-6 object-contain" />
+                                <img src="/images/images.png" alt="Redx" className="h-6 object-contain" />
                                 <span className="text-slate-400">|</span>
                                 <span className="font-semibold text-slate-800">Configure Redx</span>
                             </div>
@@ -708,7 +708,7 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 p-4">
                         <div className="flex items-center gap-4">
                             <div className="w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden">
-                                <img src="https://asset.brandfetch.io/idnMyVyiZS/idRO-r67R7.png" alt="Paperfly" className="w-full h-full object-contain" />
+                                <img src="/images/paperfly.png" alt="Paperfly" className="w-full h-full object-contain" />
                             </div>
                             <div>
                                 <CardTitle className="text-base">Paperfly</CardTitle>
@@ -724,7 +724,7 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
                         <CardContent className="p-6 border-t bg-white">
                             {/* Paperfly Header */}
                             <div className="flex items-center gap-2 mb-2">
-                                <img src="https://asset.brandfetch.io/idnMyVyiZS/idRO-r67R7.png" alt="Paperfly" className="h-6 object-contain" />
+                                <img src="/images/paperfly.png" alt="Paperfly" className="h-6 object-contain" />
                                 <span className="text-slate-400">|</span>
                                 <span className="font-semibold text-slate-800">Configure Paperfly</span>
                             </div>
