@@ -252,8 +252,14 @@ For valid claims, we process refunds directly to your original payment method (o
 
 *Note: Due to the perishable nature of our products, we cannot accept returns for items that have been cooked or consumed.*`;
             }
-            setConfig(res);
-            setOriginalConfig(res);
+            const safeConfig: SiteConfig = {
+                ...res,
+                privacyPolicy: res.privacyPolicy ?? undefined,
+                refundPolicy: res.refundPolicy ?? undefined,
+                termsPolicy: res.termsPolicy ?? undefined,
+            };
+            setConfig(safeConfig);
+            setOriginalConfig(safeConfig);
         }
         setIsLoading(false);
     };
