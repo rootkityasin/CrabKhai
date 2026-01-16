@@ -4,7 +4,7 @@ import { Bell, Check, Trash2, X, Mail, LogOut, Menu } from 'lucide-react';
 import { useAdmin } from '@/components/providers/AdminProvider';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { getNotifications, markAsRead, clearNotifications } from '@/app/actions/notification';
 import {
     DropdownMenu,
@@ -38,12 +38,28 @@ export function AdminHeader({ title }: AdminHeaderProps) {
     };
 
     const [mounted, setMounted] = useState(false);
+    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+    // Polling Loop
+    const scheduleNextPoll = () => {
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        timeoutRef.current = setTimeout(async () => {
+            // Only poll if tab is visible
+            if (!document.hidden) {
+                await fetchNotifications();
+            }
+            scheduleNextPoll();
+        }, 30000); // 30s Poll
+    };
 
     useEffect(() => {
         setMounted(true);
         fetchNotifications();
-        const interval = setInterval(fetchNotifications, 15000); // Poll every 15s
-        return () => clearInterval(interval);
+        scheduleNextPoll();
+
+        return () => {
+            if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        };
     }, []);
 
     const handleRead = async (id: string, e: React.MouseEvent) => {

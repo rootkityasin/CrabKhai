@@ -1,12 +1,10 @@
 'use server';
 
-import { prisma as globalPrisma } from '@/lib/prisma';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma'; // Changed alias from globalPrisma to prisma
+import { PrismaClient } from '@prisma/client'; // This import is no longer needed if we always use the singleton
 
-// Fallback to local instance if global is stale (missing coupon delegate)
-const prisma = (globalPrisma as any).coupon
-    ? globalPrisma
-    : new PrismaClient();
+// The conditional fallback to local instance is removed as per instruction.
+// We now directly use the imported singleton 'prisma' from '@/lib/prisma'.
 
 export async function createOrder(data: {
     customerName: string;

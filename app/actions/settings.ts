@@ -181,7 +181,66 @@ export async function updatePaymentConfig(data: any) {
         revalidatePath('/admin/shop');
         return { success: true };
     } catch (error) {
-        console.error("Failed to update payment config:", error);
         return { success: false, error: "Failed to save payment config" };
+    }
+}
+
+export async function getDeliveryConfig() {
+    try {
+        const config = await prisma.deliveryConfig.findFirst();
+        if (!config) {
+            return {
+                defaultCharge: 60,
+                defaultCodEnabled: true,
+                nonRefundable: false,
+                weightBasedCharges: [],
+                deliveryZones: [],
+                courierPathaoEnabled: false,
+                courierPathaoCredentials: null
+            };
+        }
+        return config;
+    } catch (error) {
+        console.error("Failed to fetch delivery config:", error);
+        return null;
+    }
+}
+
+export async function updateDeliveryConfig(data: any) {
+    try {
+        const existing = await prisma.deliveryConfig.findFirst();
+
+        if (existing) {
+            await prisma.deliveryConfig.update({
+                where: { id: existing.id },
+                data: {
+                    defaultCharge: parseInt(data.defaultCharge || 0),
+                    defaultCodEnabled: data.defaultCodEnabled,
+                    nonRefundable: data.nonRefundable,
+                    weightBasedCharges: data.weightBasedCharges || [],
+                    deliveryZones: data.deliveryZones || [],
+                    courierPathaoEnabled: data.courierPathaoEnabled,
+                    courierPathaoCredentials: data.courierPathaoCredentials
+                }
+            });
+        } else {
+            await prisma.deliveryConfig.create({
+                data: {
+                    defaultCharge: parseInt(data.defaultCharge || 0),
+                    defaultCodEnabled: data.defaultCodEnabled,
+                    nonRefundable: data.nonRefundable,
+                    weightBasedCharges: data.weightBasedCharges || [],
+                    deliveryZones: data.deliveryZones || [],
+                    courierPathaoEnabled: data.courierPathaoEnabled,
+                    courierPathaoCredentials: data.courierPathaoCredentials
+                }
+            });
+        }
+
+        revalidatePath('/admin/shop');
+        return { success: true };
+    } catch (error) {
+        console.error("Failed to update delivery config:", error);
+        return { success: false, error: "Failed to save delivery config" };
     }
 }

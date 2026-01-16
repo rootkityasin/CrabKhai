@@ -2,6 +2,7 @@
 
 import { Settings, Globe, Shield, Truck, ChevronRight, Store, Mail, Phone, MapPin, AlertTriangle, BadgeCheck, Plus, Trash2, LayoutTemplate, CreditCard, Loader2, Save, ArrowLeft, Database, FolderOpen, Folder, X, Bold, Italic, Heading, Palette } from 'lucide-react';
 import { PaymentSettings } from '@/components/admin/PaymentSettings';
+import { DeliverySettings } from '@/components/admin/DeliverySettings';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -724,6 +725,10 @@ export function ShopClient({ initialConfig }: { initialConfig: any }) {
             ) : activeModule === 'policy' ? (
                 <Card className="p-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
                     <PolicySettings />
+                </Card>
+            ) : activeModule === 'shipping' ? (
+                <Card className="p-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
+                    <DeliverySettings />
                 </Card>
             ) : activeModule ? (
                 <Card className="p-12 text-center animate-in fade-in zoom-in-95">

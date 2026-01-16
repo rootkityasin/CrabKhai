@@ -44,14 +44,19 @@ export async function createProduct(data: any) {
         const product = await prisma.product.create({
             data: {
                 name: data.name,
-                price: data.price,
+                price: parseInt(String(data.price || 0)) || 0,
                 description: data.description,
                 descriptionSwap: data.descriptionSwap || false,
                 image: data.image,
                 sku: data.sku,
+<<<<<<< HEAD
                 pieces: data.pieces, // Initial Stock
                 weight: data.weight,
                 stage: data.stage, // Add Stage
+=======
+                pieces: parseInt(String(data.pieces || 0)) || 0, // Initial Stock
+                weight: parseInt(String(data.weight || 0)) || 0,
+>>>>>>> origin/wip/delivery-settings
                 categoryId: data.categoryId,
                 images: data.images || [], // Add images
                 type: data.type || 'SINGLE', // Default to SINGLE
@@ -81,11 +86,11 @@ export async function updateProduct(id: string, data: any) {
             where: { id },
             data: {
                 name: data.name,
-                price: data.price,
-                pieces: data.pieces, // Explicit stock update
+                price: parseInt(String(data.price || 0)) || 0,
+                pieces: parseInt(String(data.pieces || 0)) || 0, // Explicit stock update
                 image: data.image,
                 images: data.images || [], // Add images
-                weight: data.weight,
+                weight: parseInt(String(data.weight || 0)) || 0,
                 description: data.description,
                 descriptionSwap: data.descriptionSwap,
                 stage: data.stage, // Add Stage
