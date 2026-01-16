@@ -12,8 +12,97 @@ This project is built using the latest web technologies for speed, scalability, 
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/)
 - **UI Components**: [Radix UI](https://www.radix-ui.com/) & [Lucide Icons](https://lucide.dev/)
 - **State Management**: [Zustand](https://github.com/pmndrs/zustand)
-- **Database**: Prisma (ORM)
+- **Database**: Prisma (ORM) with PostgreSQL
 - **Fonts**: Playfair Display (Headings) & Inter (Body)
+
+---
+
+## 🔒 Security Features
+
+CrabKhai implements enterprise-grade security measures to protect admin operations and customer data.
+
+### Device Authorization System
+- **Trusted Device Registration**: New devices must be authorized with a secret setup token before accessing the admin panel
+- **30-Day Device Sessions**: Authorized devices remain trusted for 30 days with automatic expiry
+- **Device Fingerprinting**: Records browser, OS, device type, and user agent for each trusted device
+- **IP Tracking**: Logs IP addresses for all device authorizations and security events
+
+### Authentication & Access Control
+- **Multi-Layer Authentication**: Combines session-based auth with device verification
+- **Role-Based Access Control (RBAC)**: Granular permissions for Super Admin, Admin, and Hub Manager roles
+- **Stale Session Detection**: Automatically clears auth cookies if database record is missing
+- **Secure Cookie Management**: HTTP-only, secure cookies in production with proper expiry
+
+### Security Audit & Logging
+- **Comprehensive Security Logs**: All security events (login attempts, device authorizations) are logged
+- **Severity Levels**: Events categorized as LOW, MEDIUM, or HIGH severity
+- **IP & User Agent Tracking**: Full audit trail for compliance and security review
+- **Real-time Security Dashboard**: View all security events in the admin panel
+
+### Admin Panel Protection
+- **Device Setup Flow**: `/admin/security/device-setup` requires valid token for new device authorization
+- **Token Management**: Admins can rotate the setup token from the security dashboard
+- **Automatic Redirects**: Unauthorized devices are redirected to the setup page
+
+---
+
+## ⚡ Performance Optimizations
+
+This project includes comprehensive performance optimizations to reduce CPU usage and improve response times.
+
+### React Strict Mode Protection
+**useRef Guards** prevent duplicate API calls that occur in React Strict Mode (development):
+
+| Component | Optimization |
+|-----------|--------------|
+| `AdminHeader.tsx` | Prevents double notification polling |
+| `TrustFooter.tsx` | Prevents double `getSiteConfig()` calls |
+| `CategoryNav.tsx` | Prevents double category fetching |
+| `AdminProvider.tsx` | Prevents double localStorage + DB sync |
+| `app/(client)/page.tsx` | Prevents double home page data load |
+| `app/admin/customers/page.tsx` | Prevents double customer list fetch |
+
+### Server Action Caching
+In-memory caching with TTL (Time-To-Live) for frequently accessed data:
+
+```typescript
+// 60-second cache with automatic invalidation
+getSiteConfig()   // Cached, invalidated on update
+getCategories()   // Cached, invalidated on create/delete
+```
+
+### Debounce & Throttle Utilities
+Custom hooks in `lib/hooks/useDebounce.ts`:
+
+```typescript
+import { useDebounce, useDebouncedCallback, useThrottle } from '@/lib/hooks/useDebounce';
+
+// Debounce a search value
+const debouncedSearch = useDebounce(searchTerm, 300);
+
+// Debounce a callback function
+const debouncedFetch = useDebouncedCallback(fetchResults, 300);
+
+// Throttle scroll handlers
+const throttledScroll = useThrottle(scrollPosition, 500);
+```
+
+### Next.js Configuration
+Optimized `next.config.ts` for production:
+
+- **Image Optimization**: Remote patterns for external images, optimized device sizes
+- **Gzip Compression**: Enabled via `compress: true`
+- **Source Maps**: Disabled in production for smaller bundles
+- **External Packages**: Prisma packages externalized for faster builds
+- **Reduced Logging**: Fetch logging minimized in production
+
+### Performance Impact
+- **~50% fewer API calls** in development mode
+- **Faster page loads** with cached server actions
+- **Reduced database queries** through intelligent caching
+- **Smaller production bundle** without source maps
+
+---
 
 ## Project Structure
 Here's a quick overview of how the codebase is organized:
@@ -23,12 +112,16 @@ crab-khai/
 ├── app/                  # Next.js App Router
 │   ├── (client)/         # Client-facing pages (Menu, Checkout)
 │   ├── admin/            # Admin dashboard routes
-│   └── page.tsx          # Landing page (Home)
+│   │   └── security/     # Security dashboard & device setup
+│   ├── actions/          # Server actions (with caching)
+│   └── api/              # API routes
 ├── components/           # Reusable UI components
 │   ├── client/           # Components for the public store
 │   ├── admin/            # Components for the admin panel
 │   └── ui/               # Base UI elements (Buttons, Inputs)
 ├── lib/                  # Utilities and helper functions
+│   ├── hooks/            # Custom React hooks (debounce, throttle)
+│   └── prisma.ts         # Prisma client singleton
 ├── prisma/               # Database schema and config
 └── public/               # Static assets (images, fonts)
 ```
@@ -53,12 +146,18 @@ Make sure you have [Node.js](https://nodejs.org/) (v18 or higher) installed.
    npm install
    ```
 
-3. **Run the development server**
+3. **Set up the database**
+   ```bash
+   npx prisma generate
+   npx prisma db push
+   ```
+
+4. **Run the development server**
    ```bash
    npm run dev
    ```
 
-4. **Access the App**
+5. **Access the App**
    Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Kitchen Management System (Backend)
@@ -97,6 +196,7 @@ When deploying to Vercel (or any other host), you **MUST** configure the followi
 | `DATABASE_URL` | Connection string for your PostgreSQL database. |
 | `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` | Your Cloudinary Cloud Name (e.g., `dwrmfoq1a`). |
 | `NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET` | Your **Unsigned** Upload Preset (e.g., `CrabKhai`). |
+| `ADMIN_SETUP_SECRET` | Secret token for authorizing new admin devices (optional, has default). |
 
 ### How to Add in Vercel
 1. Go to your Vercel Dashboard.
