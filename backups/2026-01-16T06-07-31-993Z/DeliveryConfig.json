@@ -1,0 +1,27 @@
+[
+  {
+    "id": "cmkg3qxj6000h5oi6jleb2s62",
+    "defaultCharge": 60,
+    "defaultCodEnabled": true,
+    "nonRefundable": false,
+    "weightBasedCharges": [],
+    "deliveryZones": [
+      {
+        "id": "a9fc2877-f403-445a-8d72-baf6359abfb3",
+        "name": "Chittagong",
+        "type": "DISTRICT",
+        "price": 40,
+        "codEnabled": false
+      }
+    ],
+    "courierPathaoEnabled": false,
+    "courierPathaoCredentials": null,
+    "courierSteadfastEnabled": false,
+    "courierSteadfastCredentials": null,
+    "courierRedxEnabled": false,
+    "courierRedxCredentials": null,
+    "courierPaperflyEnabled": false,
+    "courierPaperflyCredentials": null,
+    "updatedAt": "2026-01-15T17:50:15.780Z"
+  }
+]

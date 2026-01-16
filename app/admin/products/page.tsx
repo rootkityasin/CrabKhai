@@ -1,6 +1,6 @@
 'use client';
 
-import { Search, Plus, MoreVertical, Copy, X, Trash2, Edit, LayoutGrid, List, Filter, Eye } from 'lucide-react';
+import { Search, Plus, MoreVertical, Copy, X, Trash2, Edit, LayoutGrid, List, Filter, Eye, Share2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -79,6 +79,15 @@ export default function ProductsPage() {
         fetchData();
     }, []);
 
+    // Effect to set default view based on shop type
+    useEffect(() => {
+        if (config?.shopType === 'RESTAURANT') {
+            setView('kanban');
+        } else {
+            setView('table');
+        }
+    }, [config.shopType]);
+
     // Format Stock Helper
     const formatStock = (pieces: number) => {
         const unit = config.measurementUnit || 'PCS';
@@ -91,9 +100,13 @@ export default function ProductsPage() {
     };
 
 
-    // Filter Logic
+    // Filter Logic - for RESTAURANT, table view only shows Draft (Ready Stock) items
     const stages = Array.from(new Set(products.map(p => p.stage)));
     const filteredProducts = products.filter(p => {
+        // For RESTAURANT: Only show Draft items in table (batch items are for Kanban only)
+        if (config.shopType === 'RESTAURANT' && view === 'table' && p.stage !== 'Draft') {
+            return false;
+        }
         const matchesStock = filterStock === 'all' ? true :
             filterStock === 'instock' ? (p.pieces > 0) : (p.pieces <= 0);
         const matchesStage = filterStage === 'all' ? true : p.stage === filterStage;
@@ -112,10 +125,80 @@ export default function ProductsPage() {
         }
     };
 
-    const handleStageMove = async (id: string, newStage: string) => {
-        // Optimistic update
-        setProducts(prev => prev.map(p => p.id === id ? { ...p, stage: newStage } : p));
-        await updateProduct(id, { stage: newStage });
+    const handleStageMove = async (id: string, newStage: string, quantity?: number) => {
+        const product = products.find(p => p.id === id);
+        if (!product) return;
+
+        // SPECIAL CASE: Returning to Ready Stock (Draft) - Merge back into original
+        if (newStage === 'Draft' && product.stage !== 'Draft') {
+            // Find the original product in Ready Stock by matching the base name
+            // Remove any "(Batch)" suffix or stage suffix from name to find original
+            const baseName = product.name.replace(/\s*\(Batch\)/g, '').trim();
+            const originalProduct = products.find(p =>
+                p.stage === 'Draft' &&
+                p.id !== id &&
+                (p.name === baseName || p.name === product.name)
+            );
+
+            if (originalProduct) {
+                // Merge: Add returning quantity to original
+                const newTotal = originalProduct.pieces + product.pieces;
+                setProducts(prev => prev.map(p =>
+                    p.id === originalProduct.id ? { ...p, pieces: newTotal } : p
+                ));
+                // Remove the returning batch from UI
+                setProducts(prev => prev.filter(p => p.id !== id));
+
+                await updateProduct(originalProduct.id, { pieces: newTotal });
+                await deleteProduct(id);
+
+                toast.success(`Returned ${product.pieces} items to Ready Stock`);
+                fetchData();
+                return;
+            } else {
+                // No original found, just move it back as is
+                setProducts(prev => prev.map(p => p.id === id ? { ...p, stage: newStage } : p));
+                await updateProduct(id, { stage: newStage });
+                toast.success(`Moved to Ready Stock`);
+                return;
+            }
+        }
+
+        // If NO quantity provided (e.g. non-restaurant move), do standard move
+        if (!quantity) {
+            setProducts(prev => prev.map(p => p.id === id ? { ...p, stage: newStage } : p));
+            await updateProduct(id, { stage: newStage });
+            return;
+        }
+
+        // Restaurant Flow: ALWAYS Split/Deduct if quantity is provided
+        // This ensures 'Ready Stock' items stay as templates, and Batches move independently.
+
+        // 1. Deduct from Source
+        const remaining = Math.max(0, product.pieces - quantity);
+        setProducts(prev => prev.map(p => p.id === id ? { ...p, pieces: remaining } : p));
+
+        await updateProduct(id, { pieces: remaining });
+
+        // 2. Create Clone/Batch at new Stage
+        const res = await createProduct({
+            ...product,
+            id: undefined,
+            createdAt: undefined,
+            updatedAt: undefined,
+            pieces: quantity,
+            stage: newStage,
+            name: product.name,
+            sku: `${Date.now()}` // Simple unique numeric SKU
+        });
+
+        if (res.success) {
+            toast.success(`Moved ${quantity} items to ${newStage}`);
+            fetchData(); // Refresh to ensure IDs are synced
+        } else {
+            toast.error("Failed to create batch");
+            fetchData(); // Revert on failure
+        }
     };
 
     const handleClone = async (product: any) => {
@@ -195,20 +278,23 @@ export default function ProductsPage() {
                     <p className="text-sm text-slate-500">Manage your menu items and production pipeline.</p>
                 </div>
                 <div className="flex items-center gap-2">
-                    <div className="flex bg-gray-100 p-1 rounded-lg mr-2">
-                        <button
-                            onClick={() => setView('table')}
-                            className={cn("p-1.5 rounded-md transition-all", view === 'table' ? "bg-white shadow-sm text-slate-900" : "text-slate-400")}
-                        >
-                            <List className="w-4 h-4" />
-                        </button>
-                        <button
-                            onClick={() => setView('kanban')}
-                            className={cn("p-1.5 rounded-md transition-all", view === 'kanban' ? "bg-white shadow-sm text-slate-900" : "text-slate-400")}
-                        >
-                            <LayoutGrid className="w-4 h-4" />
-                        </button>
-                    </div>
+                    {/* View Toggle */}
+                    {config.shopType !== 'GROCERY' && (
+                        <div className="flex bg-gray-100 p-1 rounded-lg mr-2">
+                            <button
+                                onClick={() => setView('table')}
+                                className={cn("p-1.5 rounded-md transition-all", view === 'table' ? "bg-white shadow-sm text-slate-900" : "text-slate-400")}
+                            >
+                                <List className="w-4 h-4" />
+                            </button>
+                            <button
+                                onClick={() => setView('kanban')}
+                                className={cn("p-1.5 rounded-md transition-all", view === 'kanban' ? "bg-white shadow-sm text-slate-900" : "text-slate-400")}
+                            >
+                                <LayoutGrid className="w-4 h-4" />
+                            </button>
+                        </div>
+                    )}
                     <div className="flex items-center gap-2 flex-wrap">
                         <div className="relative">
                             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
@@ -494,7 +580,8 @@ export default function ProductsPage() {
                 </div>
             )}
 
-            {view === 'table' ? (
+            {/* Table view for GROCERY or when view is 'table' */}
+            {(view === 'table' || config.shopType === 'GROCERY') ? (
                 <Card className="border-none shadow-none bg-transparent">
                     <Tabs defaultValue="all" className="w-full">
                         <div className="overflow-x-auto pb-2">
@@ -513,13 +600,13 @@ export default function ProductsPage() {
                                             <th className="p-4">SKU</th>
                                             <th className="p-4">Price</th>
                                             <th className="p-4">Stock</th>
-                                            <th className="p-4">Stage</th>
+                                            {config.shopType !== 'GROCERY' && <th className="p-4">Stage</th>}
                                             <th className="p-4 text-right">Action</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-50">
                                         {loading ? (
-                                            <tr><td colSpan={7} className="p-8 text-center">Loading...</td></tr>
+                                            <tr><td colSpan={6} className="p-8 text-center">Loading...</td></tr>
                                         ) : filteredProducts.map((product) => (
                                             <tr key={product.id} className="hover:bg-gray-50/50">
                                                 <td className="p-4"><input type="checkbox" /></td>
@@ -587,9 +674,11 @@ export default function ProductsPage() {
                                                         })()
                                                     )}
                                                 </td>
-                                                <td className="p-4">
-                                                    <Badge variant="outline">{product.stage}</Badge>
-                                                </td>
+                                                {config.shopType !== 'GROCERY' && (
+                                                    <td className="p-4">
+                                                        <Badge variant="outline">{product.stage}</Badge>
+                                                    </td>
+                                                )}
                                                 <td className="p-4 text-right">
                                                     <DropdownMenu>
                                                         <DropdownMenuTrigger asChild>
@@ -600,6 +689,12 @@ export default function ProductsPage() {
                                                         <DropdownMenuContent align="end">
                                                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                                             <DropdownMenuSeparator />
+                                                            <DropdownMenuItem onClick={() => {
+                                                                navigator.clipboard.writeText(`${window.location.origin}/buy/${product.id}`);
+                                                                alert('Link Copied!');
+                                                            }}>
+                                                                <Share2 className="w-4 h-4 mr-2" /> Share Link
+                                                            </DropdownMenuItem>
                                                             <DropdownMenuItem onClick={() => handleEdit(product)}>
                                                                 <Edit className="w-4 h-4 mr-2" /> Edit
                                                             </DropdownMenuItem>
@@ -615,7 +710,7 @@ export default function ProductsPage() {
                                             </tr>
                                         ))}
                                         {!loading && filteredProducts.length === 0 && (
-                                            <tr><td colSpan={7} className="p-8 text-center text-slate-400">No products found. Add one!</td></tr>
+                                            <tr><td colSpan={6} className="p-8 text-center text-slate-400">No products found. Add one!</td></tr>
                                         )}
                                     </tbody>
                                 </table>
@@ -624,7 +719,14 @@ export default function ProductsPage() {
                     </Tabs>
                 </Card>
             ) : (
-                <ProductBoard products={filteredProducts} onMove={handleStageMove} config={config} />
+                <ProductBoard
+                    products={filteredProducts.filter(p => p.pieces > 0)}
+                    onMove={handleStageMove}
+                    config={config}
+                    onEdit={handleEdit}
+                    onClone={handleClone}
+                    onDelete={handleDelete}
+                />
             )}
         </div>
     );

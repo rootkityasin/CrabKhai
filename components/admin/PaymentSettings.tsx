@@ -13,7 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from 'sonner';
 import { MediaUpload } from '@/components/admin/MediaUpload';
-import { Loader2, Save } from 'lucide-react';
+import { Loader2, Save, CreditCard } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export function PaymentSettings() {
@@ -23,50 +23,74 @@ export function PaymentSettings() {
 
     // Local state for form editing - init from context
     const [config, setConfig] = useState<any>(paymentConfig);
+    const [originalConfig, setOriginalConfig] = useState<any>(paymentConfig);
+    const [hasChanges, setHasChanges] = useState(false);
     const [taxPercentage, setTaxPercentage] = useState<number | string>(settings.taxPercentage || 0);
 
     // Sync from context when it loads (in case hard reload)
     useEffect(() => {
-        setConfig(paymentConfig);
+        // Only update if we don't have changes or if it's the first load
+        if (!hasChanges) {
+            setConfig(paymentConfig);
+            setOriginalConfig(paymentConfig);
+        }
         setTaxPercentage(settings.taxPercentage || 0);
-        // Only set loading false if context is ready (which it should be mostly)
-        // If paymentConfig is empty object initially (simplified), we might need to wait? 
-        // AdminProvider initializes empty, then fetches.
-        // It's acceptable for fields to populate as they arrive.
-    }, [paymentConfig, settings]);
+    }, [paymentConfig, settings, hasChanges]);
+
+    // Comparison effect
+    useEffect(() => {
+        if (!originalConfig || !config) return;
+        const isDifferent = JSON.stringify(originalConfig) !== JSON.stringify(config);
+        setHasChanges(isDifferent);
+    }, [config, originalConfig]);
 
     const handleSave = async () => {
         setSaving(true);
+
+        // 1. Update Payment Config
         const res = await updatePaymentServerConfig(config);
 
-        // Update Tax separately (it lives in SiteConfig)
+        // 2. Update Tax (if changed)
+        // Tax lives in SiteConfig, so we fetch current and update it.
+        // Optimization: We could have a specific action for this, but this works.
         const currentSiteConfig = await getSiteConfig();
         if (currentSiteConfig) {
-            await updateSiteConfig({ ...currentSiteConfig, taxPercentage });
+            await updateSiteConfig({ ...currentSiteConfig, taxPercentage: Number(taxPercentage) });
         }
-
-        // Update Context
-        updateContextPayment(config);
-        updateSettings({ ...settings, taxPercentage: parseFloat(taxPercentage as string) });
 
         if (res.success) {
             toast.success("Payment settings saved successfully");
+
+            // Update Context
+            updateContextPayment(config);
+            updateSettings({ ...settings, taxPercentage: Number(taxPercentage) });
+
+            // Update local state helpers
+            setOriginalConfig(config);
+            setHasChanges(false);
         } else {
             toast.error("Failed to save settings");
         }
         setSaving(false);
     };
 
+
     if (loading) return <div className="p-8 flex justify-center"><Loader2 className="animate-spin text-orange-500" /></div>;
 
     return (
         <div className="space-y-6 max-w-4xl mx-auto pb-20">
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center mb-6">
                 <div>
-                    <h2 className="text-2xl font-bold text-slate-800">Payment Gateways</h2>
-                    <p className="text-sm text-slate-500">Enable and configure your preferred payment methods</p>
+                    <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                        <CreditCard className="w-6 h-6 text-green-600" /> Payment Gateways
+                    </h2>
+                    <p className="text-sm text-slate-500 ml-8">Enable and configure your preferred payment methods</p>
                 </div>
-                <Button onClick={handleSave} disabled={saving} className="bg-orange-600 hover:bg-orange-700 text-white">
+                <Button
+                    onClick={handleSave}
+                    disabled={saving}
+                    className="bg-slate-900 hover:bg-orange-600 text-white shadow-sm hover:shadow-xl transition-all duration-500 tracking-wide"
+                >
                     {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
                     Save Changes
                 </Button>

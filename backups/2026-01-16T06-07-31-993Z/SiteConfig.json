@@ -1,0 +1,20 @@
+[
+  {
+    "id": "default-config",
+    "contactPhone": "+880 1804 221 161",
+    "contactEmail": "crabkhaibangladesh@gmail.com",
+    "contactAddress": "195 Green Road, Dhaka",
+    "shopName": "Crab & Khai",
+    "logoUrl": null,
+    "measurementUnit": "PCS",
+    "allergensText": "Crustaceans, Shellfish",
+    "certificates": [],
+    "adminSetupToken": "crab-secret",
+    "primaryColor": "#E60000",
+    "secondaryColor": "#0f172a",
+    "taxPercentage": 0,
+    "shopType": "RESTAURANT",
+    "weightUnitValue": 200,
+    "volumeUnitValue": 1000
+  }
+]

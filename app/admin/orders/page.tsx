@@ -25,10 +25,19 @@ import { cn } from '@/lib/utils';
 import { FulfillmentBoard } from '@/components/admin/FulfillmentBoard';
 import { useAdmin } from '@/components/providers/AdminProvider';
 import { format } from "date-fns"
+import { getSiteConfig } from '@/app/actions/settings';
+import { useEffect } from 'react';
 
 export default function OrdersPage() {
     // Global State
     const { orders, addOrder, updateOrder, deleteOrder } = useAdmin();
+    const [shopType, setShopType] = useState('RESTAURANT');
+
+    useEffect(() => {
+        getSiteConfig().then(config => {
+            if (config?.shopType) setShopType(config.shopType);
+        });
+    }, []);
 
     const [view, setView] = useState<'table' | 'kanban'>('table');
     const [filterStatus, setFilterStatus] = useState('all');
@@ -41,6 +50,9 @@ export default function OrdersPage() {
     // Edit Order State
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editForm, setEditForm] = useState({ customer: '', phone: '', price: 0, items: 1 });
+    const [originalEditForm, setOriginalEditForm] = useState<any>(null); // Track original for changes
+
+    const hasChanges = editingId && originalEditForm && JSON.stringify(editForm) !== JSON.stringify(originalEditForm);
 
     // Add Order Form
     const [newOrder, setNewOrder] = useState({ customer: '', phone: '', price: 0, items: 1 });
@@ -87,12 +99,14 @@ export default function OrdersPage() {
 
     const handleEditClick = (order: any) => {
         setEditingId(order.id);
-        setEditForm({
+        const form = {
             customer: order.customer,
             phone: order.phone,
             price: order.price,
             items: order.items
-        });
+        };
+        setEditForm(form);
+        setOriginalEditForm(form);
     };
 
     const handleUpdateOrder = (e: React.FormEvent) => {
@@ -108,16 +122,18 @@ export default function OrdersPage() {
     }
 
     const getAllStatuses = () => [
-        "Placed", "Confirmed", "Processing", "Ready", "Shipped", "Delivered", "Completed", "Cancelled", "Returned", "Payment OnProcess", "Payment Failed"
+        "Placed", "Confirmed", "Ready to Process", "Ready To Fry", "Processing", "Ready", "Shipped", "Delivered", "Completed", "Cancelled", "Returned", "Payment OnProcess", "Payment Failed"
     ];
 
     const getStatusColor = (status: string) => {
         switch (status) {
             case 'Placed': return "bg-blue-100 text-blue-700";
             case 'Confirmed': return "bg-green-100 text-green-700";
+            case 'Ready to Process': return "bg-indigo-100 text-indigo-700";
+            case 'Ready To Fry': return "bg-orange-100 text-orange-700";
             case 'Processing': return "bg-orange-100 text-orange-700";
             case 'Ready': return "bg-purple-100 text-purple-700";
-            case 'Shipped': return "bg-indigo-100 text-indigo-700";
+            case 'Shipped': return "bg-slate-800 text-white"; // Highlight dispatched
             case 'Delivered': return "bg-emerald-100 text-emerald-700";
             case 'Completed': return "bg-slate-100 text-slate-700";
             case 'Cancelled': return "bg-red-100 text-red-700";
@@ -144,12 +160,14 @@ export default function OrdersPage() {
                         >
                             <List className="w-4 h-4" />
                         </button>
-                        <button
-                            onClick={() => setView('kanban')}
-                            className={cn("p-1.5 rounded-md transition-all", view === 'kanban' ? "bg-white shadow-sm text-slate-900" : "text-slate-400")}
-                        >
-                            <LayoutGrid className="w-4 h-4" />
-                        </button>
+                        {shopType === 'RESTAURANT' && (
+                            <button
+                                onClick={() => setView('kanban')}
+                                className={cn("p-1.5 rounded-md transition-all", view === 'kanban' ? "bg-white shadow-sm text-slate-900" : "text-slate-400")}
+                            >
+                                <LayoutGrid className="w-4 h-4" />
+                            </button>
+                        )}
                     </div>
 
                     {/* Search */}
@@ -285,7 +303,15 @@ export default function OrdersPage() {
                                 </div>
                                 <div className="flex gap-2 justify-end pt-2">
                                     <Button type="button" variant="destructive" onClick={() => { handleDelete(editingId!); setEditingId(null); }}>Delete Order</Button>
-                                    <Button type="submit" className="bg-orange-600 hover:bg-orange-700 text-white">Save Changes</Button>
+                                    <Button
+                                        type="submit"
+                                        className={hasChanges
+                                            ? "bg-orange-600 hover:bg-orange-700 text-white shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5"
+                                            : "bg-slate-900 hover:bg-orange-600 text-white shadow-sm hover:shadow-xl transition-all duration-500 tracking-wide"
+                                        }
+                                    >
+                                        Save Changes
+                                    </Button>
                                 </div>
                             </form>
                         </div>

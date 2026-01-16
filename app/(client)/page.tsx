@@ -52,13 +52,12 @@ export default function ClientHomePage() {
 
             {/* Dynamic Sections */}
             <div className="space-y-4">
-                {sections.map((section, index) => (
+                {sections.map((section) => (
                     section.products.length > 0 && (
                         <div key={section.id} id={`section-${section.slug}`} className="scroll-mt-32">
                             <ProductRail
                                 title={section.title}
                                 products={section.products}
-                                enableScrollAnimation={index === 0}
                             />
                         </div>
                     )

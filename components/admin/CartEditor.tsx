@@ -59,9 +59,19 @@ export function CartEditor() {
 
     const [previewMode, setPreviewMode] = useState<'empty' | 'filled' | 'success'>('filled');
 
+    // Change detection
+    const [originalConfig, setOriginalConfig] = useState<any>(null);
+    const [hasChanges, setHasChanges] = useState(false);
+
     useEffect(() => {
         loadData();
     }, []);
+
+    useEffect(() => {
+        if (!originalConfig) return;
+        const isDifferent = JSON.stringify(originalConfig) !== JSON.stringify(config);
+        setHasChanges(isDifferent);
+    }, [config, originalConfig]);
 
     const loadData = async () => {
         setLoading(true);
@@ -73,6 +83,9 @@ export function CartEditor() {
         const cartSection = sections.find((s: any) => s.type === 'CART_TEXTS');
         if (cartSection?.content) {
             setConfig({ ...config, ...(cartSection.content as any) });
+            setOriginalConfig({ ...config, ...(cartSection.content as any) });
+        } else {
+            setOriginalConfig(config);
         }
 
         if (paymentConf) {
@@ -86,6 +99,8 @@ export function CartEditor() {
         const res = await updateStorySection('CART_TEXTS', config);
         if (res.success) {
             toast.success('Cart texts updated');
+            setOriginalConfig(config);
+            setHasChanges(false);
         } else {
             toast.error('Failed to update cart texts');
         }
@@ -117,7 +132,14 @@ export function CartEditor() {
                 <Card className="p-6 bg-white shadow-sm border-slate-200">
                     <div className="flex items-center justify-between mb-6">
                         <h3 className="text-lg font-bold text-slate-800">Cart Configuration</h3>
-                        <Button disabled={saving} onClick={handleSave} className="bg-orange-600 hover:bg-orange-700 text-white">
+                        <Button
+                            disabled={saving}
+                            onClick={handleSave}
+                            className={hasChanges
+                                ? "bg-orange-600 hover:bg-orange-700 text-white shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5"
+                                : "bg-slate-900 hover:bg-orange-600 text-white shadow-sm hover:shadow-xl transition-all duration-500 tracking-wide"
+                            }
+                        >
                             {saving ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : <Save className="mr-2 h-4 w-4" />}
                             Save Changes
                         </Button>

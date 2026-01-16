@@ -1,0 +1,30 @@
+[
+  {
+    "id": "cmkg1zoml0000ysi67ke2vinx",
+    "deviceId": "vugplqbeo2ti7kio9y31s",
+    "name": "Chrome on Windows",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "lastUsed": "2026-01-15T17:57:16.840Z",
+    "expiresAt": "2026-02-14T17:01:00.136Z",
+    "createdAt": "2026-01-15T17:01:00.140Z",
+    "browser": "Chrome",
+    "deviceType": "Desktop",
+    "ipAddress": "::1",
+    "location": null,
+    "os": "Windows"
+  },
+  {
+    "id": "cmkgh5pbq00008wvompe6oz22",
+    "deviceId": "c1ahr7qgflh0hqbljus6wcu",
+    "name": "Chrome on Windows",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "lastUsed": "2026-01-16T00:05:35.222Z",
+    "expiresAt": "2026-02-15T00:05:35.217Z",
+    "createdAt": "2026-01-16T00:05:35.222Z",
+    "browser": "Chrome",
+    "deviceType": "Desktop",
+    "ipAddress": "::1",
+    "location": null,
+    "os": "Windows"
+  }
+]

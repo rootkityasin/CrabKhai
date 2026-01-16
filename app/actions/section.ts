@@ -28,7 +28,7 @@ export async function getHomeSections() {
             include: {
                 products: {
                     where: {
-                        stage: { in: ['Selling', 'Published', 'Coming Soon', 'Draft'] }
+                        stage: { in: ['Selling', 'Published', 'Coming Soon'] }
                     },
                     orderBy: { createdAt: 'desc' }, // Or allow custom ordering per section in future
                     take: 10 // Limit products per rail
@@ -76,7 +76,6 @@ export async function deleteSection(id: string) {
     try {
         await prisma.productSection.delete({ where: { id } });
         revalidatePath('/admin/sections');
-        revalidatePath('/');
         return { success: true };
     } catch (error) {
         return { success: false, error: "Failed to delete section" };
@@ -124,55 +123,55 @@ export async function seedDefaultSections() {
     }
 
     // Assign some products if sections act as fresh start
-    // try {
-    const products = await prisma.product.findMany({
-        take: 10,
-        where: { stage: { in: ['Selling', 'Published', 'Draft'] } }
-    });
+    try {
+        const products = await prisma.product.findMany({
+            take: 10,
+            where: { stage: { in: ['Selling', 'Published'] } }
+        });
 
-    if (products.length === 0) return;
+        if (products.length === 0) return;
 
-    // Best Sellers (assign first 3)
-    const bestSellers = sections.find(s => s.slug === 'best-sellers');
-    if (bestSellers) {
-        const pIds = products.slice(0, 3).map(p => ({ id: p.id }));
-        if (pIds.length > 0) {
-            await prisma.productSection.update({
-                where: { id: bestSellers.id },
-                data: { products: { connect: pIds } }
-            });
+        // Best Sellers (assign first 3)
+        const bestSellers = sections.find(s => s.slug === 'best-sellers');
+        if (bestSellers) {
+            const pIds = products.slice(0, 3).map(p => ({ id: p.id }));
+            if (pIds.length > 0) {
+                await prisma.productSection.update({
+                    where: { id: bestSellers.id },
+                    data: { products: { connect: pIds } }
+                });
+            }
         }
-    }
 
-    // New Arrivals (assign next 3)
-    const newArrivals = sections.find(s => s.slug === 'new-arrivals');
-    if (newArrivals) {
-        const pIds = products.slice(3, 6).map(p => ({ id: p.id }));
-        if (pIds.length > 0) {
-            await prisma.productSection.update({
-                where: { id: newArrivals.id },
-                data: { products: { connect: pIds } }
-            });
+        // New Arrivals (assign next 3)
+        const newArrivals = sections.find(s => s.slug === 'new-arrivals');
+        if (newArrivals) {
+            const pIds = products.slice(3, 6).map(p => ({ id: p.id }));
+            if (pIds.length > 0) {
+                await prisma.productSection.update({
+                    where: { id: newArrivals.id },
+                    data: { products: { connect: pIds } }
+                });
+            }
         }
-    }
 
-    // Super Savings (assign last 2)
-    const superSavings = sections.find(s => s.slug === 'super-savings');
-    if (superSavings) {
-        const pIds = products.slice(6, 8).map(p => ({ id: p.id }));
-        if (pIds.length > 0) {
-            await prisma.productSection.update({
-                where: { id: superSavings.id },
-                data: { products: { connect: pIds } }
-            });
+        // Super Savings (assign last 2)
+        const superSavings = sections.find(s => s.slug === 'super-savings');
+        if (superSavings) {
+            const pIds = products.slice(6, 8).map(p => ({ id: p.id }));
+            if (pIds.length > 0) {
+                await prisma.productSection.update({
+                    where: { id: superSavings.id },
+                    data: { products: { connect: pIds } }
+                });
+            }
         }
-    }
 
-    revalidatePath('/');
-    revalidatePath('/admin/sections');
-    // } catch (error) {
-    //    console.error("Error auto-assigning products during seed:", error);
-    // }
+        revalidatePath('/');
+        revalidatePath('/admin/sections');
+    } catch (error) {
+        console.error("Error auto-assigning products during seed:", error);
+    }
 }
 
 export async function reorderSections(items: { id: string; order: number }[]) {
@@ -186,7 +185,6 @@ export async function reorderSections(items: { id: string; order: number }[]) {
             )
         );
         revalidatePath('/admin/sections');
-        revalidatePath('/');
         return { success: true };
     } catch (error) {
         console.error("Failed to reorder sections:", error);

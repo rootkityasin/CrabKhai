@@ -22,22 +22,17 @@ interface FulfillmentBoardProps {
 export function FulfillmentBoard({ orders, onStatusChange }: FulfillmentBoardProps) {
     const columns = [
         { title: 'Pending', status: 'Placed', icon: Clock, color: 'bg-gray-100 text-gray-500' },
-        { title: 'Processing', status: 'Processing', icon: Package, color: 'bg-orange-100 text-orange-600' },
-        { title: 'Ready', status: 'Ready', icon: CheckCircle, color: 'bg-green-100 text-green-600' },
-        { title: 'Dispatched', status: 'Dispatched', icon: Truck, color: 'bg-blue-100 text-blue-600' },
+        { title: 'Ready to Process', status: 'Ready to Process', icon: Package, color: 'bg-indigo-100 text-indigo-600' },
+        { title: 'Ready To Fry', status: 'Ready To Fry', icon: CheckCircle, color: 'bg-orange-100 text-orange-600' },
+        { title: 'Dispatched', status: 'Shipped', icon: Truck, color: 'bg-blue-100 text-blue-600' },
     ];
 
     const getNextStatus = (current: string) => {
-        if (current === 'Placed') return 'Confirmed'; // Wait, board has 'Pending' mapped to 'Placed' in my col def?
-        // Actually the flow in table was Placed -> Confirmed -> Processing.
-        // Let's standardise: 
-        // Post-Placed = Confirmed (maybe 'Pending' column shows both or just Confirmed?)
-        // Let's assume 'Placed' & 'Confirmed' go to Pending column, but 'Confirmed' is ready for 'Processing'.
         if (current === 'Placed') return 'Confirmed';
-        if (current === 'Confirmed') return 'Processing';
-        if (current === 'Processing') return 'Ready';
-        if (current === 'Ready') return 'Dispatched';
-        return 'Dispatched';
+        if (current === 'Confirmed') return 'Ready to Process';
+        if (current === 'Ready to Process') return 'Ready To Fry';
+        if (current === 'Ready To Fry') return 'Shipped';
+        return 'Shipped';
     };
 
     return (
@@ -50,6 +45,8 @@ export function FulfillmentBoard({ orders, onStatusChange }: FulfillmentBoardPro
                         <Badge variant="outline" className="ml-auto bg-white shadow-sm border-none">
                             {orders.filter(o => {
                                 if (col.status === 'Placed') return o.status === 'Placed' || o.status === 'Confirmed';
+                                if (col.status === 'Ready to Process') return o.status === 'Ready to Process' || o.status === 'Processing';
+                                if (col.status === 'Ready To Fry') return o.status === 'Ready To Fry' || o.status === 'Ready';
                                 return o.status === col.status;
                             }).length}
                         </Badge>
@@ -59,6 +56,8 @@ export function FulfillmentBoard({ orders, onStatusChange }: FulfillmentBoardPro
                         {orders
                             .filter(o => {
                                 if (col.status === 'Placed') return o.status === 'Placed' || o.status === 'Confirmed';
+                                if (col.status === 'Ready to Process') return o.status === 'Ready to Process' || o.status === 'Processing';
+                                if (col.status === 'Ready To Fry') return o.status === 'Ready To Fry' || o.status === 'Ready';
                                 return o.status === col.status;
                             })
                             .map(order => (
@@ -71,7 +70,7 @@ export function FulfillmentBoard({ orders, onStatusChange }: FulfillmentBoardPro
 
                                     {/* Quick Actions */}
                                     <div className="flex gap-2">
-                                        {order.status !== 'Dispatched' && (
+                                        {order.status !== 'Shipped' && (
                                             <Button
                                                 size="sm"
                                                 variant="secondary"
@@ -91,6 +90,8 @@ export function FulfillmentBoard({ orders, onStatusChange }: FulfillmentBoardPro
                             ))}
                         {orders.filter(o => {
                             if (col.status === 'Placed') return o.status === 'Placed' || o.status === 'Confirmed';
+                            if (col.status === 'Ready to Process') return o.status === 'Ready to Process' || o.status === 'Processing';
+                            if (col.status === 'Ready To Fry') return o.status === 'Ready To Fry' || o.status === 'Ready';
                             return o.status === col.status;
                         }).length === 0 && (
                                 <div className="h-24 border-2 border-dashed border-gray-200 rounded-lg flex items-center justify-center text-xs text-gray-400">

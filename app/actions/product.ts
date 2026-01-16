@@ -51,6 +51,7 @@ export async function createProduct(data: any) {
                 sku: data.sku,
                 pieces: data.pieces, // Initial Stock
                 weight: data.weight,
+                stage: data.stage, // Add Stage
                 categoryId: data.categoryId,
                 images: data.images || [], // Add images
                 type: data.type || 'SINGLE', // Default to SINGLE
@@ -87,6 +88,7 @@ export async function updateProduct(id: string, data: any) {
                 weight: data.weight,
                 description: data.description,
                 descriptionSwap: data.descriptionSwap,
+                stage: data.stage, // Add Stage
                 sections: data.sections ? {
                     set: data.sections.map((id: string) => ({ id }))
                 } : undefined,

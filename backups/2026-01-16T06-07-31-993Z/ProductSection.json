@@ -1,0 +1,29 @@
+[
+  {
+    "id": "cmkg2kicl00045oi66bpc1idv",
+    "title": "Best Sellers",
+    "slug": "best-sellers",
+    "isActive": true,
+    "order": 0,
+    "createdAt": "2026-01-15T17:17:11.781Z",
+    "updatedAt": "2026-01-15T17:17:11.781Z"
+  },
+  {
+    "id": "cmkg2kifi00055oi69uoz1n79",
+    "title": "New Arrivals",
+    "slug": "new-arrivals",
+    "isActive": true,
+    "order": 1,
+    "createdAt": "2026-01-15T17:17:11.886Z",
+    "updatedAt": "2026-01-15T17:17:11.886Z"
+  },
+  {
+    "id": "cmkg2kiic00065oi6rv3r0gqz",
+    "title": "Super Savings",
+    "slug": "super-savings",
+    "isActive": true,
+    "order": 2,
+    "createdAt": "2026-01-15T17:17:11.988Z",
+    "updatedAt": "2026-01-15T17:17:11.988Z"
+  }
+]

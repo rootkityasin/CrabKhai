@@ -1,0 +1,124 @@
+[
+  {
+    "id": "cmkg401wf000i5oi6rbxmnzjh",
+    "type": "HERO",
+    "content": {
+      "title": "",
+      "estYear": "",
+      "subtitle": "",
+      "mascotImage": ""
+    },
+    "updatedAt": "2026-01-15T17:57:16.575Z"
+  },
+  {
+    "id": "cmkg405wc000j5oi6g2gdys7a",
+    "type": "VALUES",
+    "content": {
+      "brandValues": [],
+      "manifestoText": "",
+      "manifestoTitle": ""
+    },
+    "updatedAt": "2026-01-15T17:57:21.756Z"
+  },
+  {
+    "id": "cmkg409wx000k5oi6zejjqosb",
+    "type": "PRODUCTS",
+    "content": {
+      "title": "Our Signatures",
+      "productIds": []
+    },
+    "updatedAt": "2026-01-15T17:57:26.961Z"
+  },
+  {
+    "id": "cmkg40crt000l5oi6szgmaleh",
+    "type": "GALLERY",
+    "content": [],
+    "updatedAt": "2026-01-15T17:57:30.665Z"
+  },
+  {
+    "id": "cmkg40eom000m5oi68gy02j1x",
+    "type": "TEAM",
+    "content": [],
+    "updatedAt": "2026-01-15T17:57:33.142Z"
+  },
+  {
+    "id": "cmkg40iob000n5oi6p4ofxtxr",
+    "type": "WHOLESALE",
+    "content": {
+      "image": "",
+      "title": "",
+      "description": "",
+      "whatsappNumber": ""
+    },
+    "updatedAt": "2026-01-15T17:57:38.315Z"
+  },
+  {
+    "id": "cmkg40leh000o5oi6besfhhvd",
+    "type": "REVIEWS",
+    "content": {
+      "reviews": [],
+      "gridImages": [],
+      "featuredImage": ""
+    },
+    "updatedAt": "2026-01-15T17:57:41.849Z"
+  },
+  {
+    "id": "cmkg40oss000p5oi6zboi50zq",
+    "type": "CART_TEXTS",
+    "content": {
+      "title": "Your Cart",
+      "total": "Total",
+      "fields": [
+        {
+          "id": "name",
+          "type": "text",
+          "label": "Name",
+          "enabled": true,
+          "isSystem": true,
+          "required": true,
+          "placeholder": "Enter your full name"
+        },
+        {
+          "id": "phone",
+          "type": "tel",
+          "label": "Phone",
+          "enabled": true,
+          "isSystem": true,
+          "required": true,
+          "placeholder": "017..."
+        },
+        {
+          "id": "area",
+          "type": "select",
+          "label": "Area",
+          "enabled": true,
+          "isSystem": true,
+          "required": true,
+          "placeholder": "Select your area"
+        },
+        {
+          "id": "address",
+          "type": "textarea",
+          "label": "Address",
+          "enabled": true,
+          "isSystem": true,
+          "required": true,
+          "placeholder": "House, Road, Block, Sector..."
+        }
+      ],
+      "backHome": "Back to Home",
+      "subtotal": "Subtotal",
+      "browseMenu": "Browse Menu",
+      "emptyImage": "",
+      "emptyTitle": "Your Cart is Empty! 🦀",
+      "deliveryFee": "Delivery Fee",
+      "confirmOrder": "Confirm Order",
+      "emptyMessage": "Looks like you haven't added any delicious crabs yet.",
+      "successImage": "",
+      "successTitle": "Order Placed Successfully! 🎉",
+      "successMessage": "We'll call you shortly to confirm.",
+      "deliveryDetails": "Delivery Details & Checkout"
+    },
+    "updatedAt": "2026-01-15T17:57:46.252Z"
+  }
+]

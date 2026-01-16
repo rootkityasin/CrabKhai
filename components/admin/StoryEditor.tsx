@@ -23,6 +23,14 @@ export function StoryEditor() {
     const [wholesale, setWholesale] = useState<any>({ title: '', description: '', whatsappNumber: '', image: '' });
     const [reviews, setReviews] = useState<any>({ featuredImage: '', gridImages: [], reviews: [] });
     const [productsSection, setProductsSection] = useState<any>({ title: 'Our Signatures', productIds: [] });
+
+    // Change detection
+    const [originalState, setOriginalState] = useState<any>({});
+    const checkChanges = (key: string, current: any) => {
+        if (!originalState[key]) return false;
+        return JSON.stringify(current) !== JSON.stringify(originalState[key]);
+    };
+
     const [availableProducts, setAvailableProducts] = useState<any[]>([]);
     const [saving, setSaving] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState('hero');
@@ -61,15 +69,17 @@ export function StoryEditor() {
 
         setAvailableProducts(products);
 
+        const loadedState: any = {};
         sections.forEach((section: any) => {
-            if (section.type === 'HERO') setHero(section.content);
-            if (section.type === 'VALUES') setValues(section.content);
-            if (section.type === 'GALLERY') setGallery(section.content);
-            if (section.type === 'TEAM') setTeam(section.content);
-            if (section.type === 'WHOLESALE') setWholesale(section.content);
-            if (section.type === 'REVIEWS') setReviews(section.content);
-            if (section.type === 'PRODUCTS') setProductsSection(section.content);
+            if (section.type === 'HERO') { setHero(section.content); loadedState['HERO'] = section.content; }
+            if (section.type === 'VALUES') { setValues(section.content); loadedState['VALUES'] = section.content; }
+            if (section.type === 'GALLERY') { setGallery(section.content); loadedState['GALLERY'] = section.content; }
+            if (section.type === 'TEAM') { setTeam(section.content); loadedState['TEAM'] = section.content; }
+            if (section.type === 'WHOLESALE') { setWholesale(section.content); loadedState['WHOLESALE'] = section.content; }
+            if (section.type === 'REVIEWS') { setReviews(section.content); loadedState['REVIEWS'] = section.content; }
+            if (section.type === 'PRODUCTS') { setProductsSection(section.content); loadedState['PRODUCTS'] = section.content; }
         });
+        setOriginalState(loadedState);
         setLoading(false);
     };
 
@@ -78,6 +88,7 @@ export function StoryEditor() {
         const res = await updateStorySection(type, content);
         if (res.success) {
             toast.success(`${type} section updated`);
+            setOriginalState({ ...originalState, [type]: content });
         } else {
             toast.error(`Failed to update ${type}`);
         }
@@ -123,7 +134,14 @@ export function StoryEditor() {
                                     <Label>Mascot Image</Label>
                                     <ImageUpload value={hero.mascotImage} onChange={url => setHero({ ...hero, mascotImage: url })} onRemove={() => setHero({ ...hero, mascotImage: '' })} />
                                 </div>
-                                <Button disabled={saving === 'HERO'} onClick={() => handleSave('HERO', hero)} className="bg-slate-900 text-white">
+                                <Button
+                                    disabled={saving === 'HERO'}
+                                    onClick={() => handleSave('HERO', hero)}
+                                    className={checkChanges('HERO', hero)
+                                        ? "bg-orange-600 hover:bg-orange-700 text-white shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5"
+                                        : "bg-slate-900 hover:bg-orange-600 text-white shadow-sm hover:shadow-xl transition-all duration-500 tracking-wide"
+                                    }
+                                >
                                     {saving === 'HERO' ? <Loader2 className="animate-spin mr-2" /> : <Save className="mr-2 w-4 h-4" />} Save Hero
                                 </Button>
                             </div>
@@ -146,7 +164,14 @@ export function StoryEditor() {
                                     <Label>Brand Values (Comma separated)</Label>
                                     <Input value={values.brandValues?.join(', ')} onChange={e => setValues({ ...values, brandValues: e.target.value.split(',').map((s: string) => s.trim()) })} placeholder="FRESH, ORGANIC, PREMIUM..." />
                                 </div>
-                                <Button disabled={saving === 'VALUES'} onClick={() => handleSave('VALUES', values)} className="bg-slate-900 text-white">
+                                <Button
+                                    disabled={saving === 'VALUES'}
+                                    onClick={() => handleSave('VALUES', values)}
+                                    className={checkChanges('VALUES', values)
+                                        ? "bg-orange-600 hover:bg-orange-700 text-white shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5"
+                                        : "bg-slate-900 hover:bg-orange-600 text-white shadow-sm hover:shadow-xl transition-all duration-500 tracking-wide"
+                                    }
+                                >
                                     {saving === 'VALUES' ? <Loader2 className="animate-spin mr-2" /> : <Save className="mr-2 w-4 h-4" />} Save Values
                                 </Button>
                             </div>
@@ -194,7 +219,14 @@ export function StoryEditor() {
                                 ))}
                             </div>
                             <div className="mt-6">
-                                <Button disabled={saving === 'GALLERY'} onClick={() => handleSave('GALLERY', gallery)} className="bg-slate-900 text-white">
+                                <Button
+                                    disabled={saving === 'GALLERY'}
+                                    onClick={() => handleSave('GALLERY', gallery)}
+                                    className={checkChanges('GALLERY', gallery)
+                                        ? "bg-orange-600 hover:bg-orange-700 text-white shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5"
+                                        : "bg-slate-900 hover:bg-orange-600 text-white shadow-sm hover:shadow-xl transition-all duration-500 tracking-wide"
+                                    }
+                                >
                                     {saving === 'GALLERY' ? <Loader2 className="animate-spin mr-2" /> : <Save className="mr-2 w-4 h-4" />} Save Gallery
                                 </Button>
                             </div>
@@ -261,7 +293,14 @@ export function StoryEditor() {
                                 ))}
                             </div>
                             <div className="mt-6">
-                                <Button disabled={saving === 'TEAM'} onClick={() => handleSave('TEAM', team)} className="bg-slate-900 text-white">
+                                <Button
+                                    disabled={saving === 'TEAM'}
+                                    onClick={() => handleSave('TEAM', team)}
+                                    className={checkChanges('TEAM', team)
+                                        ? "bg-orange-600 hover:bg-orange-700 text-white shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5"
+                                        : "bg-slate-900 hover:bg-orange-600 text-white shadow-sm hover:shadow-xl transition-all duration-500 tracking-wide"
+                                    }
+                                >
                                     {saving === 'TEAM' ? <Loader2 className="animate-spin mr-2" /> : <Save className="mr-2 w-4 h-4" />} Save Team
                                 </Button>
                             </div>
@@ -288,7 +327,14 @@ export function StoryEditor() {
                                     <Label>Mascot Image</Label>
                                     <ImageUpload value={wholesale.image} onChange={url => setWholesale({ ...wholesale, image: url })} onRemove={() => setWholesale({ ...wholesale, image: '' })} />
                                 </div>
-                                <Button disabled={saving === 'WHOLESALE'} onClick={() => handleSave('WHOLESALE', wholesale)} className="bg-slate-900 text-white">
+                                <Button
+                                    disabled={saving === 'WHOLESALE'}
+                                    onClick={() => handleSave('WHOLESALE', wholesale)}
+                                    className={checkChanges('WHOLESALE', wholesale)
+                                        ? "bg-orange-600 hover:bg-orange-700 text-white shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5"
+                                        : "bg-slate-900 hover:bg-orange-600 text-white shadow-sm hover:shadow-xl transition-all duration-500 tracking-wide"
+                                    }
+                                >
                                     {saving === 'WHOLESALE' ? <Loader2 className="animate-spin mr-2" /> : <Save className="mr-2 w-4 h-4" />} Save Wholesale
                                 </Button>
                             </div>
@@ -323,7 +369,14 @@ export function StoryEditor() {
                                     </div>
                                 </div>
 
-                                <Button disabled={saving === 'REVIEWS'} onClick={() => handleSave('REVIEWS', reviews)} className="bg-slate-900 text-white">
+                                <Button
+                                    disabled={saving === 'REVIEWS'}
+                                    onClick={() => handleSave('REVIEWS', reviews)}
+                                    className={checkChanges('REVIEWS', reviews)
+                                        ? "bg-orange-600 hover:bg-orange-700 text-white shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5"
+                                        : "bg-slate-900 hover:bg-orange-600 text-white shadow-sm hover:shadow-xl transition-all duration-500 tracking-wide"
+                                    }
+                                >
                                     {saving === 'REVIEWS' ? <Loader2 className="animate-spin mr-2" /> : <Save className="mr-2 w-4 h-4" />} Save Reviews
                                 </Button>
                             </div>
@@ -374,7 +427,14 @@ export function StoryEditor() {
                                     />
                                 </div>
 
-                                <Button disabled={saving === 'PRODUCTS'} onClick={() => handleSave('PRODUCTS', productsSection)} className="bg-slate-900 text-white">
+                                <Button
+                                    disabled={saving === 'PRODUCTS'}
+                                    onClick={() => handleSave('PRODUCTS', productsSection)}
+                                    className={checkChanges('PRODUCTS', productsSection)
+                                        ? "bg-orange-600 hover:bg-orange-700 text-white shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5"
+                                        : "bg-slate-900 hover:bg-orange-600 text-white shadow-sm hover:shadow-xl transition-all duration-500 tracking-wide"
+                                    }
+                                >
                                     {saving === 'PRODUCTS' ? <Loader2 className="animate-spin mr-2" /> : <Save className="mr-2 w-4 h-4" />} Save Products
                                 </Button>
                             </div>

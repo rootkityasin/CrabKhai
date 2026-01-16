@@ -2,14 +2,27 @@
 
 import { motion } from 'framer-motion';
 import { Phone, Mail, MapPin, ShieldCheck, AlertTriangle } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import rehypeRaw from 'rehype-raw';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog"
 
 interface TrustFooterProps extends React.HTMLAttributes<HTMLDivElement> {
     config?: {
         contactPhone: string;
         contactEmail: string;
         contactAddress: string;
+        shopName?: string;
+        logoUrl?: string;
         allergensText: string;
         certificates: string[];
+        privacyPolicy?: string;
+        refundPolicy?: string;
+        termsPolicy?: string;
     } | null;
 }
 
@@ -18,6 +31,7 @@ import { useEffect, useState } from 'react';
 
 export default function TrustFooter({ config: initialConfig, ...props }: TrustFooterProps) {
     const [config, setConfig] = useState<any>(initialConfig || null);
+    const [policyOpen, setPolicyOpen] = useState<'privacy' | 'refund' | 'terms' | null>(null);
 
     useEffect(() => {
         getSiteConfig().then((data) => {
@@ -160,6 +174,88 @@ export default function TrustFooter({ config: initialConfig, ...props }: TrustFo
                     </div>
                 </motion.div>
             </div>
-        </section>
+
+            {/* Bottom Bar: Copyright & Policies */}
+            <div className="max-w-5xl mx-auto mt-16 pt-8 border-t border-white/10 flex flex-col-reverse md:flex-row justify-between items-center bg-transparent relative z-10 gap-4">
+                <p className="text-xs text-white/50 font-mono text-center md:text-left">
+                    &copy; {new Date().getFullYear()} {shopName}. All rights reserved.
+                </p>
+
+                <div className="flex gap-6 text-xs text-white/70 font-medium tracking-wide">
+                    <button onClick={() => setPolicyOpen('privacy')} className="hover:text-amber-200 transition-colors uppercase">
+                        Privacy Policy
+                    </button>
+                    <button onClick={() => setPolicyOpen('refund')} className="hover:text-amber-200 transition-colors uppercase">
+                        Refund Policy
+                    </button>
+                    <button onClick={() => setPolicyOpen('terms')} className="hover:text-amber-200 transition-colors uppercase">
+                        Terms & Conditions
+                    </button>
+                </div>
+            </div>
+
+            <PolicyModal
+                isOpen={policyOpen === 'privacy'}
+                onClose={() => setPolicyOpen(null)}
+                title="Privacy Policy"
+                content={config?.privacyPolicy || "We value your privacy. Content loading..."}
+            />
+            <PolicyModal
+                isOpen={policyOpen === 'refund'}
+                onClose={() => setPolicyOpen(null)}
+                title="Refund Policy"
+                content={config?.refundPolicy || "Our freshness guarantee. Content loading..."}
+            />
+            <PolicyModal
+                isOpen={policyOpen === 'terms'}
+                onClose={() => setPolicyOpen(null)}
+                title="Terms & Conditions"
+                content={config?.termsPolicy || "Terms of service. Content loading..."}
+            />
+        </section >
+    );
+}
+
+function PolicyModal({ isOpen, onClose, title, content }: { isOpen: boolean; onClose: () => void; title: string; content: string }) {
+    return (
+        <Dialog open={isOpen} onOpenChange={onClose}>
+            <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto bg-slate-950 text-slate-200 border border-white/5 shadow-2xl shadow-black ring-1 ring-white/10 p-0 overflow-hidden rounded-xl">
+                {/* Decorative Top Bar */}
+                <div className="sticky top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-amber-500 to-transparent z-50 opacity-80" />
+
+                <div className="p-8 md:p-10 relative">
+                    {/* Background Texture Effect */}
+                    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03] pointer-events-none" />
+
+                    <DialogHeader className="mb-8 text-center space-y-4 relative z-10">
+                        <div className="flex flex-col items-center gap-3">
+                            <span className="text-[10px] uppercase tracking-[0.3em] text-amber-500/80 font-mono">Official Document</span>
+                            <DialogTitle className="text-3xl md:text-4xl font-serif text-white tracking-wide font-medium">
+                                {title}
+                            </DialogTitle>
+                        </div>
+                        <div className="mx-auto w-24 h-px bg-gradient-to-r from-transparent via-amber-500/50 to-transparent" />
+                    </DialogHeader>
+
+                    <div className="relative z-10 prose prose-invert prose-sm max-w-none 
+                        prose-headings:font-serif prose-headings:text-amber-50 prose-headings:font-normal prose-headings:tracking-wide
+                        prose-p:text-slate-400 prose-p:leading-loose prose-p:font-light
+                        prose-strong:text-amber-200 prose-strong:font-medium
+                        prose-li:text-slate-400">
+                        <ReactMarkdown rehypePlugins={[rehypeRaw]}>{content}</ReactMarkdown>
+                    </div>
+
+                    <div className="mt-12 pt-8 border-t border-white/5 text-center relative z-10">
+                        <div className="flex justify-center items-center gap-2 opacity-50">
+                            <div className="w-2 h-2 rounded-full bg-amber-900" />
+                            <p className="text-[10px] text-amber-700 font-serif italic tracking-widest uppercase">
+                                Crab & Khai Quality Assurance
+                            </p>
+                            <div className="w-2 h-2 rounded-full bg-amber-900" />
+                        </div>
+                    </div>
+                </div>
+            </DialogContent>
+        </Dialog>
     );
 }

@@ -27,21 +27,38 @@ export default function SettingsPage() {
     // Local state for the "edit buffer" to avoid re-renders on every keystroke if desired, 
     // but for simplicity we can sync one-way or just use local buffer.
     // Let's use a local buffer `config` initialized from `settings` to allow "Save" behavior.
+    // Let's use a local buffer `config` initialized from `settings` to allow "Save" behavior.
     const [config, setConfig] = useState(settings);
+    const [originalConfig, setOriginalConfig] = useState(settings);
+    const [hasChanges, setHasChanges] = useState(false);
 
     // Sync local config when provider settings change (e.g. initial load)
     useEffect(() => {
-        setConfig(settings);
-    }, [settings]);
+        // Only update if no local changes yet or just initialization
+        if (!hasChanges) {
+            setConfig(settings);
+            setOriginalConfig(settings);
+        }
+    }, [settings, hasChanges]);
+
+    // Comparison effect
+    useEffect(() => {
+        if (!originalConfig) return;
+        const isDifferent = JSON.stringify(originalConfig) !== JSON.stringify(config);
+        setHasChanges(isDifferent);
+    }, [config, originalConfig]);
 
     const [newCert, setNewCert] = useState('');
     const [isSaving, setIsSaving] = useState(false);
+    const [backupPath, setBackupPath] = useState('G:\\crabkhai\\backup');
 
     const handleSave = () => {
         setIsSaving(true);
         updateSettings(config);
         setTimeout(() => {
             setIsSaving(false);
+            setOriginalConfig(config);
+            setHasChanges(false);
             toast.success("Settings updated successfully!");
         }, 800);
     };
@@ -63,7 +80,14 @@ export default function SettingsPage() {
                     <h1 className="text-2xl font-bold tracking-tight text-slate-800">Site Settings</h1>
                     <p className="text-sm text-slate-500">Manage global website information.</p>
                 </div>
-                <Button onClick={handleSave} disabled={isSaving} className="bg-green-600 hover:bg-green-700 text-white">
+                <Button
+                    onClick={handleSave}
+                    disabled={isSaving}
+                    className={hasChanges
+                        ? "bg-orange-600 hover:bg-orange-700 text-white shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5"
+                        : "bg-slate-900 hover:bg-orange-600 text-white shadow-sm hover:shadow-xl transition-all duration-500 tracking-wide"
+                    }
+                >
                     {isSaving ? <span className="animate-spin mr-2">⏳</span> : <Save className="w-4 h-4 mr-2" />}
                     Save Changes
                 </Button>
@@ -114,6 +138,53 @@ export default function SettingsPage() {
                             onChange={(e) => setConfig({ ...config, allergensText: e.target.value })}
                             placeholder="e.g. Crustaceans, Shellfish"
                         />
+                    </div>
+                </Card>
+
+                {/* Database Backup */}
+                <Card className="p-6">
+                    <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
+                        <span className="w-2 h-6 bg-blue-500 rounded-full" />
+                        Database Backup
+                    </h2>
+                    <div className="space-y-4">
+                        <div className="grid gap-2">
+                            <Label>Local Backup Path</Label>
+                            <div className="flex gap-2">
+                                <Input
+                                    value={backupPath}
+                                    onChange={(e) => setBackupPath(e.target.value)}
+                                    placeholder="e.g. G:\crabkhai\backup"
+                                />
+                                <Button
+                                    onClick={async () => {
+                                        const path = backupPath || 'G:\\crabkhai\\backup';
+                                        toast.promise(
+                                            (async () => {
+                                                const { performBackup } = await import('@/app/actions/backup');
+                                                const res = await performBackup(path);
+                                                if (!res.success) throw new Error(res.message);
+                                                return res.message;
+                                            })(),
+                                            {
+                                                loading: 'Backing up database...',
+                                                success: (msg) => `${msg}`,
+                                                error: (err) => `Backup failed: ${err.message}`
+                                            }
+                                        );
+                                    }}
+                                    variant="outline"
+                                    className="whitespace-nowrap"
+                                >
+                                    <Save className="w-4 h-4 mr-2" />
+                                    Backup Now
+                                </Button>
+                            </div>
+                            <p className="text-sm text-gray-500">
+                                Enter a local folder path where you want to save the database backup.
+                                A new timestamped folder will be created inside.
+                            </p>
+                        </div>
                     </div>
                 </Card>
 

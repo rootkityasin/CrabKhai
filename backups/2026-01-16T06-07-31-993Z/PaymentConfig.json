@@ -1,0 +1,25 @@
+[
+  {
+    "id": "cmkg2ju0y00035oi6mkgzzbp3",
+    "isActive": true,
+    "codEnabled": true,
+    "bkashEnabled": false,
+    "bkashAppKey": null,
+    "bkashSecretKey": null,
+    "bkashUsername": null,
+    "bkashPassword": null,
+    "nagadEnabled": false,
+    "nagadMerchantNumber": null,
+    "nagadPublicKey": null,
+    "nagadPrivateKey": null,
+    "selfMfsEnabled": false,
+    "selfMfsType": null,
+    "selfMfsPhone": null,
+    "selfMfsInstruction": null,
+    "selfMfsQrCode": null,
+    "advancePaymentType": null,
+    "advancePaymentValue": null,
+    "createdAt": "2026-01-15T17:16:40.258Z",
+    "updatedAt": "2026-01-15T17:16:40.258Z"
+  }
+]

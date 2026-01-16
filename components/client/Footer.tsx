@@ -2,9 +2,39 @@
 
 import Link from 'next/link';
 import { Facebook, Instagram, Phone, Mail } from 'lucide-react';
-
 import { useLanguageStore } from '@/lib/languageStore';
 import { translations } from '@/lib/translations';
+
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog"
+import { useState } from 'react';
+import ReactMarkdown from 'react-markdown';
+
+interface PolicyModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    title: string;
+    content: string;
+}
+
+function PolicyModal({ isOpen, onClose, title, content }: PolicyModalProps) {
+    return (
+        <Dialog open={isOpen} onOpenChange={onClose}>
+            <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                <DialogHeader>
+                    <DialogTitle>{title}</DialogTitle>
+                </DialogHeader>
+                <div className="prose prose-sm max-w-none dark:prose-invert">
+                    <ReactMarkdown>{content}</ReactMarkdown>
+                </div>
+            </DialogContent>
+        </Dialog>
+    );
+}
 
 interface FooterProps {
     config?: {
@@ -13,12 +43,15 @@ interface FooterProps {
         contactAddress: string;
         shopName?: string;
         logoUrl?: string;
+        privacyPolicy?: string;
+        refundPolicy?: string;
     } | null;
 }
 
 export function Footer({ config }: FooterProps) {
     const { language } = useLanguageStore();
     const t = translations[language];
+    const [policyOpen, setPolicyOpen] = useState<'privacy' | 'refund' | null>(null);
 
     const phone = config?.contactPhone || "+880 1804 221 161";
     const email = config?.contactEmail || "crabkhaibangladesh@gmail.com";
@@ -29,6 +62,19 @@ export function Footer({ config }: FooterProps) {
 
     return (
         <footer className="bg-crab-red text-white py-12 pb-24">
+            <PolicyModal
+                isOpen={policyOpen === 'privacy'}
+                onClose={() => setPolicyOpen(null)}
+                title={t.privacyPolicy || "Privacy Policy"}
+                content={config?.privacyPolicy || "No policy content available."}
+            />
+            <PolicyModal
+                isOpen={policyOpen === 'refund'}
+                onClose={() => setPolicyOpen(null)}
+                title={t.refundPolicy || "Refund Policy"}
+                content={config?.refundPolicy || "No policy content available."}
+            />
+
             <div className="container mx-auto px-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
                     <div>
@@ -44,7 +90,16 @@ export function Footer({ config }: FooterProps) {
                             <li><Link href="/story" className="hover:text-sand transition-colors">{t.ourStory}</Link></li>
                             <li><Link href="/menu" className="hover:text-sand transition-colors">{t.menu}</Link></li>
                             <li><a href={`mailto:${email}`} className="hover:text-sand transition-colors">{t.contact}</a></li>
-                            <li><Link href="/" className="hover:text-sand transition-colors">{t.terms}</Link></li>
+                            <li>
+                                <button onClick={() => setPolicyOpen('privacy')} className="hover:text-sand transition-colors text-left">
+                                    {t.privacyPolicy || "Privacy Policy"}
+                                </button>
+                            </li>
+                            <li>
+                                <button onClick={() => setPolicyOpen('refund')} className="hover:text-sand transition-colors text-left">
+                                    {t.refundPolicy || "Refund Policy"}
+                                </button>
+                            </li>
                         </ul>
                     </div>
 
