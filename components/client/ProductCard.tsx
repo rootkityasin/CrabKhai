@@ -116,7 +116,7 @@ export function ProductCard({
                     onMouseMove={handleMouseMove}
                 >
                     {/* Glass Pieces Tag */}
-                    {pieces && pieces > 0 && (
+                    {(pieces || 0) > 0 && (
                         <div className="absolute top-3 right-3 z-30 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 pointer-events-none">
                             <span className="px-2.5 py-1 rounded-lg bg-white/70 backdrop-blur-md border border-white/50 text-xs font-bold text-gray-900 shadow-sm flex items-center gap-1">
                                 <span className="w-1.5 h-1.5 rounded-full bg-crab-red inline-block" />

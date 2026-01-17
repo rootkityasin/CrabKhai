@@ -175,6 +175,11 @@ This project includes a robust backend administrative dashboard designed to stre
 - **Smart Admin Redirect**: Intelligent routing that instantly directs admins to the dashboard upon login.
 - **User Roles**: Granular access control for admins, kitchen staff, and managers.
 
+### 🧠 AI Smart Features (Powered by Gemini Pro)
+- **Magic Description**: Automatically generates professional product descriptions.
+- **Bangla Auto-Translate**: Translates ingredient names to Bangla as you type.
+- **Smart Paste**: Copy-paste raw text (e.g., "Crab 500g 1200tk") and let AI parse it into the form. **(Price is intentionally excluded so you can set it manually)**.
+
 ## Design System
 We use a custom theme configured in `tailwind.config.ts` to reflect our brand identity:
 - **Colors**: `crab-red` (Primary), `ocean-blue` (Secondary), `sand` (Accent).

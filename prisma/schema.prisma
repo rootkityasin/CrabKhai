@@ -5,15 +5,14 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-
 }
 
 model Product {
-  id              String      @id @default(cuid())
+  id              String           @id @default(cuid())
   name            String
   price           Int
   image           String?
-  isAvailable     Boolean     @default(true)
+  isAvailable     Boolean          @default(true)
   categoryId      String
   cookingImage    String?
   nutritionImage  String?
@@ -26,40 +25,35 @@ model Product {
   name_bn         String?
   name_ctg        String?
   name_noa        String?
-  pieces          Int         @default(0)
-  pointsReward    Int         @default(0)
-  weight          Int         @default(0)
-  sku             String?     @unique
-  stage           String      @default("Draft")
-  type            ProductType @default(SINGLE)
+  pieces          Int              @default(0)
+  pointsReward    Int              @default(0)
+  weight          Int              @default(0)
+  sku             String           @unique
+  stage           String           @default("Draft")
+  type            ProductType      @default(SINGLE)
+  images          String[]
+  totalSold       Int              @default(0)
+  createdAt       DateTime         @default(now())
+  descriptionSwap Boolean          @default(false)
+  partOfCombos    ComboItem[]      @relation("ComboChild")
+  comboItems      ComboItem[]      @relation("ComboParent")
   inventory       Inventory[]
   modifiers       Modifier[]
   orderItems      OrderItem[]
-  comboItems      ComboItem[] @relation("ComboParent")
-  partOfCombos    ComboItem[] @relation("ComboChild")
-  category        Category    @relation(fields: [categoryId], references: [id])
-  images          String[]
-  totalSold       Int         @default(0)
-  createdAt       DateTime    @default(now())
-  descriptionSwap Boolean     @default(false)
-  sections        ProductSection[]
+  category        Category         @relation(fields: [categoryId], references: [id])
   reviews         Review[]
+  sections        ProductSection[] @relation("ProductToProductSection")
 }
 
 model ComboItem {
-  id        String  @id @default(cuid())
-  parentId  String
-  childId   String
-  quantity  Int     // Units of child product required
-  parent    Product @relation("ComboParent", fields: [parentId], references: [id], onDelete: Cascade)
-  child     Product @relation("ComboChild", fields: [childId], references: [id])
+  id       String  @id @default(cuid())
+  parentId String
+  childId  String
+  quantity Int
+  child    Product @relation("ComboChild", fields: [childId], references: [id])
+  parent   Product @relation("ComboParent", fields: [parentId], references: [id], onDelete: Cascade)
 
   @@unique([parentId, childId])
-}
-
-enum ProductType {
-  SINGLE
-  COMBO
 }
 
 model Modifier {
@@ -92,11 +86,11 @@ model PromoCard {
   title         String
   description   String?
   imageUrl      String
-  style         String   @default("CLASSIC") // CLASSIC, DARK
+  style         String   @default("CLASSIC")
   buttonText    String?
   buttonLink    String?
-  price         String?  // For DARK mode
-  originalPrice String?  // For DARK mode
+  price         String?
+  originalPrice String?
   isActive      Boolean  @default(true)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -109,7 +103,7 @@ model SiteConfig {
   contactAddress  String   @default("195 Green Road, Dhaka")
   shopName        String   @default("Crab & Khai")
   logoUrl         String?
-  measurementUnit String   @default("PCS") // Options: PCS, WEIGHT, VOLUME
+  measurementUnit String   @default("PCS")
   allergensText   String   @default("Crustaceans, Shellfish")
   certificates    String[]
   adminSetupToken String   @default("crab-secret-setup-123")
@@ -122,11 +116,6 @@ model SiteConfig {
   privacyPolicy   String?  @default("We value your privacy. Your data is safe with us.")
   refundPolicy    String?  @default("Refunds are processed within 5-7 business days.")
   termsPolicy     String?  @default("By using our service, you agree to our terms of service.")
-}
-
-enum ShopType {
-  RESTAURANT
-  GROCERY
 }
 
 model Hub {
@@ -155,9 +144,9 @@ model User {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   accounts  Account[]
+  reviews   Review[]
   sessions  Session[]
   hub       Hub?      @relation(fields: [hubId], references: [id])
-  reviews   Review[]
 }
 
 model Account {
@@ -228,24 +217,18 @@ model Expense {
   hub         Hub?     @relation(fields: [hubId], references: [id])
 }
 
-
-enum DiscountType {
-  PERCENTAGE
-  FIXED
-}
-
 model Coupon {
-  id            String       @id @default(cuid())
-  code          String       @unique
-  discountType  DiscountType @default(FIXED)
-  discountValue Int
-  minOrderAmount Int         @default(0)
-  expiresAt     DateTime?
-  isActive      Boolean      @default(true)
-  usageLimit    Int?         
-  usedCount     Int          @default(0)
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+  id             String       @id @default(cuid())
+  code           String       @unique
+  discountType   DiscountType @default(FIXED)
+  discountValue  Int
+  minOrderAmount Int          @default(0)
+  expiresAt      DateTime?
+  isActive       Boolean      @default(true)
+  usageLimit     Int?
+  usedCount      Int          @default(0)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
 }
 
 model Order {
@@ -259,10 +242,10 @@ model Order {
   totalAmount     Int
   createdAt       DateTime    @default(now())
   hubId           String?
-  hub             Hub?        @relation(fields: [hubId], references: [id])
-  items           OrderItem[]
   couponCode      String?
   discountAmount  Int?
+  hub             Hub?        @relation(fields: [hubId], references: [id])
+  items           OrderItem[]
 }
 
 model PaymentConfig {
@@ -323,12 +306,6 @@ model Notification {
   createdAt DateTime @default(now())
 }
 
-enum Role {
-  SUPER_ADMIN
-  HUB_ADMIN
-  USER
-}
-
 model HeroSlide {
   id          String   @id @default(cuid())
   imageUrl    String
@@ -357,11 +334,11 @@ model Review {
   comment   String?
   images    String[]
   userId    Int
-  user      User     @relation(fields: [userId], references: [id])
   productId String
-  product   Product  @relation(fields: [productId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  product   Product  @relation(fields: [productId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
 }
 
 model ProductSection {
@@ -370,32 +347,28 @@ model ProductSection {
   slug      String    @unique
   isActive  Boolean   @default(true)
   order     Int       @default(0)
-  products  Product[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+  products  Product[] @relation("ProductToProductSection")
 }
 
-model DeliveryConfig {
-  id                    String   @id @default(cuid())
-  defaultCharge         Int      @default(60)
-  defaultCodEnabled     Boolean  @default(true)
-  nonRefundable         Boolean  @default(false)
-  
-  // JSON fields for flexibility
-  weightBasedCharges    Json?    // Array of { minWeight, maxWeight, charge }
-  deliveryZones         Json?    // Array of { type: 'ZONE'|'DISTRICT'|'UPAZILA', id: string, name: string, price: number, codEnabled: boolean }
-  
-  courierPathaoEnabled  Boolean  @default(false)
-  courierPathaoCredentials Json? // { store_id, client_id, client_secret, username, password }
-  
-  courierSteadfastEnabled Boolean @default(false)
-  courierSteadfastCredentials Json? // { api_key, app_secret }
-  
-  courierRedxEnabled Boolean @default(false)
-  courierRedxCredentials Json? // { api_key }
-  
-  courierPaperflyEnabled Boolean @default(false)
-  courierPaperflyCredentials Json? // { username, password }
-  
-  updatedAt             DateTime @updatedAt
+enum ProductType {
+  SINGLE
+  COMBO
+}
+
+enum ShopType {
+  RESTAURANT
+  GROCERY
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED
+}
+
+enum Role {
+  SUPER_ADMIN
+  HUB_ADMIN
+  USER
 }

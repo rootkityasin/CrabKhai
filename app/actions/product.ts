@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache';
 
 export async function getProducts() {
     return await prisma.product.findMany({
-        orderBy: { name: 'asc' },
+        orderBy: { sku: 'asc' },
         include: {
             category: true,
             inventory: true,
@@ -44,11 +44,11 @@ export async function createProduct(data: any) {
         const product = await prisma.product.create({
             data: {
                 name: data.name,
+                sku: data.sku, // Added SKU
                 price: parseInt(String(data.price || 0)) || 0,
                 description: data.description,
                 descriptionSwap: data.descriptionSwap || false,
                 image: data.image,
-                sku: data.sku,
                 pieces: parseInt(String(data.pieces || 0)) || 0, // Initial Stock
                 weight: parseInt(String(data.weight || 0)) || 0,
                 stage: data.stage, // Add Stage
@@ -81,6 +81,7 @@ export async function updateProduct(id: string, data: any) {
             where: { id },
             data: {
                 name: data.name,
+                sku: data.sku, // Added SKU
                 price: parseInt(String(data.price || 0)) || 0,
                 pieces: parseInt(String(data.pieces || 0)) || 0, // Explicit stock update
                 image: data.image,
@@ -111,5 +112,36 @@ export async function deleteProduct(id: string) {
         return { success: true };
     } catch (error) {
         return { success: false, error: "Failed to delete" };
+    }
+}
+
+export async function generateUniqueSku() {
+    try {
+        // Fetch all SKUs to find the highest number
+        const products = await prisma.product.findMany({
+            select: { sku: true }
+        });
+
+        let maxId = 0;
+
+        for (const p of products) {
+            // Strictly parse integers, ignoring anything with non-digits
+            // "0005" -> 5
+            // "SKU-123" -> NaN (ignored so it won't break sequence)
+            if (p.sku && /^\d+$/.test(p.sku)) {
+                const num = parseInt(p.sku, 10);
+                if (num > maxId) maxId = num;
+            }
+        }
+
+        // Increment
+        const nextId = maxId + 1;
+        // Pad to ensure at least 4 digits: 1 -> "0001"
+        const sku = nextId.toString().padStart(4, '0');
+
+        return { success: true, sku };
+    } catch (error) {
+        console.error("SKU Gen Error:", error);
+        return { success: false, error: "Generation failed" };
     }
 }

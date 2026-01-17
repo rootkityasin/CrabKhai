@@ -5,7 +5,6 @@ import { HeroCarousel } from '@/components/client/HeroCarousel';
 import { CategoryNav } from '@/components/client/CategoryNav';
 import { ProductRail } from '@/components/client/ProductRail';
 import TrustFooter from '@/components/client/TrustFooter';
-import { getProducts } from '@/app/actions/product';
 import { getSiteConfig } from '@/app/actions/settings';
 import { getHeroSlides } from '@/app/actions/hero';
 import { getHomeSections } from '@/app/actions/section';

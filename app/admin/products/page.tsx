@@ -1,6 +1,6 @@
 'use client';
 
-import { Search, Plus, MoreVertical, Copy, X, Trash2, Edit, LayoutGrid, List, Filter, Eye, Share2 } from 'lucide-react';
+import { Search, Plus, MoreVertical, Copy, X, Trash2, Edit, LayoutGrid, List, Filter, Eye, Share2, Sparkles } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,10 +17,12 @@ import { toast } from 'sonner';
 import { MediaUpload } from '@/components/admin/MediaUpload';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from "@/components/ui/switch";
-import { getProducts, createProduct, updateProduct, deleteProduct } from '@/app/actions/product';
+import { getProducts, createProduct, updateProduct, deleteProduct, generateUniqueSku } from '@/app/actions/product';
 import { getCategories } from '@/app/actions/category';
 import { getSiteConfig } from '@/app/actions/settings';
 import { getSections } from '@/app/actions/section';
+// Removed: import { smartParse, generateMagicDescription, getBanglaSuggestion } from '@/lib/ai-utils';
+import { generateDescriptionAI, smartParseAI, translateToBanglaAI } from '@/app/actions/ai';
 
 export default function ProductsPage() {
     const [products, setProducts] = useState<any[]>([]);
@@ -356,12 +358,62 @@ export default function ProductsPage() {
                         <div className="p-6">
                             <div className="flex justify-between items-center mb-4">
                                 <h2 className="text-xl font-bold text-slate-800">{editingId ? 'Edit Product' : 'New Product'}</h2>
-                                <button onClick={() => setIsAdding(false)} className="text-slate-400 hover:text-slate-600"><X className="w-5 h-5" /></button>
+                                <div className="flex gap-2">
+                                    {!editingId && (
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            className="text-xs bg-indigo-50 text-indigo-600 border-indigo-200 hover:bg-indigo-100"
+                                            onClick={async () => {
+                                                const text = prompt("📋 Paste supplier text (e.g. 'Crab 500g 1200tk')");
+                                                if (text) {
+                                                    const loadingToast = toast.loading("🤖 Analyzing with Gemini...");
+                                                    const data = await smartParseAI(text);
+                                                    toast.dismiss(loadingToast);
+
+                                                    setNewProduct(prev => ({
+                                                        ...prev,
+                                                        name: data.name || prev.name,
+                                                        // Price excluded as per user request (varies)
+                                                        weight: data.weight || prev.weight,
+                                                        pieces: data.pieces || prev.pieces
+                                                    }));
+                                                    toast.success("AI Parsed Successfully!");
+                                                }
+                                            }}
+                                        >
+                                            <Sparkles className="w-3 h-3 mr-1" /> Smart Paste
+                                        </Button>
+                                    )}
+                                    <button onClick={() => setIsAdding(false)} className="text-slate-400 hover:text-slate-600"><X className="w-5 h-5" /></button>
+                                </div>
                             </div>
                             <form onSubmit={handleSave} className="space-y-4">
                                 <div>
                                     <label className="text-sm font-medium">Product Name</label>
-                                    <Input value={newProduct.name} onChange={e => setNewProduct({ ...newProduct, name: e.target.value })} required />
+                                    <div className="relative">
+                                        <Input
+                                            value={newProduct.name}
+                                            onChange={async (e) => {
+                                                const val = e.target.value;
+                                                setNewProduct(prev => ({ ...prev, name: val }));
+
+                                                // Debounce Bangla Check (simple implementation)
+                                                if (val.length > 3 && !val.includes(' ')) {
+                                                    try {
+                                                        const bn = await translateToBanglaAI(val);
+                                                        if (bn && bn.length > 0 && bn !== val) {
+                                                            toast("🇧🇩 AI Tip: " + bn, {
+                                                                position: "bottom-center",
+                                                                className: "bg-indigo-50 text-indigo-800 text-xs py-1 px-2 border-indigo-200"
+                                                            });
+                                                        }
+                                                    } catch (err) { console.error(err); }
+                                                }
+                                            }}
+                                            required
+                                        />
+                                    </div>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
@@ -477,11 +529,32 @@ export default function ProductsPage() {
                                 )}
 
                                 <div>
-                                    <label className="text-sm font-medium">Description</label>
+                                    <div className="flex justify-between items-center">
+                                        <label className="text-sm font-medium">Description</label>
+                                        <button
+                                            type="button"
+                                            onClick={async () => {
+                                                const catName = getCatName(newProduct.categoryId);
+                                                const btn = document.getElementById('ai-desc-btn');
+                                                if (btn) btn.innerText = "Writing...";
+
+                                                try {
+                                                    const desc = await generateDescriptionAI(newProduct.name, catName, Number(newProduct.weight || 0), config.measurementUnit);
+                                                    setNewProduct(prev => ({ ...prev, description: desc }));
+                                                } catch (e) { toast.error("AI Error"); }
+
+                                                if (btn) btn.innerHTML = '<span class="flex items-center"><svg class="w-3 h-3 mr-1" .../> Auto-Write (AI)</span>';
+                                            }}
+                                            id="ai-desc-btn"
+                                            className="text-[10px] text-indigo-600 font-bold hover:underline flex items-center"
+                                        >
+                                            <Sparkles className="w-3 h-3 mr-1" /> Auto-Write (AI)
+                                        </button>
+                                    </div>
                                     <Textarea
                                         value={newProduct.description}
                                         onChange={e => setNewProduct({ ...newProduct, description: e.target.value })}
-                                        placeholder="Product description..."
+                                        placeholder="Product description... or click Auto-Write"
                                         className="mt-1"
                                     />
                                     <div className="flex items-center space-x-2 mt-2">
@@ -545,8 +618,31 @@ export default function ProductsPage() {
                                         />
                                     </div>
                                     <div>
-                                        <label className="text-sm font-medium">SKU (Optional)</label>
-                                        <Input value={newProduct.sku} onChange={e => setNewProduct({ ...newProduct, sku: e.target.value })} />
+                                        <label className="text-sm font-medium">SKU <span className="text-red-500">*</span></label>
+                                        <div className="relative">
+                                            <Input
+                                                value={newProduct.sku}
+                                                onChange={e => setNewProduct({ ...newProduct, sku: e.target.value })}
+                                                placeholder="Unique SKU"
+                                                required
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={async () => {
+                                                    const res = await generateUniqueSku();
+                                                    if (res.success && res.sku) {
+                                                        setNewProduct({ ...newProduct, sku: res.sku });
+                                                        toast.success("Generated Unique SKU");
+                                                    } else {
+                                                        toast.error("Generation failed, try again");
+                                                    }
+                                                }}
+                                                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-orange-600"
+                                                title="Generate Unique SKU"
+                                            >
+                                                <Sparkles className="w-4 h-4" />
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -709,9 +805,6 @@ export default function ProductsPage() {
                                                 </td>
                                             </tr>
                                         ))}
-                                        {!loading && filteredProducts.length === 0 && (
-                                            <tr><td colSpan={6} className="p-8 text-center text-slate-400">No products found. Add one!</td></tr>
-                                        )}
                                     </tbody>
                                 </table>
                             </div>
@@ -720,12 +813,11 @@ export default function ProductsPage() {
                 </Card>
             ) : (
                 <ProductBoard
-                    products={filteredProducts.filter(p => p.pieces > 0)}
+                    products={filteredProducts}
                     onMove={handleStageMove}
-                    config={config}
                     onEdit={handleEdit}
-                    onClone={handleClone}
                     onDelete={handleDelete}
+                    onClone={handleClone}
                 />
             )}
         </div>

@@ -27,11 +27,9 @@ export async function getHomeSections() {
             orderBy: { order: 'asc' },
             include: {
                 products: {
-                    where: {
-                        stage: { in: ['Selling', 'Published', 'Coming Soon'] }
-                    },
-                    orderBy: { createdAt: 'desc' }, // Or allow custom ordering per section in future
-                    take: 10 // Limit products per rail
+                    // Removed stage filter as per user request. 
+                    // All assigned products will show.
+                    orderBy: { createdAt: 'desc' },
                 }
             }
         });
