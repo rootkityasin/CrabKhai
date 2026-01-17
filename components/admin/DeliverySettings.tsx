@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Loader2, Save, ArrowLeft, Trash2, Plus, AlertCircle, Check, ChevronDown, Eye, EyeOff } from 'lucide-react';
+import { Loader2, Save, ArrowLeft, Trash2, Plus, AlertCircle, Check, ChevronDown, Eye, EyeOff, Truck } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -71,6 +71,8 @@ const UPAZILAS = [
 export function DeliverySettings({ onBack }: { onBack?: () => void }) {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [originalConfig, setOriginalConfig] = useState<any>(null);
+    const [hasChanges, setHasChanges] = useState(false);
     const [config, setConfig] = useState<any>({
         defaultCharge: 60,
         defaultCodEnabled: true,
@@ -106,11 +108,18 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
         loadConfig();
     }, []);
 
+    useEffect(() => {
+        if (!originalConfig || !config) return;
+        const isDifferent = JSON.stringify(originalConfig) !== JSON.stringify(config);
+        setHasChanges(isDifferent);
+    }, [config, originalConfig]);
+
     const loadConfig = async () => {
         setLoading(true);
         const data = await getDeliveryConfig();
         if (data) {
             setConfig(data);
+            setOriginalConfig(data);
         }
         setLoading(false);
     };
@@ -120,7 +129,8 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
         const res = await updateDeliveryConfig(config);
         if (res.success) {
             toast.success("Delivery settings saved successfully");
-            // Reload to ensure all states are synced if needed, mostly for IDs but we are using JSON for dynamic parts
+            setOriginalConfig(config);
+            setHasChanges(false);
         } else {
             toast.error("Failed to save settings");
         }
@@ -210,13 +220,22 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
                         </Button>
                     )}
                     <div>
-                        <h2 className="text-2xl font-bold text-slate-800">Delivery Support</h2>
-                        <p className="text-sm text-slate-500">Configure your delivery charges and zones</p>
+                        <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                            <Truck className="w-6 h-6 text-orange-600" /> Delivery Support
+                        </h2>
+                        <p className="text-sm text-slate-500 ml-8">Configure your delivery charges and zones</p>
                     </div>
                 </div>
-                <Button onClick={handleSave} disabled={saving} className="bg-orange-600 hover:bg-orange-700 text-white">
+                <Button
+                    onClick={handleSave}
+                    disabled={saving}
+                    className={hasChanges
+                        ? "bg-orange-600 hover:bg-orange-700 text-white shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5"
+                        : "bg-slate-900 hover:bg-orange-600 text-white shadow-sm hover:shadow-xl transition-all duration-500 tracking-wide"
+                    }
+                >
                     {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-                    Save Changes or Update
+                    Save Changes
                 </Button>
             </div>
 
@@ -471,16 +490,19 @@ export function DeliverySettings({ onBack }: { onBack?: () => void }) {
                                     value={newZone.price || ''}
                                     onChange={(e) => setNewZone({ ...newZone, price: parseInt(e.target.value) || 0 })}
                                 />
-                                <Button variant="secondary" onClick={addZone} className="w-24">
+                                <Button
+                                    variant="secondary"
+                                    onClick={addZone}
+                                    className="w-24"
+                                    disabled={!newZone.name || !newZone.price}
+                                >
                                     Add <Plus className="w-4 h-4 ml-1" />
                                 </Button>
                             </div>
                         </div>
                     </div>
 
-                    <div className="flex justify-end pt-4">
-                        <Button onClick={handleSave} className="bg-blue-600 hover:bg-blue-700 text-white">Update Delivery Charges</Button>
-                    </div>
+
 
                 </CardContent>
             </Card>
