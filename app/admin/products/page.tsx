@@ -53,6 +53,10 @@ export default function ProductsPage() {
         sections: [] as string[]
     });
 
+    const [showSmartPaste, setShowSmartPaste] = useState(false);
+    const [smartPasteInput, setSmartPasteInput] = useState('');
+    const [isParsing, setIsParsing] = useState(false);
+
     const [editingId, setEditingId] = useState<string | null>(null);
     const [filterStock, setFilterStock] = useState<string>('all');
     const [filterStage, setFilterStage] = useState<string>('all');
@@ -364,23 +368,7 @@ export default function ProductsPage() {
                                             size="sm"
                                             variant="outline"
                                             className="text-xs bg-indigo-50 text-indigo-600 border-indigo-200 hover:bg-indigo-100"
-                                            onClick={async () => {
-                                                const text = prompt("📋 Paste supplier text (e.g. 'Crab 500g 1200tk')");
-                                                if (text) {
-                                                    const loadingToast = toast.loading("🤖 Analyzing with Gemini...");
-                                                    const data = await smartParseAI(text);
-                                                    toast.dismiss(loadingToast);
-
-                                                    setNewProduct(prev => ({
-                                                        ...prev,
-                                                        name: data.name || prev.name,
-                                                        // Price excluded as per user request (varies)
-                                                        weight: data.weight || prev.weight,
-                                                        pieces: data.pieces || prev.pieces
-                                                    }));
-                                                    toast.success("AI Parsed Successfully!");
-                                                }
-                                            }}
+                                            onClick={() => setShowSmartPaste(true)}
                                         >
                                             <Sparkles className="w-3 h-3 mr-1" /> Smart Paste
                                         </Button>
@@ -539,7 +527,13 @@ export default function ProductsPage() {
                                                 if (btn) btn.innerText = "Writing...";
 
                                                 try {
-                                                    const desc = await generateDescriptionAI(newProduct.name, catName, Number(newProduct.weight || 0), config.measurementUnit);
+                                                    const desc = await generateDescriptionAI(
+                                                        newProduct.name,
+                                                        catName,
+                                                        Number(newProduct.weight || 0),
+                                                        config.measurementUnit,
+                                                        newProduct.image // Pass Visual Context
+                                                    );
                                                     setNewProduct(prev => ({ ...prev, description: desc }));
                                                 } catch (e) { toast.error("AI Error"); }
 
@@ -557,16 +551,7 @@ export default function ProductsPage() {
                                         placeholder="Product description... or click Auto-Write"
                                         className="mt-1"
                                     />
-                                    <div className="flex items-center space-x-2 mt-2">
-                                        <Switch
-                                            id="swap-mode"
-                                            checked={newProduct.descriptionSwap}
-                                            onCheckedChange={(checked: boolean) => setNewProduct({ ...newProduct, descriptionSwap: checked })}
-                                        />
-                                        <label htmlFor="swap-mode" className="text-sm font-medium text-slate-600">
-                                            Swap Image/Text Position (Left/Right)
-                                        </label>
-                                    </div>
+
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-4">
@@ -742,7 +727,10 @@ export default function ProductsPage() {
                                                                 );
                                                             }
 
-                                                            const unitValue = product.weight || 200; // Default to 200 if not set
+                                                            // Use global unit values from settings
+                                                            const unitValue = unit === 'WEIGHT'
+                                                                ? (config.weightUnitValue || 200)
+                                                                : (config.volumeUnitValue || 1000);
 
                                                             if (unit === 'VOLUME') {
                                                                 const totalVolume = product.pieces * unitValue;
@@ -819,6 +807,100 @@ export default function ProductsPage() {
                     onDelete={handleDelete}
                     onClone={handleClone}
                 />
+            )}
+            {/* Smart Paste AI Modal */}
+            {showSmartPaste && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/90 backdrop-blur-xl p-4 animate-in fade-in duration-300">
+                    <div className="relative w-full max-w-sm group">
+
+                        {/* Spin-On-Hover Glow (Seamless Continuous Loop) */}
+                        {/* 1. Blurry Glow (Hidden -> Visible & Spinning) */}
+                        <div className="absolute -inset-[3px] rounded-[28px] opacity-0 blur-lg overflow-hidden transition-opacity duration-500 group-hover:opacity-100">
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300%] h-[300%] bg-[conic-gradient(from_0deg,#f97316_0deg,#9333ea_90deg,#06b6d4_180deg,#9333ea_270deg,#f97316_360deg)] animate-[spin_4s_linear_infinite]" />
+                        </div>
+                        {/* 2. Sharp Border (Hidden -> Visible & Spinning) */}
+                        <div className="absolute -inset-[1.5px] rounded-[26px] overflow-hidden opacity-0 transition-opacity duration-500 group-hover:opacity-100">
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300%] h-[300%] bg-[conic-gradient(from_0deg,#f97316_0deg,#9333ea_90deg,#06b6d4_180deg,#9333ea_270deg,#f97316_360deg)] animate-[spin_4s_linear_infinite]" />
+                        </div>
+
+                        <Card className="relative w-full bg-[#080808] rounded-3xl overflow-hidden p-8 flex flex-col items-center text-center h-full border-none">
+
+                            {/* Inner Shine (Top Left) to match reference lighting */}
+                            <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-white/5 to-transparent pointer-events-none" />
+
+                            {/* Close Button */}
+                            <button
+                                onClick={() => setShowSmartPaste(false)}
+                                className="absolute top-4 right-4 p-2 text-slate-600 hover:text-slate-300 transition-colors rounded-full hover:bg-white/5 z-20"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+
+                            {/* Glowing Orb Icon (Refined) */}
+                            <div className="relative w-20 h-20 mb-6 flex items-center justify-center">
+                                {/* Icon Background Gradient */}
+                                <div className="absolute inset-0 bg-gradient-to-tr from-blue-600 to-purple-600 rounded-2xl blur-lg opacity-40" />
+                                <div className="relative w-16 h-16 bg-gradient-to-br from-[#1e2230] to-[#13151f] rounded-2xl flex items-center justify-center border border-white/5 shadow-2xl">
+                                    <Sparkles className="w-6 h-6 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
+                                </div>
+                            </div>
+
+                            {/* Typography */}
+                            <h3 className="text-xl font-bold text-white mb-2 tracking-tight">
+                                Paste <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">Supplier Text</span>
+                            </h3>
+                            <p className="text-slate-500 text-xs mb-6 leading-relaxed max-w-[240px]">
+                                Copy the messy list from your supplier and paste it below. AI will automatically extract the <strong>Name</strong>, <strong>Weight</strong>, and <strong>Pieces</strong>.
+                            </p>
+
+                            {/* Glassy Input */}
+                            <div className="w-full relative mb-6 group/input">
+                                <Textarea
+                                    value={smartPasteInput}
+                                    onChange={(e) => setSmartPasteInput(e.target.value)}
+                                    placeholder="Paste raw text here..."
+                                    className="relative w-full min-h-[100px] bg-[#12141c] border-white/5 focus:border-purple-500/50 text-white placeholder:text-slate-700 rounded-xl resize-none p-4 text-sm shadow-inner focus:ring-1 focus:ring-purple-500/50 transition-all font-medium"
+                                    autoFocus
+                                />
+                            </div>
+
+                            {/* Main Action Button */}
+                            <Button
+                                onClick={async () => {
+                                    if (!smartPasteInput.trim()) return;
+                                    setIsParsing(true);
+                                    try {
+                                        const data = await smartParseAI(smartPasteInput);
+                                        setNewProduct(prev => ({
+                                            ...prev,
+                                            name: data.name || prev.name,
+                                            weight: data.weight || prev.weight,
+                                            pieces: data.pieces || prev.pieces
+                                        }));
+                                        toast.success("Insights Applied!");
+                                        setShowSmartPaste(false);
+                                        setSmartPasteInput('');
+                                    } catch (e) {
+                                        toast.error("Failed to parse");
+                                    } finally {
+                                        setIsParsing(false);
+                                    }
+                                }}
+                                disabled={!smartPasteInput.trim() || isParsing}
+                                className="w-full h-10 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white transition-all rounded-lg font-medium text-sm shadow-[0_0_15px_rgba(79,70,229,0.4)] disabled:opacity-50"
+                            >
+                                {isParsing ? (
+                                    <span className="flex items-center gap-2">
+                                        <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                        Processing...
+                                    </span>
+                                ) : (
+                                    "Analyze Now"
+                                )}
+                            </Button>
+                        </Card>
+                    </div>
+                </div>
             )}
         </div>
     );

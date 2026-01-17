@@ -253,8 +253,14 @@ export function CartDrawer() {
                                             >
                                                 <Minus className="w-3 h-3" />
                                             </button>
-                                            <span className="text-xs font-bold w-4 text-center">
-                                                {item.quantity}
+                                            <span className="text-xs font-bold min-w-[32px] text-center">
+                                                {settings.measurementUnit === 'WEIGHT'
+                                                    ? (() => {
+                                                        const grams = item.quantity * (settings.weightUnitValue || 200);
+                                                        return grams >= 1000 ? `${(grams / 1000).toFixed(1)}kg` : `${grams}g`;
+                                                    })()
+                                                    : item.quantity
+                                                }
                                             </span>
                                             <button
                                                 onClick={() => addItem({ ...item, quantity: 1 })}

@@ -95,6 +95,7 @@ export async function getAllUsers() {
 
     try {
         const users = await prisma.user.findMany({
+            where: { role: 'USER' }, // Only show customers, not admins
             orderBy: { id: 'desc' },
             select: { id: true, name: true, email: true, role: true, phone: true, status: true }
         });
@@ -114,3 +115,43 @@ export async function getUserProfile(userId: string) {
         return null;
     }
 }
+
+/**
+ * Bulk import customers from AI-parsed data
+ */
+export async function bulkImportCustomers(customers: { name: string; phone: string; email?: string }[]) {
+    const session = await auth();
+    if ((session?.user as any)?.role !== 'SUPER_ADMIN' && (session?.user as any)?.role !== 'HUB_ADMIN') {
+        return { success: false, error: "Unauthorized", imported: 0, skipped: 0 };
+    }
+
+    let imported = 0;
+    let skipped = 0;
+
+    for (const customer of customers) {
+        try {
+            // Check if phone already exists
+            const existing = await prisma.user.findFirst({ where: { phone: customer.phone } });
+            if (existing) {
+                skipped++;
+                continue;
+            }
+
+            await prisma.user.create({
+                data: {
+                    name: customer.name,
+                    phone: customer.phone,
+                    email: customer.email || `${customer.phone}@placeholder.com`,
+                    role: 'USER'
+                }
+            });
+            imported++;
+        } catch (error) {
+            console.error("Import error for", customer.phone, error);
+            skipped++;
+        }
+    }
+
+    return { success: true, imported, skipped };
+}
+

@@ -7,9 +7,18 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Filter, MoreVertical, User, Plus, X, Phone, Mail, Edit, Trash2, Download } from 'lucide-react';
+import { Search, Filter, MoreVertical, User, Plus, X, Phone, Mail, Edit, Trash2, Download, Upload, Loader2, FileSpreadsheet } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { getAllUsers } from '@/app/actions/user';
+import { getAllUsers, bulkImportCustomers } from '@/app/actions/user';
+import { toast } from 'sonner';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function CustomersPage() {
     const [customers, setCustomers] = useState<any[]>([]);
@@ -17,6 +26,9 @@ export default function CustomersPage() {
     const [editingId, setEditingId] = useState<number | null>(null);
     const [newCustomer, setNewCustomer] = useState({ name: '', phone: '', email: '' });
     const [search, setSearch] = useState('');
+    const [isUploading, setIsUploading] = useState(false);
+    const [showUploadGuide, setShowUploadGuide] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const hasFetched = useRef(false);
 
     useEffect(() => {
@@ -121,6 +133,84 @@ export default function CustomersPage() {
         document.body.removeChild(link);
     };
 
+    const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setIsUploading(true);
+        try {
+            const text = await file.text();
+            toast.info('Parsing your file...');
+
+            // Simple CSV parsing logic
+            const lines = text.split('\n').map(line => line.trim()).filter(line => line);
+            if (lines.length < 2) {
+                toast.error('File must have header row and at least one data row');
+                setIsUploading(false);
+                return;
+            }
+
+            // Parse header - find column indices
+            const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim().toLowerCase());
+            const nameIdx = headers.findIndex(h => ['name', 'full name', 'customer name', 'full_name', 'customer_name'].includes(h));
+            const phoneIdx = headers.findIndex(h => ['phone', 'mobile', 'contact', 'phone number', 'phone_number'].includes(h));
+            const emailIdx = headers.findIndex(h => ['email', 'email address', 'mail'].includes(h));
+
+            if (nameIdx === -1 || phoneIdx === -1) {
+                toast.error('File must have "Name" and "Phone" columns');
+                setIsUploading(false);
+                return;
+            }
+
+            // Parse data rows
+            const parsed: { name: string; phone: string; email?: string }[] = [];
+            for (let i = 1; i < lines.length; i++) {
+                const cols = lines[i].split(',').map(c => c.replace(/"/g, '').trim());
+                const name = cols[nameIdx];
+                const phone = cols[phoneIdx]?.replace(/\D/g, ''); // Keep only digits
+                const email = emailIdx !== -1 ? cols[emailIdx] : '';
+
+                if (name && phone && phone.length >= 10) {
+                    parsed.push({ name, phone, email: email || undefined });
+                }
+            }
+
+            if (parsed.length === 0) {
+                toast.error('No valid customers found in file');
+                setIsUploading(false);
+                return;
+            }
+
+            toast.info(`Found ${parsed.length} customers. Importing...`);
+
+            const result = await bulkImportCustomers(parsed);
+
+            if (result.success) {
+                toast.success(`Imported ${result.imported} customers, ${result.skipped} skipped (duplicates)`);
+                // Refresh list
+                hasFetched.current = false;
+                const users = await getAllUsers();
+                const formatted = users.map(u => ({
+                    id: u.id,
+                    name: u.name,
+                    email: u.email,
+                    phone: u.phone || 'N/A',
+                    orders: 0,
+                    spent: 0
+                }));
+                setCustomers(formatted);
+            } else {
+                toast.error(result.error || 'Import failed');
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error('Failed to process file');
+        } finally {
+            setIsUploading(false);
+            if (fileInputRef.current) fileInputRef.current.value = '';
+        }
+    };
+
     return (
         <div className="space-y-6 relative">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -187,6 +277,91 @@ export default function CustomersPage() {
                     <Button variant="outline" onClick={handleDownload}>
                         <Download className="w-4 h-4 mr-2" /> Download CSV
                     </Button>
+                    <Button
+                        variant="outline"
+                        onClick={() => setShowUploadGuide(true)}
+                        disabled={isUploading}
+                    >
+                        {isUploading ? (
+                            <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Importing...</>
+                        ) : (
+                            <><Upload className="w-4 h-4 mr-2" /> Upload Excel</>
+                        )}
+                    </Button>
+                    <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept=".csv,.xlsx,.xls"
+                        onChange={handleUpload}
+                        className="hidden"
+                    />
+
+                    {/* Upload Guide Dialog */}
+                    <Dialog open={showUploadGuide} onOpenChange={setShowUploadGuide}>
+                        <DialogContent className="max-w-lg">
+                            <DialogHeader>
+                                <DialogTitle className="flex items-center gap-2">
+                                    <FileSpreadsheet className="w-5 h-5 text-orange-600" />
+                                    Excel Format Guide
+                                </DialogTitle>
+                                <DialogDescription>
+                                    Your file should look like this:
+                                </DialogDescription>
+                            </DialogHeader>
+
+                            {/* Demo Table */}
+                            <div className="border rounded-lg overflow-hidden bg-white">
+                                <table className="w-full text-sm">
+                                    <thead className="bg-orange-50 border-b">
+                                        <tr>
+                                            <th className="p-2 text-left font-bold text-orange-800">Name *</th>
+                                            <th className="p-2 text-left font-bold text-orange-800">Phone *</th>
+                                            <th className="p-2 text-left font-medium text-slate-500">Email</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y">
+                                        <tr className="bg-slate-50">
+                                            <td className="p-2">Rahim Uddin</td>
+                                            <td className="p-2">01712345678</td>
+                                            <td className="p-2 text-slate-400">rahim@email.com</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="p-2">Karim Hossain</td>
+                                            <td className="p-2">01898765432</td>
+                                            <td className="p-2 text-slate-400">-</td>
+                                        </tr>
+                                        <tr className="bg-slate-50">
+                                            <td className="p-2">Fatima Begum</td>
+                                            <td className="p-2">01555123456</td>
+                                            <td className="p-2 text-slate-400">fatima@mail.com</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div className="text-xs text-slate-500 space-y-1">
+                                <p><span className="text-red-500">*</span> <strong>Name</strong> and <strong>Phone</strong> are required</p>
+                                <p>• Column names can be: Name, Full Name, Customer Name</p>
+                                <p>• Phone format: 01XXXXXXXXX (11 digits)</p>
+                                <p>• Duplicates (same phone) will be automatically skipped</p>
+                            </div>
+
+                            <DialogFooter className="gap-2">
+                                <Button variant="outline" onClick={() => setShowUploadGuide(false)}>
+                                    Cancel
+                                </Button>
+                                <Button
+                                    className="bg-orange-600 hover:bg-orange-700"
+                                    onClick={() => {
+                                        setShowUploadGuide(false);
+                                        fileInputRef.current?.click();
+                                    }}
+                                >
+                                    <Upload className="w-4 h-4 mr-2" /> Select File
+                                </Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
                     <Button onClick={() => { setIsAdding(true); setEditingId(null); setNewCustomer({ name: '', phone: '', email: '' }); }} className="bg-orange-600 hover:bg-orange-700 text-white">
                         <Plus className="w-4 h-4 mr-2" /> Add Customer
                     </Button>

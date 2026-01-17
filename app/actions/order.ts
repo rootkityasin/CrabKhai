@@ -1,12 +1,6 @@
 'use server';
 
-import { prisma as globalPrisma } from '@/lib/prisma';
-import { PrismaClient } from '@prisma/client';
-
-// Fallback to local instance if global is stale (missing coupon delegate)
-const prisma = (globalPrisma as any).coupon
-    ? globalPrisma
-    : new PrismaClient();
+import { prisma } from '@/lib/prisma';
 
 export async function createOrder(data: {
     customerName: string;
@@ -88,5 +82,90 @@ export async function createOrder(data: {
     } catch (error) {
         console.error("Create Order Error:", error);
         return { success: false, error: "Failed to create order" };
+    }
+}
+
+export async function getAdminOrders() {
+    try {
+        const orders = await prisma.order.findMany({
+            include: {
+                items: {
+                    include: {
+                        product: true
+                    }
+                }
+            },
+            orderBy: {
+                createdAt: 'desc'
+            }
+        });
+
+        // Map database records to the frontend expected format if necessary
+        return orders.map((o: any) => ({
+            id: o.orderId,
+            dbId: o.id,
+            date: o.createdAt.toLocaleString(),
+            customer: o.customerName,
+            phone: o.customerPhone,
+            items: o.items.reduce((acc: number, item: any) => acc + item.quantity, 0),
+            source: o.source,
+            price: o.totalAmount,
+            status: o.status,
+            hubId: o.hubId
+        }));
+    } catch (error) {
+        console.error("Fetch Admin Orders Error:", error);
+        return [];
+    }
+}
+
+export async function updateAdminOrder(id: string, updates: any) {
+    try {
+        // Find by orderId (e.g., ORD-...)
+        const order = await prisma.order.findUnique({
+            where: { orderId: id }
+        });
+
+        if (!order) throw new Error("Order not found");
+
+        await prisma.order.update({
+            where: { id: order.id },
+            data: {
+                customerName: updates.customer,
+                customerPhone: updates.phone,
+                totalAmount: updates.price,
+                status: updates.status,
+                // Add other fields as needed
+            }
+        });
+
+        return { success: true };
+    } catch (error) {
+        console.error("Update Admin Order Error:", error);
+        return { success: false, error: "Failed to update order" };
+    }
+}
+
+export async function deleteAdminOrder(id: string) {
+    try {
+        const order = await prisma.order.findUnique({
+            where: { orderId: id }
+        });
+
+        if (!order) throw new Error("Order not found");
+
+        // Delete order items first (Prisma handles this if cascade is set, but let's be safe)
+        await prisma.orderItem.deleteMany({
+            where: { orderId: order.id }
+        });
+
+        await prisma.order.delete({
+            where: { id: order.id }
+        });
+
+        return { success: true };
+    } catch (error) {
+        console.error("Delete Admin Order Error:", error);
+        return { success: false, error: "Failed to delete order" };
     }
 }

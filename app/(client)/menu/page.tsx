@@ -41,6 +41,9 @@ function MenuContent() {
         const init = async () => {
             try {
                 const [pData, cData] = await Promise.all([getProducts(), getCategories()]);
+
+                // Show ALL products - no stage filtering for any shop type
+                // Admin has full control over products
                 setProducts(pData || []);
 
                 const mappedCats = [
@@ -75,9 +78,7 @@ function MenuContent() {
             matchesFilter = item.type === 'COMBO';
         }
 
-        const isActive = item.stage === 'Selling' || item.stage === 'Published' || item.stage === 'Coming Soon';
-
-        return matchesSearch && matchesCategory && matchesFilter && isActive;
+        return matchesSearch && matchesCategory && matchesFilter;
     });
 
     // Special sorting

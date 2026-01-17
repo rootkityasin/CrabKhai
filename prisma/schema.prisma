@@ -372,3 +372,16 @@ enum Role {
   HUB_ADMIN
   USER
 }
+
+model DeliveryConfig {
+  id                       String   @id @default(cuid())
+  defaultCharge            Int      @default(60)
+  defaultCodEnabled        Boolean  @default(true)
+  nonRefundable            Boolean  @default(false)
+  weightBasedCharges       Json     @default("[]")
+  deliveryZones            Json     @default("[]")
+  courierPathaoEnabled     Boolean  @default(false)
+  courierPathaoCredentials Json?
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+}

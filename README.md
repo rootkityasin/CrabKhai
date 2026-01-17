@@ -175,6 +175,65 @@ This project includes a robust backend administrative dashboard designed to stre
 - **Smart Admin Redirect**: Intelligent routing that instantly directs admins to the dashboard upon login.
 - **User Roles**: Granular access control for admins, kitchen staff, and managers.
 
+### ⚙️ Admin Panel Settings
+
+The admin panel includes a powerful **Shop Settings** section that controls how your entire system operates:
+
+#### Measurement Unit
+Choose how stock and quantities are displayed:
+
+| Setting | Display | Use Case |
+|---------|---------|----------|
+| **Product Pieces (Default)** | "5 pcs", "10 units" | Standard retail items |
+| **Weight (Kg/Gm)** | "400g", "1.2kg" | Seafood, meat, bulk goods |
+| **Volume (Ltr/ml)** | "500ml", "1.5 Ltr" | Liquids, beverages |
+
+**Weight per Unit Setting:**
+- Define: `1 Unit = X grams` (e.g., 200g)
+- Controls how stock is **displayed and calculated** everywhere:
+  - Cart Drawer: Shows "400g" instead of "2"
+  - Cart Page: Weight-based quantity display
+  - Admin Products: Shows "2.4 kg (12 units)"
+  - Inventory: Add/remove stock in grams
+  
+**Logic:**
+```
+Display Weight = Stock Value (stored as grams)
+Units (reference) = Stock Value ÷ Weight per Unit
+```
+
+#### Shop Type
+Choose your business model:
+
+| Type | Features |
+|------|----------|
+| **Restaurant** | Kitchen Order Board (Kanban), Stage management (Draft → Selling) |
+| **Grocery/Retail** | Standard order table view, simplified workflow |
+
+**What Changes:**
+- Restaurant: Enables Kanban board at `/admin/orders`
+- Grocery: Traditional order list view
+- Product stages work differently based on shop type
+
+### 📊 Customer Management
+
+#### Excel Import Feature
+Bulk import customers from CSV/Excel files:
+
+1. Click **Upload Excel** → See format guide popup
+2. File must have **Name** and **Phone** columns (Email optional)
+3. System automatically:
+   - Parses header row
+   - Maps columns by name matching
+   - Validates phone numbers (10+ digits)
+   - Skips duplicates (by phone)
+   - Reports: "Imported X, Skipped Y"
+
+**Supported Column Names:**
+- Name: `Name`, `Full Name`, `Customer Name`
+- Phone: `Phone`, `Mobile`, `Contact`
+- Email: `Email`, `Mail` (optional)
+
 ### 🧠 AI Smart Features (Powered by Gemini Pro)
 - **Magic Description**: Automatically generates professional product descriptions.
 - **Bangla Auto-Translate**: Translates ingredient names to Bangla as you type.

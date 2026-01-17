@@ -263,7 +263,7 @@ export default function CartPage() {
                                         </div>
                                         <div className="text-right md:hidden">
                                             <span className="font-bold text-gray-900 text-lg block">৳{item.price * item.quantity}</span>
-                                            {item.quantity > 1 && <span className="text-xs text-gray-400">৳{item.price} x {item.quantity}</span>}
+                                            {item.quantity > 1 && <span className="text-xs text-gray-400">৳{item.price} x {settings.measurementUnit === 'WEIGHT' ? (() => { const g = item.quantity * (settings.weightUnitValue || 200); return g >= 1000 ? `${(g / 1000).toFixed(1)}kg` : `${g}g`; })() : item.quantity}</span>}
                                         </div>
                                         <span className="hidden md:block font-bold text-gray-900 text-xl">৳{item.price * item.quantity}</span>
                                     </div>
@@ -278,8 +278,14 @@ export default function CartPage() {
                                                 >
                                                     <Minus className="w-4 h-4" />
                                                 </button>
-                                                <span className="text-sm font-bold min-w-[2rem] text-center">
-                                                    {item.quantity}
+                                                <span className="text-sm font-bold min-w-[3rem] text-center">
+                                                    {settings.measurementUnit === 'WEIGHT'
+                                                        ? (() => {
+                                                            const grams = item.quantity * (settings.weightUnitValue || 200);
+                                                            return grams >= 1000 ? `${(grams / 1000).toFixed(1)}kg` : `${grams}g`;
+                                                        })()
+                                                        : item.quantity
+                                                    }
                                                 </span>
                                                 <button
                                                     className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 rounded text-gray-600 transition-colors"
@@ -315,7 +321,7 @@ export default function CartPage() {
 
                         <div className="space-y-4 mb-6 text-sm text-gray-600">
                             <div className="flex justify-between">
-                                <span>Merchandise Subtotal</span>
+                                <span>Subtotal</span>
                                 <span className="font-bold text-gray-900">৳{subTotalAmount}</span>
                             </div>
                             <div className="flex justify-between">

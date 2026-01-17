@@ -47,16 +47,19 @@ export function StockList({ products }: { products: any[] }) {
 
     const handleAdjustment = async () => {
         if (!selectedProduct || !amount) return;
-        const val = parseInt(amount);
-        if (isNaN(val) || val <= 0) {
+        const inputVal = parseInt(amount);
+        if (isNaN(inputVal) || inputVal <= 0) {
             toast.error("Invalid amount");
             return;
         }
 
-        const delta = adjustType === 'add' ? val : -val;
+        // No conversion - store input directly
+        // WEIGHT mode: input is grams, stored as grams
+        // PCS mode: input is pieces, stored as pieces
+        const delta = adjustType === 'add' ? inputVal : -inputVal;
 
-        // Optimistic check (though server assumes truth)
-        if (adjustType === 'remove' && selectedProduct.pieces < val) {
+        // Optimistic check
+        if (adjustType === 'remove' && selectedProduct.pieces < inputVal) {
             toast.error("Cannot remove more than current stock");
             return;
         }
@@ -64,7 +67,11 @@ export function StockList({ products }: { products: any[] }) {
         setLoading(selectedProduct.id);
         const res = await adjustStock(selectedProduct.id, delta);
         if (res.success) {
-            toast.success(`Stock ${adjustType === 'add' ? 'added' : 'removed'} successfully`);
+            const unit = siteConfig?.measurementUnit || 'PCS';
+            const msg = unit === 'WEIGHT'
+                ? `${inputVal}g ${adjustType === 'add' ? 'added' : 'removed'}`
+                : `${inputVal} ${adjustType === 'add' ? 'added' : 'removed'}`;
+            toast.success(msg);
             setIsDialogOpen(false);
         } else {
             toast.error("Failed to adjust stock");
@@ -143,7 +150,10 @@ export function StockList({ products }: { products: any[] }) {
                                                     );
                                                 }
 
-                                                const unitValue = p.weight || 200;
+                                                // Use global settings for unit value
+                                                const unitValue = siteConfig?.measurementUnit === 'WEIGHT'
+                                                    ? (siteConfig?.weightUnitValue || 200)
+                                                    : (siteConfig?.volumeUnitValue || 1000);
 
                                                 if (unit === 'VOLUME') {
                                                     const totalVolume = p.pieces * unitValue;
@@ -156,16 +166,18 @@ export function StockList({ products }: { products: any[] }) {
                                                     );
                                                 }
 
-                                                // Default to WEIGHT
-                                                const weightInGrams = p.pieces * unitValue;
-                                                const isLowStock = p.pieces < 10;
+                                                // Default to WEIGHT - pieces IS grams now (stored directly)
+                                                const weightInGrams = p.pieces; // No multiplication needed
+                                                const weightUnitVal = siteConfig?.weightUnitValue || 200;
+                                                const units = Math.floor(weightInGrams / weightUnitVal); // Calculate units for reference
+                                                const isLowStock = weightInGrams < 1000; // Low stock if < 1kg
                                                 return (
                                                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${isLowStock ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
                                                         {weightInGrams >= 1000
                                                             ? `${(weightInGrams / 1000).toFixed(1)} kg`
                                                             : `${weightInGrams} g`
                                                         }
-                                                        <span className="ml-1 opacity-75">({p.pieces})</span>
+                                                        <span className="ml-1 opacity-75">({units} units)</span>
                                                     </span>
                                                 );
                                             })()
@@ -207,12 +219,24 @@ export function StockList({ products }: { products: any[] }) {
                     <DialogHeader>
                         <DialogTitle>{adjustType === 'add' ? 'Add Stock' : 'Remove Stock'}</DialogTitle>
                         <DialogDescription>
-                            {selectedProduct?.name} - Current: {selectedProduct?.pieces}
+                            {selectedProduct?.name} - Current: {(() => {
+                                const unit = siteConfig?.measurementUnit || 'PCS';
+                                if (unit === 'PCS') return `${selectedProduct?.pieces} Pcs`;
+                                const unitVal = unit === 'WEIGHT' ? (siteConfig?.weightUnitValue || 200) : (siteConfig?.volumeUnitValue || 1000);
+                                const total = (selectedProduct?.pieces || 0) * unitVal;
+                                if (unit === 'WEIGHT') {
+                                    return total >= 1000 ? `${(total / 1000).toFixed(1)} kg (${selectedProduct?.pieces} units)` : `${total} g (${selectedProduct?.pieces} units)`;
+                                }
+                                return total >= 1000 ? `${(total / 1000).toFixed(1)} Ltr (${selectedProduct?.pieces})` : `${total} ml (${selectedProduct?.pieces})`;
+                            })()}
                         </DialogDescription>
                     </DialogHeader>
                     <div className="py-4">
                         <label className="text-xs font-bold text-slate-500 mb-2 block">
-                            Quantity to {adjustType === 'add' ? 'add' : 'remove'}
+                            {siteConfig?.measurementUnit === 'WEIGHT'
+                                ? `Enter grams to ${adjustType === 'add' ? 'add' : 'remove'}`
+                                : `Quantity to ${adjustType === 'add' ? 'add' : 'remove'}`
+                            }
                         </label>
                         <Input
                             type="number"

@@ -53,14 +53,6 @@ export function ProductCard({
 
     // Zoom Logic
     const [isHovering, setIsHovering] = useState(false);
-    const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-
-    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-        const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
-        const x = ((e.clientX - left) / width) * 100;
-        const y = ((e.clientY - top) / height) * 100;
-        setMousePos({ x, y });
-    };
 
     const displayPrice = language !== 'en' && price_bn ? price_bn : price;
     const displayName = language !== 'en' && name_bn ? name_bn : name;
@@ -110,10 +102,9 @@ export function ProductCard({
                 transition={{ duration: 0.2 }}
             >
                 <div
-                    className="aspect-square overflow-hidden bg-gray-100 relative"
+                    className="aspect-square overflow-hidden bg-gray-100 relative group-hover:shadow-[inset_0_0_40px_rgba(0,0,0,0.05)] transition-all duration-500"
                     onMouseEnter={() => setIsHovering(true)}
                     onMouseLeave={() => setIsHovering(false)}
-                    onMouseMove={handleMouseMove}
                 >
                     {/* Glass Pieces Tag */}
                     {(pieces || 0) > 0 && (
@@ -130,11 +121,7 @@ export function ProductCard({
                             ref={imageRef}
                             src={activeImage}
                             alt={name}
-                            className="w-full h-full object-cover transition-transform duration-200"
-                            style={{
-                                transformOrigin: `${mousePos.x}% ${mousePos.y}%`,
-                                transform: isHovering ? "scale(2)" : "scale(1)"
-                            }}
+                            className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
                             loading="lazy"
                         />
                     </div>

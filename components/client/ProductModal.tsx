@@ -254,7 +254,13 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
                     <div className="px-6 pt-5 pb-2">
                         <h2 className="text-xl font-heading font-bold text-slate-900 leading-tight">{product.name}</h2>
                         <p className="text-slate-500 mt-1.5 text-xs leading-relaxed font-medium">
-                            Sustainably sourced, fresh soft shell crab. Cleaned and processed for immediate cooking.
+                            {/* Dynamic Description based on Settings */}
+                            {settings.shopType === 'GROCERY'
+                                ? settings.measurementUnit === 'WEIGHT'
+                                    ? `Premium quality pack. Sold in increments of ${settings.weightUnitValue || 200}g. Sustainably sourced.`
+                                    : `Verified grocery item. Quality checked and sealed for freshness.`
+                                : `Sustainably sourced, fresh soft shell crab. Cleaned and processed for immediate cooking.`
+                            }
                         </p>
                     </div>
 
@@ -296,7 +302,7 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
                                         className="space-y-6"
                                     >
                                         {/* Total Sold Badge */}
-                                        {product.totalSold && (
+                                        {(product.totalSold ?? 0) > 0 && (
                                             <div className="flex justify-start">
                                                 <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-600 border border-red-200 shadow-sm">
                                                     <Activity className="w-3 h-3 mr-1" />
@@ -305,12 +311,13 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
                                             </div>
                                         )}
 
-                                        {/* Variant Selector */}
-                                        {product.weightOptions && product.weightOptions.length > 0 && (
+                                        {/* Variant Selector (Custom or Auto-Generated) */}
+                                        {/* 1. Custom defined variants */}
+                                        {(product.weightOptions?.length ?? 0) > 0 ? (
                                             <div className="space-y-2">
                                                 <label className="text-sm font-bold text-slate-700">Select Weight</label>
                                                 <div className="flex flex-wrap gap-2">
-                                                    {product.weightOptions.map((opt) => (
+                                                    {product.weightOptions?.map((opt) => (
                                                         <button
                                                             key={opt}
                                                             onClick={() => setSelectedVariant(opt)}
@@ -326,6 +333,36 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
                                                     ))}
                                                 </div>
                                             </div>
+                                        ) : (
+                                            /* 2. Auto-generated Weight Options (if Unit = WEIGHT) */
+                                            settings.measurementUnit === 'WEIGHT' && (
+                                                <div className="space-y-2">
+                                                    <label className="text-sm font-bold text-slate-700">Select Quantity by Weight</label>
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {[1, 2, 3, 5, 10].map((qty) => {
+                                                            const unitVal = settings.weightUnitValue || 200;
+                                                            const totalWeight = qty * unitVal;
+                                                            const label = totalWeight >= 1000 ? `${totalWeight / 1000} kg` : `${totalWeight} g`;
+
+                                                            return (
+                                                                <button
+                                                                    key={qty}
+                                                                    onClick={() => setQuantity(qty)}
+                                                                    className={cn(
+                                                                        "px-4 py-2 rounded-full text-sm font-medium transition-all border-2",
+                                                                        quantity === qty
+                                                                            ? "border-orange-500 bg-orange-50 text-orange-700 shadow-sm"
+                                                                            : "border-gray-200 bg-white text-slate-600 hover:border-gray-300"
+                                                                    )}
+                                                                >
+                                                                    {label}
+                                                                </button>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                    <p className="text-xs text-slate-400">Based on standard unit size of {settings.weightUnitValue || 200}g.</p>
+                                                </div>
+                                            )
                                         )}
 
                                     </motion.div>
@@ -426,13 +463,21 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
                                         <div className="grid grid-cols-2 gap-3 md:gap-4">
                                             {(function () {
                                                 // Constant (Default) Items for consistency
+                                                // Calculate Multiplier based on selected weight
+                                                // Base nutrition is for 100g.
+                                                // If Unit=WEIGHT, Total Weight = Quantity * UnitValue (e.g. 200g).
+                                                // Multiplier = Total Weight / 100.
+                                                const unitVal = settings.measurementUnit === 'WEIGHT' ? (settings.weightUnitValue || 200) : 100;
+                                                const totalWeight = quantity * unitVal;
+                                                const multiplier = totalWeight / 100;
+
                                                 const defaultItems = [
-                                                    { label: "Energy", value: "125", unit: "kcal", color: "text-amber-600", bg: "bg-amber-50" },
-                                                    { label: "Protein", value: "9.38", unit: "g", color: "text-blue-600", bg: "bg-blue-50" },
-                                                    { label: "Carbs", value: "19.79", unit: "g", color: "text-emerald-600", bg: "bg-emerald-50" },
-                                                    { label: "Fat", value: "1.04", unit: "g", color: "text-rose-600", bg: "bg-rose-50" },
-                                                    { label: "Sodium", value: "343", unit: "mg", color: "text-slate-600", bg: "bg-slate-100" },
-                                                    { label: "Cholesterol", value: "31.25", unit: "mg", color: "text-slate-600", bg: "bg-slate-100" },
+                                                    { label: "Energy", value: (125 * multiplier).toFixed(0), unit: "kcal", color: "text-amber-600", bg: "bg-amber-50" },
+                                                    { label: "Protein", value: (9.38 * multiplier).toFixed(1), unit: "g", color: "text-blue-600", bg: "bg-blue-50" },
+                                                    { label: "Carbs", value: (19.79 * multiplier).toFixed(1), unit: "g", color: "text-emerald-600", bg: "bg-emerald-50" },
+                                                    { label: "Fat", value: (1.04 * multiplier).toFixed(1), unit: "g", color: "text-rose-600", bg: "bg-rose-50" },
+                                                    { label: "Sodium", value: (343 * multiplier).toFixed(0), unit: "mg", color: "text-slate-600", bg: "bg-slate-100" },
+                                                    { label: "Cholesterol", value: (31.25 * multiplier).toFixed(1), unit: "mg", color: "text-slate-600", bg: "bg-slate-100" },
                                                 ];
 
                                                 // Always use default items to ensure 'constant' look
@@ -497,10 +542,13 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
                             <div className="w-24 flex justify-center font-bold text-lg text-slate-900">
                                 {(() => {
                                     const unit = settings.measurementUnit || 'PCS';
-                                    if (unit === 'VOLUME') return `${quantity} Ltr`;
+                                    if (unit === 'VOLUME') {
+                                        const ml = quantity * (settings.volumeUnitValue || 1000); // Default 1L
+                                        return ml >= 1000 ? `${(ml / 1000).toFixed(1)} Ltr` : `${ml} ml`;
+                                    }
                                     if (unit === 'WEIGHT') {
-                                        const totalWeight = quantity * 200;
-                                        return totalWeight >= 1000 ? `${(totalWeight / 1000).toFixed(1)} kg` : `${totalWeight} g`;
+                                        const grams = quantity * (settings.weightUnitValue || 200); // Default 200g
+                                        return grams >= 1000 ? `${(grams / 1000).toFixed(1)} kg` : `${grams} g`;
                                     }
                                     return quantity;
                                 })()}

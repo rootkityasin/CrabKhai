@@ -26,11 +26,13 @@ import { FulfillmentBoard } from '@/components/admin/FulfillmentBoard';
 import { useAdmin } from '@/components/providers/AdminProvider';
 import { format } from "date-fns"
 import { getSiteConfig } from '@/app/actions/settings';
+import { getAdminOrders, createOrder as createOrderAction } from '@/app/actions/order';
+import { toast } from 'sonner';
 import { useEffect } from 'react';
 
 export default function OrdersPage() {
     // Global State
-    const { orders, addOrder, updateOrder, deleteOrder } = useAdmin();
+    const { orders, addOrder, updateOrder, deleteOrder, setOrders } = useAdmin();
     const [shopType, setShopType] = useState('RESTAURANT');
 
     useEffect(() => {
@@ -80,21 +82,27 @@ export default function OrdersPage() {
         updateOrder(id, { status: newStatus });
     };
 
-    const handleCreateOrder = (e: React.FormEvent) => {
+    const handleCreateOrder = async (e: React.FormEvent) => {
         e.preventDefault();
-        const order = {
-            id: `#${Math.floor(Math.random() * 1000000)}`,
-            date: new Date().toLocaleString(),
-            customer: newOrder.customer,
-            phone: newOrder.phone,
-            items: newOrder.items,
-            source: 'MANUAL',
-            price: newOrder.price,
-            status: 'Placed'
-        };
-        addOrder(order);
-        setIsAdding(false);
-        setNewOrder({ customer: '', phone: '', price: 0, items: 1 });
+
+        const res = await createOrderAction({
+            customerName: newOrder.customer,
+            customerPhone: newOrder.phone,
+            customerAddress: "Manual Order (No Address)",
+            totalAmount: newOrder.price,
+            items: [] // Manual order currently doesn't specify items in the UI
+        });
+
+        if (res.success) {
+            toast.success("Order created successfully");
+            // Refresh orders from DB
+            const dbOrders = await getAdminOrders();
+            setOrders(dbOrders);
+            setIsAdding(false);
+            setNewOrder({ customer: '', phone: '', price: 0, items: 1 });
+        } else {
+            toast.error(res.error || "Failed to create order");
+        }
     };
 
     const handleEditClick = (order: any) => {

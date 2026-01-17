@@ -3,7 +3,9 @@
 
 
 
-import React, { createContext, useContext, useState, useMemo } from 'react';
+import React, { createContext, useContext, useState, useMemo, useEffect, useRef } from 'react';
+import { getAdminOrders, updateAdminOrder, deleteAdminOrder } from '@/app/actions/order';
+import { toast } from 'sonner';
 
 // --- Types ---
 export type Role = 'SUPER_ADMIN' | 'HUB_ADMIN';
@@ -43,7 +45,7 @@ export interface User {
     hubId?: string; // If null/undefined, effectively Super Admin access to all
 }
 
-// --- Mock Data ---
+// --- Constants ---
 const HUBS: Hub[] = [
     { id: 'dhaka-central', name: 'Dhaka Central Hub', location: 'Dhaka' },
     { id: 'khulna-hub', name: 'Khulna Hub', location: 'Khulna' },
@@ -52,112 +54,6 @@ const HUBS: Hub[] = [
 
 const MOCK_USERS: User[] = [
     { id: 'super-admin', name: 'Super Admin', email: 'admin@crabkhai.com', role: 'SUPER_ADMIN' },
-    { id: 'khulna-admin', name: 'Khulna Manager', email: 'khulna@crabkhai.com', role: 'HUB_ADMIN', hubId: 'khulna-hub' },
-    { id: 'dhaka-admin', name: 'Dhaka Manager', email: 'dhaka@crabkhai.com', role: 'HUB_ADMIN', hubId: 'dhaka-central' },
-];
-
-const initialOrders = [
-    { id: '#1411610', date: 'Oct 04, 2024, 05:32 PM', customer: 'Shiham Chowdhury', phone: '01856241009', items: 2, source: 'WEB', price: 1250, status: 'Confirmed', hubId: 'dhaka-central' },
-    { id: '#1411611', date: 'Oct 04, 2024, 06:15 PM', customer: 'Rakib Hasan', phone: '01711223344', items: 5, source: 'WHATSAPP', price: 4500, status: 'Placed', hubId: 'khulna-hub' },
-    { id: '#1411612', date: 'Oct 04, 2024, 07:00 PM', customer: 'New User', phone: '01900000000', items: 1, source: 'WEB', price: 850, status: 'Processing', hubId: 'dhaka-central' },
-    { id: '#1411613', date: 'Oct 05, 2024, 11:00 AM', customer: 'Khulna Cust', phone: '01500000000', items: 3, source: 'WEB', price: 2100, status: 'Confirmed', hubId: 'khulna-hub' },
-];
-
-const initialProducts = [
-    // Best Sellers
-    {
-        id: '1',
-        sku: 'BS001',
-        name: 'Signature Masala Crab wings',
-        variants: 1,
-        price: 350,
-        image: 'https://www.easykoro.com/inventories/fit-in/400x400/651903648889884.png',
-        images: [
-            'https://www.easykoro.com/inventories/fit-in/400x400/651903648889884.png',
-            'https://www.easykoro.com/inventories/fit-in/400x400/1684482693291279.png',
-            'https://www.easykoro.com/inventories/fit-in/400x400/604194297355933.png'
-        ],
-        stock: true,
-        source: 'Self',
-        stage: 'Selling',
-        hubId: 'dhaka-central',
-        pieces: 12,
-        totalSold: 443,
-        weightOptions: ['200g', '400g', '600g', '1kg'],
-        features: [
-            '100% real crab meat',
-            'Ready to cook & serve in minutes',
-            'Crispy texture, juicy inside',
-            'Perfect for snacks, tiffin, or gatherings'
-        ]
-    },
-    {
-        id: '2',
-        sku: 'BS002',
-        name: 'Signature Masala Crab Bomb',
-        variants: 2,
-        price: 350,
-        image: 'https://www.easykoro.com/inventories/fit-in/400x400/1684482693291279.png',
-        images: [
-            'https://www.easykoro.com/inventories/fit-in/400x400/1684482693291279.png',
-            'https://www.easykoro.com/inventories/fit-in/400x400/651903648889884.png'
-        ],
-        stock: true,
-        source: 'Self',
-        stage: 'Selling',
-        hubId: 'dhaka-central',
-        pieces: 8,
-        totalSold: 1250,
-        weightOptions: ['250g', '500g'],
-        features: [
-            'Spicy masala blend',
-            'No preservatives',
-            'Halal certified'
-        ]
-    },
-    {
-        id: '3',
-        sku: 'BS003',
-        name: 'Crispy Crab Wings',
-        variants: 0,
-        price: 330,
-        image: 'https://www.easykoro.com/inventories/fit-in/400x400/604194297355933.png',
-        stock: true,
-        source: 'Self',
-        stage: 'Selling',
-        hubId: 'dhaka-central',
-        pieces: 10,
-        totalSold: 89,
-        weightOptions: ['1 Box'],
-        features: ['Kid favorite', 'Mild spice']
-    },
-
-    // Super Savings
-    {
-        id: '4',
-        sku: 'SS001',
-        name: 'WINGS & BOMB COMBO',
-        variants: 1,
-        price: 1200,
-        image: 'https://www.easykoro.com/inventories/fit-in/400x400/4838007732246716.jpg',
-        stock: true,
-        source: 'Self',
-        stage: 'Selling',
-        hubId: 'dhaka-central',
-        pieces: 20,
-        totalSold: 320,
-        weightOptions: ['Family Pack'],
-        features: ['Best Value', 'Includes Sauce']
-    },
-    { id: '5', sku: 'SS002', name: 'Tempura Shrimp', variants: 3, price: 400, image: 'https://www.easykoro.com/inventories/fit-in/400x400/745402355963125.png', stock: true, source: 'Self', stage: 'Selling', hubId: 'khulna-hub', pieces: 15, totalSold: 56, weightOptions: ['200g'], features: ['Authentic Japanese Style'] },
-
-    // New Arrivals
-    { id: '6', sku: 'NA001', name: 'Raw Crab Clean', variants: 0, price: 450, image: 'https://www.easykoro.com/inventories/fit-in/400x400/587600975137614.png', stock: true, source: 'Self', stage: 'Selling', hubId: 'chattogram-hub', pieces: 6, totalSold: 12, weightOptions: ['1kg'], features: ['Fresh Catch'] },
-    { id: '7', sku: 'NA002', name: 'Crispy Crab Bomb', variants: 1, price: 330, image: 'https://www.easykoro.com/inventories/fit-in/400x400/606088101401451.png', stock: true, source: 'Self', stage: 'Selling', hubId: 'dhaka-central', pieces: 9, totalSold: 200, weightOptions: ['500g'], features: ['Party Snack'] },
-
-    // Others
-    { id: '8', sku: '799245', name: 'Shell-less Crab Meat', variants: 3, price: 1850, image: 'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?q=80&w=300&fit=crop', stock: true, source: 'Self', stage: 'Process', hubId: 'dhaka-central', pieces: 18, totalSold: 5, weightOptions: ['1kg'], features: ['Premium Quality'] },
-    { id: '9', sku: '799246', name: 'Crab Masala Mix', variants: 1, price: 450, image: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=300&fit=crop', stock: false, source: 'Self', stage: 'Draft', hubId: 'khulna-hub', pieces: 12, totalSold: 0, weightOptions: ['100g'], features: ['Spice Mix'] },
 ];
 
 interface AdminContextType {
@@ -177,6 +73,9 @@ interface AdminContextType {
         taxPercentage?: number;
         primaryColor?: string;
         secondaryColor?: string;
+        weightUnitValue?: number;
+        volumeUnitValue?: number;
+        shopType?: string;
     };
     paymentConfig: PaymentConfigType;
 
@@ -212,8 +111,8 @@ export function AdminProvider({ children, initialUser }: { children: React.React
     const [currentUser, setCurrentUser] = useState<User>(initialUser || MOCK_USERS[0]); // Fallback for dev only
     const [activeHubId, setActiveHubId] = useState<string | 'ALL'>('ALL');
 
-    const [orders, setOrdersState] = useState(initialOrders);
-    const [products, setProductsState] = useState(initialProducts);
+    const [orders, setOrdersState] = useState<any[]>([]);
+    const [products, setProductsState] = useState<any[]>([]);
     const [isSidebarCollapsed, setSidebarCollapsed] = useState(true); // Default collapsed (mobile friendly start)
 
     // --- RBAC Logic ---
@@ -265,24 +164,24 @@ export function AdminProvider({ children, initialUser }: { children: React.React
         ],
         taxPercentage: 0,
         primaryColor: "#ea0000",
-        secondaryColor: "#0f172a"
+        secondaryColor: "#0f172a",
+        shopType: "RESTAURANT"
     });
 
     const [paymentConfig, setPaymentConfigState] = useState<PaymentConfigType>({});
     const hasFetched = React.useRef(false);
 
-    // Load from LocalStorage on Mount AND fetch fresh config
-    React.useEffect(() => {
+    // Load from LocalStorage on Mount AND fetch fresh config/orders
+    useEffect(() => {
         if (hasFetched.current) return;
         hasFetched.current = true;
 
         if (typeof window !== 'undefined') {
-            // 1. Try LocalStorage for instant render
+            // 1. Try LocalStorage for settings/products (not orders anymore, orders are handled by server)
             const savedData = localStorage.getItem('crab-khai-admin-data-v7');
             if (savedData) {
                 try {
                     const parsed = JSON.parse(savedData);
-                    if (parsed.orders) setOrdersState(parsed.orders);
                     if (parsed.products) setProductsState(parsed.products);
                     if (parsed.settings) setSettings(prev => ({ ...prev, ...parsed.settings }));
                 } catch (e) { console.error(e); }
@@ -300,21 +199,26 @@ export function AdminProvider({ children, initialUser }: { children: React.React
                     }
                 });
             });
+
+            // 3. Fetch Orders from DB
+            getAdminOrders().then(dbOrders => {
+                if (dbOrders) setOrdersState(dbOrders);
+            });
         }
     }, []);
 
-    // Save to LocalStorage on Change
-    React.useEffect(() => {
+    // Save to LocalStorage on Change (excluding orders)
+    useEffect(() => {
         if (typeof window !== 'undefined') {
             const dataToSave = {
-                orders: orders,
+                // Not saving orders to localStorage anymore to avoid stale data
                 products: products,
                 settings: settings,
                 paymentConfig: paymentConfig
             };
             localStorage.setItem('crab-khai-admin-data-v7', JSON.stringify(dataToSave));
         }
-    }, [orders, products, settings, paymentConfig]);
+    }, [products, settings, paymentConfig]);
 
 
     // --- Actions ---
@@ -323,11 +227,33 @@ export function AdminProvider({ children, initialUser }: { children: React.React
     const updateSettings = (newSettings: any) => setSettings(prev => ({ ...prev, ...newSettings }));
     const updatePaymentConfig = (newConfig: any) => setPaymentConfigState(prev => ({ ...prev, ...newConfig }));
 
-    const addOrder = (order: any) => setOrdersState([{ ...order, hubId: activeHubId === 'ALL' ? 'dhaka-central' : activeHubId }, ...orders]); // Default hub if ALL
-    const updateOrder = (id: string, updates: any) => {
-        setOrdersState(prev => prev.map(o => o.id === id ? { ...o, ...updates } : o));
+    const addOrder = (order: any) => {
+        // Since manual orders are created via OrdersPage form, they should ideally call createOrder action
+        // For now we keep this local-first if needed, but the true fix is fetching after creation.
+        setOrdersState([order, ...orders]);
     };
-    const deleteOrder = (id: string) => setOrdersState(prev => prev.filter(o => o.id !== id));
+
+    const updateOrder = async (id: string, updates: any) => {
+        // 1. Update UI immediately
+        setOrdersState(prev => prev.map(o => o.id === id ? { ...o, ...updates } : o));
+
+        // 2. Update DB
+        const res = await updateAdminOrder(id, updates);
+        if (!res.success) {
+            toast.error("Failed to sync status with database");
+            // Optionally revert UI here
+        }
+    };
+
+    const deleteOrder = async (id: string) => {
+        const res = await deleteAdminOrder(id);
+        if (res.success) {
+            setOrdersState(prev => prev.filter(o => o.id !== id));
+            toast.success("Order deleted from database");
+        } else {
+            toast.error("Failed to delete from database");
+        }
+    };
 
     const addProduct = (product: any) => setProductsState([{ ...product, hubId: activeHubId === 'ALL' ? 'dhaka-central' : activeHubId }, ...products]);
     const updateProduct = (id: string, updates: any) => {
