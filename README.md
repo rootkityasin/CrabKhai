@@ -17,32 +17,16 @@ This project is built using the latest web technologies for speed, scalability, 
 
 ---
 
-## 🔒 Security Features
+### Security Audit & Hardening (ZAP Audited)
+CrabKhai has been audited against **OWASP Top 10** vulnerabilities using ZAP (Zed Attack Proxy).
 
-CrabKhai implements enterprise-grade security measures to protect admin operations and customer data.
-
-### Device Authorization System
-- **Trusted Device Registration**: New devices must be authorized with a secret setup token before accessing the admin panel
-- **30-Day Device Sessions**: Authorized devices remain trusted for 30 days with automatic expiry
-- **Device Fingerprinting**: Records browser, OS, device type, and user agent for each trusted device
-- **IP Tracking**: Logs IP addresses for all device authorizations and security events
-
-### Authentication & Access Control
-- **Multi-Layer Authentication**: Combines session-based auth with device verification
-- **Role-Based Access Control (RBAC)**: Granular permissions for Super Admin, Admin, and Hub Manager roles
-- **Stale Session Detection**: Automatically clears auth cookies if database record is missing
-- **Secure Cookie Management**: HTTP-only, secure cookies in production with proper expiry
-
-### Security Audit & Logging
-- **Comprehensive Security Logs**: All security events (login attempts, device authorizations) are logged
-- **Severity Levels**: Events categorized as LOW, MEDIUM, or HIGH severity
-- **IP & User Agent Tracking**: Full audit trail for compliance and security review
-- **Real-time Security Dashboard**: View all security events in the admin panel
-
-### Admin Panel Protection
-- **Device Setup Flow**: `/admin/security/device-setup` requires valid token for new device authorization
-- **Token Management**: Admins can rotate the setup token from the security dashboard
-- **Automatic Redirects**: Unauthorized devices are redirected to the setup page
+- **Content Security Policy (CSP)**: Robust policy preventing XSS and unauthorized script execution.
+- **HSTS (Strict-Transport-Security)**: Enforced HTTPS for all connections for 1 year.
+- **Anti-Clickjacking**: Implemented `X-Frame-Options: SAMEORIGIN`.
+- **MIME Sniffing Protection**: Added `X-Content-Type-Options: nosniff`.
+- **Referrer Policy**: Set to `strict-origin-when-cross-origin` for privacy.
+- **Permissions Policy**: Restricted browser features (camera, microphone) to minimize attack surface.
+- **SRI (Subresource Integrity)**: Critical assets are validated for integrity (handled via Next.js optimization).
 
 ---
 

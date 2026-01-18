@@ -105,6 +105,7 @@ export function AdminSidebar() {
         {
             label: 'REPORTS',
             items: [
+                { label: 'Event Matrix', href: '/admin/events', icon: BarChart3, badge: 'LIVE', badgeColor: "bg-green-100 text-green-600" },
                 { label: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
             ],
         },

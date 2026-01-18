@@ -25,6 +25,7 @@ import { useLanguageStore } from '@/lib/languageStore';
 import { translations } from '@/lib/translations';
 import { CouponSection } from './CouponSection';
 import { useRouter } from 'next/navigation';
+import { trackEvent } from '@/lib/track';
 
 export function GlobalCheckoutDrawer() {
     const { checkoutOpen, closeCheckout, items, total, discount, clearCart, coupon } = useCartStore();
@@ -43,6 +44,22 @@ export function GlobalCheckoutDrawer() {
     useEffect(() => {
         getSiteConfig().then(setSiteConfig);
     }, []);
+
+    // Track InitiateCheckout when drawer opens
+    useEffect(() => {
+        if (checkoutOpen && items.length > 0) {
+            trackEvent({
+                eventName: 'InitiateCheckout',
+                eventData: {
+                    content_ids: items.map(i => i.id),
+                    contents: items.map(i => ({ id: i.id, quantity: i.quantity })),
+                    num_items: items.length,
+                    value: totalAmount,
+                    currency: 'BDT'
+                }
+            });
+        }
+    }, [checkoutOpen]);
 
     // Totals
     const subTotalAmount = total();
@@ -74,6 +91,26 @@ export function GlobalCheckoutDrawer() {
         const res = await createOrder(orderData);
 
         if (res.success) {
+            // Server-Side Tracking: Purchase
+            trackEvent({
+                eventName: 'Purchase',
+                eventData: {
+                    content_ids: items.map(i => i.id),
+                    contents: items.map(i => ({ id: i.id, quantity: i.quantity })),
+                    num_items: items.length,
+                    value: totalAmount,
+                    currency: 'BDT',
+                    order_id: res.orderId // Assuming createOrder returns orderId
+                },
+                userData: {
+                    email: '', // Not captured in this form currently
+                    phone: formData.phone,
+                    name: formData.name,
+                    area: formData.area,
+                    city: 'Dhaka' // Default city if not specified, or use area
+                }
+            });
+
             toast.success("Order placed successfully!");
             setTimeout(() => {
                 setIsAnimating(false);

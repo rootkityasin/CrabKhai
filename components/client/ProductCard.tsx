@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { Plus } from 'lucide-react';
 import { ProductModal } from './ProductModal';
 import { useAdmin } from '@/components/providers/AdminProvider';
+import { trackEvent } from '@/lib/track';
 
 interface ProductCardProps {
     id: string;
@@ -73,6 +74,18 @@ export function ProductCard({
         const priceNum = typeof price === 'string' ? Number(price.replace(/[^0-9.]/g, '')) : price;
         addItem({ id, name, price: priceNum, image: activeImage, quantity: 1 });
 
+        // Server-Side Tracking: AddToCart
+        trackEvent({
+            eventName: 'AddToCart',
+            eventData: {
+                content_name: name,
+                content_ids: [id],
+                content_type: 'product',
+                value: priceNum,
+                currency: 'BDT'
+            }
+        });
+
         toast.custom((t) => (
             <div className="flex items-center gap-4 w-full bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-xl border border-white/20">
                 <div className="h-12 w-12 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
@@ -95,7 +108,20 @@ export function ProductCard({
         <>
             <motion.div
                 className="group relative bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 cursor-pointer flex flex-col h-full"
-                onClick={() => setShowModal(true)}
+                onClick={() => {
+                    setShowModal(true);
+                    // Server-Side Tracking: ViewContent
+                    trackEvent({
+                        eventName: 'ViewContent',
+                        eventData: {
+                            content_name: name,
+                            content_ids: [id],
+                            content_type: 'product',
+                            value: typeof price === 'string' ? Number(price.replace(/[^0-9.]/g, '')) : price,
+                            currency: 'BDT'
+                        }
+                    });
+                }}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 whileHover={{ y: -5 }} // Simple lift instead of 3D tilt for better zoom usability
