@@ -23,6 +23,10 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
+import { getDeliveryConfig } from '@/app/actions/settings';
+import { DISTRICTS, UPAZILAS } from '@/lib/locations';
+import { cn } from "@/lib/utils";
+import { ChevronDown, Check } from "lucide-react";
 
 export default function CartPage() {
     const { items, removeItem, addItem, clearCart, total, discount, coupon } = useCartStore();
@@ -36,15 +40,37 @@ export default function CartPage() {
     const [paymentMethod, setPaymentMethod] = useState('COD');
     const [trxId, setTrxId] = useState('');
 
+    // Delivery State
+    const [deliveryConfig, setDeliveryConfig] = useState<any>(null);
+    const [deliveryFee, setDeliveryFee] = useState(60);
+    const [isCodAllowed, setIsCodAllowed] = useState(true);
+
+    // Location State
+    const [selectedDistrict, setSelectedDistrict] = useState('');
+    const [selectedUpazila, setSelectedUpazila] = useState('');
+    const [openDistrict, setOpenDistrict] = useState(false);
+    const [openUpazila, setOpenUpazila] = useState(false);
+    const [districtSearch, setDistrictSearch] = useState('');
+    const [upazilaSearch, setUpazilaSearch] = useState('');
+
+    const filteredDistricts = DISTRICTS.filter(d => d.toLowerCase().includes(districtSearch.toLowerCase()));
+    const filteredUpazilas = UPAZILAS.filter(u => u.toLowerCase().includes(upazilaSearch.toLowerCase()));
+
     useEffect(() => {
         const loadConfig = async () => {
-            const [payConfig, siteConf, sections] = await Promise.all([
+            const [payConfig, siteConf, sections, delConfig] = await Promise.all([
                 getPaymentConfig(),
                 getSiteConfig(),
-                getStorySections()
+                getStorySections(),
+                getDeliveryConfig()
             ]);
 
             if (siteConf) setSiteConfig(siteConf);
+            if (delConfig) {
+                setDeliveryConfig(delConfig);
+                setDeliveryFee(delConfig.defaultCharge || 60);
+                setIsCodAllowed(delConfig.defaultCodEnabled);
+            }
 
             if (payConfig) {
                 setPaymentConfig(payConfig);
@@ -65,12 +91,88 @@ export default function CartPage() {
         loadConfig();
     }, []);
 
+    // Calculate Delivery Fee Effect
+    useEffect(() => {
+        if (!deliveryConfig || !settings) return;
+
+        let charge = Number(deliveryConfig.defaultCharge) || 60;
+        let codEnabled = deliveryConfig.defaultCodEnabled;
+
+        // Determine effective location strings
+        // If selectedDistrict is empty (custom typing), check if current search text matches a valid district
+        let effectiveDistrict = selectedDistrict;
+        if (!effectiveDistrict && districtSearch) {
+            const exactMatch = DISTRICTS.find(d => d.toLowerCase() === districtSearch.trim().toLowerCase());
+            if (exactMatch) effectiveDistrict = exactMatch;
+        }
+
+        let effectiveUpazila = selectedUpazila;
+        if (!effectiveUpazila && upazilaSearch) {
+            const exactMatch = UPAZILAS.find(u => u.toLowerCase() === upazilaSearch.trim().toLowerCase());
+            if (exactMatch) effectiveUpazila = exactMatch;
+        }
+
+        // Check for specific zone matches (Upazila priority > District)
+        // We use case-insensitive comparison just to be safe, though IDs/exact names are better
+        const upazilaMatch = deliveryConfig.deliveryZones?.find((z: any) =>
+            z.type === 'UPAZILA' &&
+            z.name.toLowerCase().trim() === effectiveUpazila.toLowerCase().trim()
+        );
+
+        const districtMatch = deliveryConfig.deliveryZones?.find((z: any) =>
+            z.type === 'DISTRICT' &&
+            z.name.toLowerCase().trim() === effectiveDistrict.toLowerCase().trim()
+        );
+
+        if (upazilaMatch) {
+            charge = Number(upazilaMatch.price);
+            if (upazilaMatch.codEnabled !== undefined) codEnabled = upazilaMatch.codEnabled;
+        } else if (districtMatch) {
+            charge = Number(districtMatch.price);
+            if (districtMatch.codEnabled !== undefined) codEnabled = districtMatch.codEnabled;
+        }
+
+        // Weight Based Charges
+        if (settings?.measurementUnit === 'WEIGHT' && deliveryConfig.weightBasedCharges?.length > 0) {
+            const totalWeightGrams = items.reduce((sum, item) => {
+                return sum + (item.quantity * (settings.weightUnitValue || 200));
+            }, 0);
+            const totalWeightKg = totalWeightGrams / 1000;
+
+            const extraCharge = deliveryConfig.weightBasedCharges.reduce((max: number, c: any) => {
+                if (totalWeightKg >= Number(c.min)) return Math.max(max, Number(c.charge));
+                return max;
+            }, 0);
+
+            charge += extraCharge;
+        }
+
+        setDeliveryFee(charge);
+        setIsCodAllowed(codEnabled);
+
+        // If COD was selected but now disabled, switch to another method if available
+        if (!codEnabled && paymentMethod === 'COD') {
+            if (paymentConfig?.bkashEnabled) setPaymentMethod('BKASH');
+            else if (paymentConfig?.nagadEnabled) setPaymentMethod('NAGAD');
+            else if (paymentConfig?.selfMfsEnabled) setPaymentMethod('MANUAL');
+        }
+    }, [
+        deliveryConfig,
+        selectedDistrict,
+        selectedUpazila,
+        districtSearch,
+        upazilaSearch,
+        items,
+        settings,
+        paymentConfig
+    ]);
+
     // Tax Calculation
     const subTotalAmount = total();
     const discountAmount = discount();
     const discountedTotal = Math.max(0, subTotalAmount - discountAmount);
 
-    const deliveryFee = 60;
+    // const deliveryFee computed in state
     const taxRate = siteConfig?.taxPercentage || 0;
     const taxAmount = Math.ceil((discountedTotal * taxRate) / 100);
     const totalAmount = discountedTotal + deliveryFee + taxAmount;
@@ -82,7 +184,6 @@ export default function CartPage() {
     const [formData, setFormData] = useState<any>({
         name: '',
         phone: '',
-        area: '',
         address: ''
     });
 
@@ -102,7 +203,7 @@ export default function CartPage() {
         const orderData = {
             customerName: formData.name,
             customerPhone: formData.phone,
-            customerAddress: `${formData.address}, ${formData.area}`,
+            customerAddress: `${formData.address}, ${selectedUpazila}, ${selectedDistrict}`,
             items: items.map(item => ({
                 productId: item.id,
                 quantity: item.quantity,
@@ -386,28 +487,100 @@ export default function CartPage() {
                                         value={formData.phone}
                                         onChange={e => setFormData({ ...formData, phone: e.target.value })}
                                     />
-                                    <div className="grid grid-cols-3 gap-3">
-                                        <Select
-                                            value={formData.area}
-                                            onValueChange={(val) => setFormData({ ...formData, area: val })}
-                                            required
-                                        >
-                                            <SelectTrigger className="col-span-1 p-3 h-auto bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-black outline-none data-[placeholder]:text-gray-400">
-                                                <SelectValue placeholder="Area" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="Dhaka">Dhaka</SelectItem>
-                                                <SelectItem value="Ctg">Ctg</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                        <input
-                                            type="text"
-                                            placeholder="Address"
-                                            required
-                                            className="col-span-2 p-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-black transition-all outline-none text-sm"
-                                            value={formData.address}
-                                            onChange={e => setFormData({ ...formData, address: e.target.value })}
-                                        />
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        {/* District Selection */}
+                                        <div className="relative">
+                                            <input
+                                                type="text"
+                                                placeholder="Select District"
+                                                value={selectedDistrict ? selectedDistrict : districtSearch}
+                                                onChange={(e) => {
+                                                    setDistrictSearch(e.target.value);
+                                                    setSelectedDistrict(''); // Clear selection on type
+                                                    setOpenDistrict(true);
+                                                }}
+                                                onFocus={() => setOpenDistrict(true)}
+                                                onBlur={() => setTimeout(() => setOpenDistrict(false), 200)}
+                                                className="w-full p-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black transition-all outline-none text-sm placeholder:text-gray-400"
+                                                required
+                                            />
+                                            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                                            {openDistrict && (
+                                                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg z-50 max-h-[250px] overflow-y-auto">
+                                                    {filteredDistricts.length === 0 ? (
+                                                        <div className="px-4 py-3 text-sm text-gray-500 text-center">No district found</div>
+                                                    ) : (
+                                                        filteredDistricts.map((d) => (
+                                                            <div
+                                                                key={d}
+                                                                className={cn(
+                                                                    "px-4 py-2 cursor-pointer text-sm hover:bg-gray-50 flex justify-between items-center",
+                                                                    selectedDistrict === d && "bg-blue-50 text-blue-600"
+                                                                )}
+                                                                onMouseDown={(e) => e.preventDefault()}
+                                                                onClick={() => {
+                                                                    setSelectedDistrict(d);
+                                                                    setDistrictSearch('');
+                                                                    setOpenDistrict(false);
+                                                                }}
+                                                            >
+                                                                {d}
+                                                                {selectedDistrict === d && <Check className="w-3 h-3" />}
+                                                            </div>
+                                                        ))
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Upazila Selection */}
+                                        <div className="relative">
+                                            <input
+                                                type="text"
+                                                placeholder="Select Upazila/Thana"
+                                                value={selectedUpazila ? selectedUpazila : upazilaSearch}
+                                                onChange={(e) => {
+                                                    setUpazilaSearch(e.target.value);
+                                                    setSelectedUpazila('');
+                                                    setOpenUpazila(true);
+                                                }}
+                                                onFocus={() => setOpenUpazila(true)}
+                                                onBlur={() => setTimeout(() => setOpenUpazila(false), 200)}
+                                                className={cn(
+                                                    "w-full p-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black transition-all outline-none text-sm placeholder:text-gray-400",
+                                                    !selectedDistrict && "opacity-50 cursor-not-allowed"
+                                                )}
+                                                disabled={!selectedDistrict}
+                                                required
+                                            />
+                                            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                                            {openUpazila && selectedDistrict && (
+                                                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg z-50 max-h-[250px] overflow-y-auto">
+                                                    {filteredUpazilas.length === 0 ? (
+                                                        <div className="px-4 py-3 text-sm text-gray-500 text-center">No upazila found</div>
+                                                    ) : (
+                                                        filteredUpazilas.map((u) => (
+                                                            <div
+                                                                key={u}
+                                                                className={cn(
+                                                                    "px-4 py-2 cursor-pointer text-sm hover:bg-gray-50 flex justify-between items-center",
+                                                                    selectedUpazila === u && "bg-blue-50 text-blue-600"
+                                                                )}
+                                                                onMouseDown={(e) => e.preventDefault()}
+                                                                onClick={() => {
+                                                                    setSelectedUpazila(u);
+                                                                    setUpazilaSearch('');
+                                                                    setOpenUpazila(false);
+                                                                }}
+                                                            >
+                                                                {u}
+                                                                {selectedUpazila === u && <Check className="w-3 h-3" />}
+                                                            </div>
+                                                        ))
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
 

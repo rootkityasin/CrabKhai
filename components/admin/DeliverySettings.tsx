@@ -13,60 +13,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { DISTRICTS, UPAZILAS } from '@/lib/locations';
 
-const DISTRICTS = [
-    "Bagerhat", "Bandarban", "Barguna", "Barisal", "Bhola", "Bogura", "Brahmanbaria", "Chandpur", "Chittagong", "Chuadanga", "Comilla", "Cox's Bazar",
-    "Dhaka", "Dinajpur", "Faridpur", "Feni", "Gaibandha", "Gazipur", "Gopalganj", "Habiganj", "Jamalpur", "Jessore", "Jhalokati", "Jhenaidah",
-    "Joypurhat", "Khagrachari", "Khulna", "Kishoreganj", "Kurigram", "Kushtia", "Lakshmipur", "Lalmonirhat", "Madaripur", "Magura", "Manikganj",
-    "Meherpur", "Moulvibazar", "Munshiganj", "Mymensingh", "Naogaon", "Narail", "Narayanganj", "Narsingdi", "Natore", "Netrokona", "Nilphamari",
-    "Noakhali", "Pabna", "Panchagarh", "Patuakhali", "Pirojpur", "Rajbari", "Rajshahi", "Rangamati", "Rangpur", "Satkhira", "Shariatpur",
-    "Sherpur", "Sirajganj", "Sunamganj", "Sylhet", "Tangail", "Thakurgaon"
-].sort();
 
-// All 495 Upazilas of Bangladesh organized alphabetically
-const UPAZILAS = [
-    "Abhaynagar", "Adamdighi", "Aditmari", "Agailjhara", "Ajmiriganj", "Akhaura", "Akkelpur", "Alamdanga", "Alfadanga", "Alikadam",
-    "Anowara", "Araihazar", "Ashuganj", "Atgharia", "Atpara", "Austagram", "Babuganj", "Badarganj", "Badda", "Bagerhat Sadar",
-    "Bagha", "Baghaichhari", "Bagmara", "Bahirbazar", "Bajitpur", "Bakerganj", "Bakshiganj", "Baliakandi", "Banani", "Bancharampur",
-    "Bandarban Sadar", "Baniachang", "Banshkhali", "Baraigram", "Barchana", "Barguna Sadar", "Barisal Sadar", "Barkal", "Barlekha",
-    "Barura", "Basail", "Batiaghata", "Bauphal", "Begumganj", "Belabo", "Belkuchi", "Betagi", "Bhairab", "Bhaluka", "Bhandaria",
-    "Bhanga", "Bheramara", "Bhola Sadar", "Bholahat", "Bhurungamari", "Bijoynagar", "Birampur", "Birganj", "Bishwamvarpur", "Bishwanath",
-    "Boalkhali", "Boalmari", "Bogura Sadar", "Bochaganj", "Borhanuddin", "Brahmanbaria Sadar", "Burichang", "Cantonment", "Chagalnaiya",
-    "Chakaria", "Chandanaish", "Chandina", "Chandpur Sadar", "Chapainawabganj Sadar", "Charbhadrasan", "Charfashion", "Chatkhil", "Chatmohar",
-    "Chauddagram", "Chhagalnaiya", "Charghat", "Chitalmari", "Chittagong Port", "Chuadanga Sadar", "Chunarughat", "Companiganj", "Cox's Bazar Sadar",
-    "Daganbhuiyan", "Dagonbhuiyan", "Dakkhin Surma", "Damurhuda", "Dashmina", "Daulatpur", "Daulatkhan", "Debhata", "Debidwar", "Demra",
-    "Delduar", "Dewanganj", "Dhamrai", "Dhanmondi", "Dhanbari", "Dhamoirhat", "Dharmapasha", "Dhobaura", "Dhunat", "Dhupchanchia",
-    "Dighinala", "Dinajpur Sadar", "Dohar", "Domar", "Dumki", "Dumuria", "Durgapur", "Fakirhat", "Faridganj", "Faridpur Sadar",
-    "Fatikchhari", "Fatulla", "Fenchuganj", "Feni Sadar", "Fulbaria", "Fulchhari", "Fulpur", "Gabtali", "Gaibandha Sadar", "Gafargaon",
-    "Galachipa", "Gangachara", "Gangni", "Gaurnadi", "Gazipur Sadar", "Ghatail", "Ghior", "Goalanda", "Golapganj", "Godagari",
-    "Gomastapur", "Gopalganj Sadar", "Gopalpur", "Gowainghat", "Gurudaspur", "Gulshan", "Habiganj Sadar", "Haimchar", "Hajiganj", "Hakimpur",
-    "Halishahar", "Haluaghat", "Harinakundu", "Harintana", "Haripur", "Hatibandha", "Hathazari", "Hizla", "Homna", "Ishwardi",
-    "Ishwarganj", "Islampur", "Itna", "Jaintiapur", "Jajira", "Jamalpur Sadar", "Jessore Sadar", "Jhalkathi Sadar", "Jhenaidah Sadar", "Jhikargacha",
-    "Jibannagar", "Joypurhat Sadar", "Joynagar", "Kachua", "Kadamtali", "Kafrul", "Kahaloo", "Kalaroa", "Kalapara", "Kalai",
-    "Kalia", "Kaliganj", "Kaliakair", "Kalihati", "Kalmakanda", "Kamalpur", "Kamalganj", "Kamrangirchar", "Kamarkhand", "Kanaighat",
-    "Kapasia", "Karimganj", "Kasba", "Katiadi", "Kaunia", "Kawkhali", "Kendua", "Keraniganj", "Keshabpur", "Khagrachhari Sadar",
-    "Khaliajuri", "Khilgaon", "Khoksa", "Khulna Sadar", "Kishoreganj Sadar", "Kolapara", "Kotalipara", "Kotchandpur", "Kulaura", "Kuliarchar",
-    "Kumarkhali", "Kundaghat", "Kurigram Sadar", "Kushtia Sadar", "Kutubdia", "Laksham", "Lakshmipur Sadar", "Lalbag", "Lalmai", "Lalmohan",
-    "Lalmonirhat Sadar", "Lalpur", "Langadu", "Lohagara", "Lohajang", "Madarganj", "Madaripur Sadar", "Madhabpur", "Madhukhali", "Madhupur",
-    "Magura Sadar", "Maheshkhali", "Maheshpur", "Maijdee", "Manikchhari", "Manikganj Sadar", "Manirampur", "Manpura", "Matiranga", "Mawna",
-    "Meghna", "Mehendiganj", "Meherpur Sadar", "Mirersarai", "Mirsharai", "Mirpur", "Mirzapur", "Mithapukur", "Modhukhali", "Mohanganj",
-    "Mohammadpur", "Moheshkhali", "Monohordi", "Morrelganj", "Motijheel", "Moulvi Bazar Sadar", "Mujibnagar", "Muktagachha", "Muktagasa", "Muladi",
-    "Munshiganj Sadar", "Muksudpur", "Mymensingh Sadar", "Nabinagar", "Nachol", "Nagarkanda", "Nageswari", "Nakla", "Nalchity", "Nalitabari",
-    "Nandigram", "Nandail", "Naogaon Sadar", "Narail Sadar", "Narayanganj Sadar", "Narsingdi Sadar", "Natore Sadar", "Nawabganj", "Netrokona Sadar",
-    "New Market", "Nilphamari Sadar", "Niyamatpur", "Noakhali Sadar", "Paba", "Pabna Sadar", "Pahartali", "Pakundia", "Palang", "Palash",
-    "Pallabi", "Panchagar", "Panchagarh Sadar", "Pangsha", "Parbatipur", "Parshuram", "Patgram", "Patharghata", "Pathiya", "Patnitala",
-    "Patuakhali Sadar", "Pekua", "Phulbari", "Phulpur", "Pirgachha", "Pirganj", "Pirojpur Sadar", "Porsha", "Pubail", "Purbadhala",
-    "Rahanpur", "Raipur", "Raipura", "Rajbari Sadar", "Rajnagar", "Rajoir", "Rajshahi Sadar", "Ramganj", "Ramgarh", "Ramgati",
-    "Ramna", "Rampal", "Ramu", "Rangamati Sadar", "Rangpur Sadar", "Ranisankail", "Raninagar", "Rangunia", "Raozan", "Rashahi",
-    "Rohanpur", "Rowmari", "Rupganj", "Rupsa", "Sabang", "Sadarghat", "Sadar", "Sadarpur", "Sadullapur", "Saidpur",
-    "Sakhipur", "Saltha", "Sandwip", "Santhia", "Sapahar", "Sarishabari", "Sarail", "Satkhira Sadar", "Savar", "Sayedabad",
-    "Senbag", "Shahjadpur", "Shailkupa", "Shajahanpur", "Shalikha", "Shalua", "Shantiganj", "Shantinagar", "Shapahar", "Shariatpur Sadar",
-    "Sherpur Sadar", "Sher-e-Bangla Nagar", "Shibchar", "Shibganj", "Shibpur", "Shimlia", "Shirajdikhan", "Shreepur", "Shreenagar", "Shyamganj",
-    "Shyamnagar", "Sirajganj Sadar", "Sitakunda", "Sonagazi", "Sonadanga", "Sonargaon", "Sonatala", "Sreepur", "Sreemangal", "Sreerampur",
-    "Subarnachar", "Sujanagar", "Sunamganj Sadar", "Sundarganj", "Sylhet Sadar", "Tala", "Taltali", "Tanore", "Tangail Sadar", "Tarabo",
-    "Tarakanda", "Tarash", "Teknaf", "Tetulia", "Thakurgaon Sadar", "Titas", "Tongibari", "Tongi", "Ullapara", "Ullahpara",
-    "Ukhia", "Uttara", "Uzipur", "Ulipur", "Wazirpur", "Zakiganj", "Zanjira", "Zilha Sadar"
-].sort();
 
 export function DeliverySettings({ onBack }: { onBack?: () => void }) {
     const [loading, setLoading] = useState(true);
