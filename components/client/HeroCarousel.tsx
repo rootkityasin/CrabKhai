@@ -4,6 +4,7 @@ import React from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
 import Link from 'next/link';
+import NextImage from 'next/image';
 import { motion } from 'framer-motion';
 
 import { useLanguageStore } from '@/lib/languageStore';
@@ -89,10 +90,8 @@ export function HeroCarousel({ slides = [] }: { slides?: HeroSlide[] }) {
 
                         {/* Ken Burns Effect / Parallax feel */}
                         <div className="w-full h-full overflow-hidden">
-                            <motion.img
-                                src={slide.imageUrl}
-                                alt={slide.title}
-                                className="object-cover w-full h-full"
+                            <motion.div
+                                className="relative w-full h-full"
                                 initial={{ scale: 1.05 }}
                                 animate={{
                                     scale: index === selectedIndex ? 1.15 : 1.05,
@@ -102,7 +101,16 @@ export function HeroCarousel({ slides = [] }: { slides?: HeroSlide[] }) {
                                     scale: { duration: 8, ease: "linear" },
                                     x: { duration: 8, ease: "linear" }
                                 }}
-                            />
+                            >
+                                <NextImage
+                                    src={slide.imageUrl}
+                                    alt={slide.title}
+                                    fill
+                                    className="object-cover"
+                                    priority={index === 0}
+                                    sizes="100vw"
+                                />
+                            </motion.div>
                         </div>
 
                         <div className="absolute z-20 left-6 bottom-8 max-w-[80%] text-white">

@@ -1,19 +1,23 @@
 'use server';
 
 import { prisma } from '@/lib/prisma';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, unstable_cache } from 'next/cache';
 
-export async function getHeroSlides() {
-    try {
-        const slides = await prisma.heroSlide.findMany({
-            orderBy: { order: 'asc' }
-        });
-        return slides;
-    } catch (error) {
-        console.error("Failed to fetch hero slides:", error);
-        return [];
-    }
-}
+export const getHeroSlides = unstable_cache(
+    async () => {
+        try {
+            const slides = await prisma.heroSlide.findMany({
+                orderBy: { order: 'asc' }
+            });
+            return slides;
+        } catch (error) {
+            console.error("Failed to fetch hero slides:", error);
+            return [];
+        }
+    },
+    ['hero-slides'],
+    { revalidate: 3600, tags: ['hero-slides'] }
+);
 
 export async function createHeroSlide(data: any) {
     try {

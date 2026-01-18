@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Search, ShoppingCart, User, MapPin } from 'lucide-react';
+import { Search, ShoppingCart, User, MapPin, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCartStore } from '@/lib/store';
 import { useLanguageStore } from '@/lib/languageStore';
@@ -29,6 +29,7 @@ export function DesktopNavbar() {
 
     const cartItems = useCartStore((state) => state.items);
     const openCart = useCartStore((state) => state.openCart); // Get action
+    const openCheckout = useCartStore((state) => state.openCheckout);
     const { language, toggleLanguage } = useLanguageStore();
     const t = translations[language];
     const [mounted, setMounted] = useState(false);
@@ -71,31 +72,53 @@ export function DesktopNavbar() {
         <>
             <header
                 className={cn(
-                    "fixed top-0 left-0 right-0 z-50 transition-all duration-300 hidden md:block",
-                    !isTransparent
+                    "fixed top-0 left-0 right-0 transition-all duration-700 ease-in-out hidden md:block",
+                    isSidebarOpen ? "z-[100] bg-transparent backdrop-blur-none delay-100" : "z-50",
+                    !isTransparent && !isSidebarOpen
                         ? "bg-white/80 backdrop-blur-md shadow-sm border-b border-white/20 py-3"
                         : "bg-transparent py-5"
                 )}
             >
-                <div className="max-w-7xl mx-auto px-8 flex items-center justify-between">
+                <div className="max-w-7xl mx-auto px-8 flex items-center justify-between h-full">
                     <div className="flex items-center gap-6">
-                        {/* Hamburger (Desktop) */}
-                        <button
+                        {/* Hamburger / Close Toggle (Desktop) */}
+                        <motion.button
                             className={cn(
-                                "p-2 -ml-2 rounded-full transition-colors",
-                                !isTransparent ? "text-slate-800 hover:bg-slate-100" : "text-white hover:bg-white/10"
+                                "relative z-[110] p-2 -ml-2 rounded-full transition-colors",
+                                isSidebarOpen
+                                    ? "text-white hover:bg-white/10"
+                                    : !isTransparent ? "text-slate-800 hover:bg-slate-100" : "text-white hover:bg-white/10"
                             )}
-                            onClick={() => setIsSidebarOpen(true)}
+                            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                            animate={isSidebarOpen ? "open" : "closed"}
                         >
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <line x1="3" x2="21" y1="6" y2="6" />
-                                <line x1="3" x2="21" y1="12" y2="12" />
-                                <line x1="3" x2="21" y1="18" y2="18" />
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                <motion.line
+                                    x1="4" x2="20" y1="6" y2="6"
+                                    variants={{
+                                        closed: { rotate: 0, y: 0 },
+                                        open: { rotate: 45, y: 6 }
+                                    }}
+                                />
+                                <motion.line
+                                    x1="4" x2="20" y1="12" y2="12"
+                                    variants={{
+                                        closed: { opacity: 1 },
+                                        open: { opacity: 0 }
+                                    }}
+                                />
+                                <motion.line
+                                    x1="4" x2="20" y1="18" y2="18"
+                                    variants={{
+                                        closed: { rotate: 0, y: 0 },
+                                        open: { rotate: -45, y: -6 }
+                                    }}
+                                />
                             </svg>
-                        </button>
+                        </motion.button>
 
                         {/* Logo */}
-                        <Link href="/" className="flex items-center gap-2 group">
+                        <Link href="/" className={cn("flex items-center gap-2 group transition-opacity duration-300", isSidebarOpen && "opacity-0 pointer-events-none")}>
                             <img
                                 src={config?.logoUrl || "/logo.svg"}
                                 alt={config?.shopName || "CrabKhai"}
@@ -111,7 +134,7 @@ export function DesktopNavbar() {
                     </div>
 
                     {/* Center Nav */}
-                    <nav className="flex items-center gap-8 bg-black/5 backdrop-blur-sm px-8 py-2.5 rounded-full border border-white/10 shadow-sm">
+                    <nav className={cn("flex items-center gap-8 bg-black/5 backdrop-blur-sm px-8 py-2.5 rounded-full border border-white/10 shadow-sm transition-opacity duration-300", isSidebarOpen && "opacity-0 pointer-events-none")}>
                         {navItems.map((item) => {
                             const isActive = pathname === item.href;
                             return (
@@ -138,7 +161,7 @@ export function DesktopNavbar() {
                     </nav>
 
                     {/* Right Actions */}
-                    <div className="flex items-center gap-5">
+                    <div className={cn("flex items-center gap-5 transition-opacity duration-300", isSidebarOpen && "opacity-0 pointer-events-none")}>
                         {/* Search */}
                         <AnimatedSearchBar width="w-72" />
 
@@ -203,18 +226,16 @@ export function DesktopNavbar() {
                             animate={{ x: 0 }}
                             exit={{ x: "-100%" }}
                             transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                            className="fixed top-0 left-0 bottom-0 w-[280px] bg-slate-950 z-[70] shadow-2xl p-6 flex flex-col"
+                            className="fixed top-0 left-0 bottom-0 w-[300px] bg-slate-950 z-[70] shadow-2xl px-6 pb-6 pt-28 flex flex-col"
                         >
-                            <div className="flex items-center justify-between mb-8">
-                                <span className="text-white font-bold text-xl uppercase tracking-widest">Menu</span>
-                                <button onClick={() => setIsSidebarOpen(false)} className="text-white/70 hover:text-white">
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 18 18" /></svg>
-                                </button>
+                            <div className="mb-8">
+                                <span className="text-white font-black text-2xl uppercase tracking-widest pl-1">Menu</span>
                             </div>
                             <nav className="space-y-6">
                                 {[
                                     { href: "/", label: "HOME", color: "text-white" },
                                     { href: "/menu", label: "MENU", color: "text-white" },
+                                    { href: "/cart?action=checkout", label: "CHECKOUT", color: "text-orange-400" },
                                     { href: "/story", label: "OUR STORY", color: "text-crab-red" },
                                     { href: "/account", label: "ACCOUNT", color: "text-white" }
                                 ].map((item, i) => (
@@ -227,7 +248,13 @@ export function DesktopNavbar() {
                                         <Link
                                             href={item.href}
                                             className={`block text-2xl font-black hover:text-crab-red transition-colors ${item.color}`}
-                                            onClick={() => setIsSidebarOpen(false)}
+                                            onClick={(e) => {
+                                                if (item.label === 'CHECKOUT') {
+                                                    e.preventDefault();
+                                                    openCheckout();
+                                                }
+                                                setIsSidebarOpen(false);
+                                            }}
                                         >
                                             {item.label}
                                         </Link>

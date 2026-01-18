@@ -7,6 +7,7 @@ import { AdminProvider } from "@/components/providers/AdminProvider";
 
 import { DesktopNavbar } from "@/components/client/DesktopNavbar";
 import { CartDrawer } from "@/components/client/CartDrawer"; // Import
+import { GlobalCheckoutDrawer } from "@/components/client/GlobalCheckoutDrawer";
 
 export default async function ClientLayout({ // Changed to async
     children,
@@ -24,6 +25,7 @@ export default async function ClientLayout({ // Changed to async
                 </div>
                 <DesktopNavbar />
                 <CartDrawer />
+                <GlobalCheckoutDrawer />
                 <main className="flex-1 w-full relative">
                     <PageTransition>
                         {children}

@@ -61,7 +61,7 @@ export function Footer({ config }: FooterProps) {
     const cleanPhone = phone.replace(/[^0-9+]/g, '');
 
     return (
-        <footer className="bg-crab-red text-white py-12 pb-24">
+        <footer className="bg-crab-red text-white py-12 pb-24 md:pb-12">
             <PolicyModal
                 isOpen={policyOpen === 'privacy'}
                 onClose={() => setPolicyOpen(null)}

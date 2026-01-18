@@ -204,7 +204,7 @@ export default function AccountPage() {
 
     // --- PROFILE VIEW ---
     return (
-        <div className="bg-gray-50 min-h-screen pb-20 pt-20 md:pt-28">
+        <div className="bg-gray-50 min-h-screen pb-20 md:pb-0 pt-20 md:pt-28">
             <div className="max-w-4xl mx-auto px-4 md:px-0">
                 {/* Header Profile Card - Modernized Ocean Blue */}
                 <motion.div

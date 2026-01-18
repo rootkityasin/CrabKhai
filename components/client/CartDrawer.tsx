@@ -10,7 +10,7 @@ import { usePathname } from 'next/navigation';
 import { CouponSection } from '@/components/client/CouponSection';
 
 export function CartDrawer() {
-    const { items, removeItem, addItem, isOpen, closeCart, openCart, total, discount, finalTotal, coupon } = useCartStore();
+    const { items, removeItem, addItem, isOpen, closeCart, openCart, openCheckout, total, discount, finalTotal, coupon } = useCartStore();
     const { settings } = useAdmin();
     const [mounted, setMounted] = useState(false);
     const pathname = usePathname();
@@ -301,15 +301,19 @@ export function CartDrawer() {
                             </div>
                         </div>
 
-                        <Link href="/cart" onClick={closeCart}>
-                            <button className="w-full py-4 bg-crab-red text-white font-bold text-lg rounded-xl shadow-lg hover:bg-red-600 active:scale-95 transition-all flex items-center justify-center gap-2 group relative overflow-hidden">
-                                <span className="relative z-10 flex items-center gap-2">
-                                    Checkout Now <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                                </span>
-                                {/* Shine effect */}
-                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-shine" />
-                            </button>
-                        </Link>
+                        <button
+                            onClick={() => {
+                                closeCart();
+                                openCheckout();
+                            }}
+                            className="w-full py-4 bg-crab-red text-white font-bold text-lg rounded-xl shadow-lg hover:bg-red-600 active:scale-95 transition-all flex items-center justify-center gap-2 group relative overflow-hidden"
+                        >
+                            <span className="relative z-10 flex items-center gap-2">
+                                Checkout Now <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                            </span>
+                            {/* Shine effect */}
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-shine" />
+                        </button>
                     </div>
                 )}
             </motion.div>

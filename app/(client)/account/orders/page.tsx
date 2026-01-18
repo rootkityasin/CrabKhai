@@ -1,6 +1,6 @@
 export default function OrdersPage() {
     return (
-        <div className="p-4 min-h-screen bg-gray-50 pb-20">
+        <div className="p-4 min-h-screen bg-gray-50 pb-20 md:pb-0">
             <h1 className="text-2xl font-bold font-heading mb-6">My Orders</h1>
             <div className="space-y-4">
                 {[1, 2, 3].map((i) => (

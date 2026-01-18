@@ -1,7 +1,7 @@
 'use server';
 
 import { prisma } from '@/lib/prisma';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, unstable_cache } from 'next/cache';
 
 export async function getSections() {
     try {
@@ -20,25 +20,27 @@ export async function getSections() {
     }
 }
 
-export async function getHomeSections() {
-    try {
-        const sections = await prisma.productSection.findMany({
-            where: { isActive: true },
-            orderBy: { order: 'asc' },
-            include: {
-                products: {
-                    // Removed stage filter as per user request. 
-                    // All assigned products will show.
-                    orderBy: { createdAt: 'desc' },
+export const getHomeSections = unstable_cache(
+    async () => {
+        try {
+            const sections = await prisma.productSection.findMany({
+                where: { isActive: true },
+                orderBy: { order: 'asc' },
+                include: {
+                    products: {
+                        orderBy: { createdAt: 'desc' },
+                    }
                 }
-            }
-        });
-        return sections;
-    } catch (error) {
-        console.error("Failed to fetch home sections:", error);
-        return [];
-    }
-}
+            });
+            return sections;
+        } catch (error) {
+            console.error("Failed to fetch home sections:", error);
+            return [];
+        }
+    },
+    ['home-sections'],
+    { revalidate: 3600, tags: ['home-sections'] }
+);
 
 export async function createSection(data: { title: string; slug: string; isActive?: boolean; order?: number }) {
     try {

@@ -1,36 +1,27 @@
 'use server';
 
 import { prisma } from '@/lib/prisma';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, unstable_cache } from 'next/cache';
 import { ShopType } from '@prisma/client';
 
-// Simple in-memory cache with TTL for getSiteConfig
-let siteConfigCache: { data: any | null; timestamp: number } = { data: null, timestamp: 0 };
-const CACHE_TTL = 60 * 1000; // 60 seconds
-
-export async function getSiteConfig() {
-    // Return cached data if still valid
-    const now = Date.now();
-    if (siteConfigCache.data && (now - siteConfigCache.timestamp) < CACHE_TTL) {
-        return siteConfigCache.data;
-    }
-
-    const defaults = {
-        contactPhone: "+880 1804 221 161",
-        contactEmail: "crabkhaibangladesh@gmail.com",
-        contactAddress: "195 Green Road, Dhaka",
-        shopName: "Crab & Khai",
-        logoUrl: "/logo.svg",
-        measurementUnit: "PCS",
-        allergensText: "Crustaceans",
-        certificates: [],
-        primaryColor: "#ea0000",
-        secondaryColor: "#0f172a",
-        taxPercentage: 0.0,
-        shopType: 'RESTAURANT',
-        weightUnitValue: 200,
-        volumeUnitValue: 1000,
-        privacyPolicy: `**Your Privacy Matters to Us**
+export const getSiteConfig = unstable_cache(
+    async () => {
+        const defaults = {
+            contactPhone: "+880 1804 221 161",
+            contactEmail: "crabkhaibangladesh@gmail.com",
+            contactAddress: "195 Green Road, Dhaka",
+            shopName: "Crab & Khai",
+            logoUrl: "/logo.svg",
+            measurementUnit: "PCS",
+            allergensText: "Crustaceans",
+            certificates: [],
+            primaryColor: "#ea0000",
+            secondaryColor: "#0f172a",
+            taxPercentage: 0.0,
+            shopType: 'RESTAURANT',
+            weightUnitValue: 200,
+            volumeUnitValue: 1000,
+            privacyPolicy: `**Your Privacy Matters to Us**
 
 At **Crab & Khai**, we believe building trust is just as important as delivering premium seafood. We want to be transparent about how we handle your information.
 
@@ -42,7 +33,7 @@ Your personal details are used strictly to fulfill your orders and improve your 
 
 **Always Here for You**
 If you have any questions about your data or just want to verify details, please don't hesitate to contact us directly at crabkhaibangladesh@gmail.com.`,
-        refundPolicy: `**Our Freshness Guarantee**
+            refundPolicy: `**Our Freshness Guarantee**
 
 We take immense pride in the quality of our seafood. If something isn't right, we want to know.
 
@@ -53,7 +44,7 @@ In the unlikely event that you receive a product that doesn't meet our premium s
 For valid claims, we process refunds directly to your original payment method (or bKash/Nagad) within **5-7 business days**. We aim to resolve every issue with fairness and speed.
 
 *Note: Due to the perishable nature of our products, we cannot accept returns for items that have been cooked or consumed.*`,
-        termsPolicy: `**Terms of Service**
+            termsPolicy: `**Terms of Service**
 
 **1. General**
 By accessing and placing an order with **Crab & Khai**, you confirm that you are in agreement with and bound by the terms of service contained in the Terms & Conditions outlined below. These terms apply to the entire website and any email or other type of communication between you and Crab & Khai.
@@ -63,32 +54,27 @@ All products and specific offers are subject to availability. We prioritize fres
 
 **3. Payments**
 We accept Cash on Delivery (COD) and Mobile Financial Services (bKash, Nagad). Full payment must be cleared upon delivery or in advance as per the order terms.`
-    };
+        };
 
-    try {
-        const config = await prisma.siteConfig.findFirst();
-        if (!config) {
-            siteConfigCache = { data: defaults, timestamp: Date.now() };
+        try {
+            const config = await prisma.siteConfig.findFirst();
+            if (!config) return defaults;
+            return {
+                ...defaults,
+                ...config,
+                shopType: config.shopType || defaults.shopType,
+            };
+        } catch (error) {
+            console.error("Failed to fetch site config:", error);
             return defaults;
         }
-        // Merge: Use DB values, but fall back to defaults for any missing/null fields
-        const result = {
-            ...defaults,
-            ...config,
-            shopType: config.shopType || defaults.shopType, // Explicit fallback
-        };
-        siteConfigCache = { data: result, timestamp: Date.now() };
-        return result;
-    } catch (error) {
-        console.error("Failed to fetch site config:", error);
-        return siteConfigCache.data || defaults; // Return stale cache on error
-    }
-}
+    },
+    ['site-config'],
+    { revalidate: 3600, tags: ['site-config'] }
+);
 
 export async function updateSiteConfig(data: any) {
     try {
-        // Upsert: Create if not exists, otherwise update the first one found
-        // Since we don't have a singleton ID, we find first or create
         const existing = await prisma.siteConfig.findFirst();
 
         if (existing) {
@@ -131,13 +117,10 @@ export async function updateSiteConfig(data: any) {
             });
         }
 
-        // Invalidate cache after update
-        siteConfigCache = { data: null, timestamp: 0 };
         revalidatePath('/');
         return { success: true };
     } catch (error) {
         console.error("Failed to update settings:", error);
-        console.error("Payload was:", data);
         return { success: false, error: String(error) };
     }
 }

@@ -95,7 +95,7 @@ export default function AddressesPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 pb-20 relative">
+        <div className="min-h-screen bg-gray-50 pb-20 md:pb-0 relative">
             {/* Header */}
             <div className="p-4 bg-white shadow-sm sticky top-0 z-10">
                 <div className="flex items-center justify-between">
@@ -130,8 +130,8 @@ export default function AddressesPage() {
                                             key={tag}
                                             onClick={() => setNewTag(tag)}
                                             className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${newTag === tag
-                                                    ? 'bg-crab-red text-white shadow-md shadow-orange-500/20'
-                                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                                ? 'bg-crab-red text-white shadow-md shadow-orange-500/20'
+                                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                                 }`}
                                         >
                                             {tag}
@@ -201,13 +201,13 @@ export default function AddressesPage() {
                                 key={addr.id}
                                 onClick={() => handleSetDefault(addr.id)}
                                 className={`bg-white p-4 rounded-xl shadow-sm border transition-all cursor-pointer relative group ${addr.isDefault
-                                        ? 'border-crab-red/50 ring-1 ring-crab-red/20'
-                                        : 'border-gray-100 hover:border-gray-200'
+                                    ? 'border-crab-red/50 ring-1 ring-crab-red/20'
+                                    : 'border-gray-100 hover:border-gray-200'
                                     }`}
                             >
                                 <div className={`absolute top-4 right-4 text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-md ${addr.tag === 'Home' ? 'bg-green-50 text-green-600' :
-                                        addr.tag === 'Work' ? 'bg-blue-50 text-blue-600' :
-                                            'bg-gray-100 text-gray-500'
+                                    addr.tag === 'Work' ? 'bg-blue-50 text-blue-600' :
+                                        'bg-gray-100 text-gray-500'
                                     }`}>
                                     {addr.tag}
                                 </div>
