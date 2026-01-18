@@ -1,9 +1,9 @@
 'use client';
 
+import { Suspense, useState, useEffect } from 'react';
 import { useCartStore } from '@/lib/store';
 import { Minus, Plus, Trash2, ArrowRight, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useLanguageStore } from '@/lib/languageStore';
@@ -14,7 +14,6 @@ import { CartRecommendations } from '@/components/client/CartRecommendations';
 import { getPaymentConfig, getSiteConfig } from '@/app/actions/settings';
 import { createOrder } from '@/app/actions/order';
 import { toast } from 'sonner';
-import { useEffect } from 'react';
 import { useAdmin } from '@/components/providers/AdminProvider';
 import { getStorySections } from '@/app/actions/story';
 import {
@@ -28,7 +27,7 @@ import {
 import { StickyCartFooter } from '@/components/client/cart/StickyCartFooter';
 import { MobileCartItem } from '@/components/client/cart/MobileCartItem';
 
-export default function CartPage() {
+function CartContent() {
     const { items, removeItem, addItem, clearCart, total, discount, coupon } = useCartStore();
     const [isOrderPlaced, setIsOrderPlaced] = useState(false);
     const [isAnimating, setIsAnimating] = useState(false);
@@ -554,6 +553,18 @@ export default function CartPage() {
                 </div>
             </StickyCartFooter>
         </div>
+    );
+}
+
+export default function CartPage() {
+    return (
+        <Suspense fallback={
+            <div className="flex items-center justify-center min-h-[60vh]">
+                <Loader2 className="w-8 h-8 animate-spin text-crab-red" />
+            </div>
+        }>
+            <CartContent />
+        </Suspense>
     );
 }
 
